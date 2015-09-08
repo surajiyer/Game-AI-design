@@ -28,6 +28,7 @@ import com.badlogic.gdx.utils.Array;
  */
 public class Basic3DTest extends ApplicationAdapter {
     
+    final float UNITS_PER_METER = 96f;
     SpriteBatch batch;
     PerspectiveCamera camera;
     CameraInputController camController;
@@ -50,10 +51,10 @@ public class Basic3DTest extends ApplicationAdapter {
         
         // Set up a 3d perspective camera
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.position.set(50f, 50f, 50f);
+        camera.position.set(3*UNITS_PER_METER, 2f*UNITS_PER_METER, 0f);
         camera.lookAt(0,0,0);
-        camera.near = 1f;
-        camera.far = 300f;
+        camera.near = 0.25f*UNITS_PER_METER; // human eye sees between the range of 25cm to 
+        camera.far = 20f*UNITS_PER_METER;
         camera.update();
         
         // Setup a camera controller to control the camera movements
@@ -68,7 +69,14 @@ public class Basic3DTest extends ApplicationAdapter {
 //        instance = new ModelInstance(model);
         
         // load a 3d Model
-        assets.load("tower.g3db", Model.class);
+        assets.load("tower/tower.g3db", Model.class);
+        assets.load("flags/flagBlue.g3db", Model.class);
+        assets.load("flags/flagNone.g3db", Model.class);
+        assets.load("flags/flagRed.g3db", Model.class);
+        assets.load("trees/tree1.g3db", Model.class);
+        assets.load("trees/tree2.g3db", Model.class);
+        assets.load("trees/tree3.g3db", Model.class);
+        assets.load("trees/tree4.g3db", Model.class);
         assetLoading = true;
         
         // create the surrounding environment
@@ -81,7 +89,29 @@ public class Basic3DTest extends ApplicationAdapter {
     public void render () {
         // Load assets once asset manager is done loading the asset
         if(assetLoading && assets.update()) {
-            instances.add(new ModelInstance(assets.get("tower.g3db", Model.class)));
+            ModelInstance instance = new ModelInstance(assets.get("tower/tower.g3db", Model.class));
+            instances.add(instance);
+            instance = new ModelInstance(assets.get("trees/tree1.g3db", Model.class));
+            instance.transform.setToTranslation(0, 0, -2*UNITS_PER_METER);
+            instances.add(instance);
+            instance = new ModelInstance(assets.get("trees/tree2.g3db", Model.class));
+            instance.transform.setToTranslation(-2*UNITS_PER_METER, 0, -1*UNITS_PER_METER);
+            instances.add(instance);
+            instance = new ModelInstance(assets.get("trees/tree3.g3db", Model.class));
+            instance.transform.setToTranslation(-2*UNITS_PER_METER, 0, UNITS_PER_METER);
+            instances.add(instance);
+            instance = new ModelInstance(assets.get("trees/tree4.g3db", Model.class));
+            instance.transform.setToTranslation(0, 0, 2*UNITS_PER_METER);
+            instances.add(instance);
+            instance = new ModelInstance(assets.get("flags/flagRed.g3db", Model.class));
+            instance.transform.setToTranslation(UNITS_PER_METER, 0, -0.5f*UNITS_PER_METER);
+            instances.add(instance);
+            instance = new ModelInstance(assets.get("flags/flagNone.g3db", Model.class));
+            instance.transform.setToTranslation(1.2f*UNITS_PER_METER, 0, 0);
+            instances.add(instance);
+            instance = new ModelInstance(assets.get("flags/flagBlue.g3db", Model.class));
+            instance.transform.setToTranslation(UNITS_PER_METER, 0, 0.5f*UNITS_PER_METER);
+            instances.add(instance);
             assetLoading = false;
         }
         
