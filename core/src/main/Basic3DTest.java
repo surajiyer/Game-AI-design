@@ -32,7 +32,7 @@ public class Basic3DTest extends ApplicationAdapter {
     final float HUMAN_HEIGHT = 0.5f*UNITS_PER_METER;
     SpriteBatch batch;
     PerspectiveCamera camera;
-    FirstPersonCameraController camController;
+    FPCameraController camController;
     boolean fullscreen = false;
     int oldWidth, oldHeight;
     ModelBatch modelBatch;
@@ -60,7 +60,7 @@ public class Basic3DTest extends ApplicationAdapter {
         camera.update();
         
         // Setup a camera controller to control the camera movements
-        camController = new FirstPersonCameraController(camera);
+        camController = new FPCameraController(camera);
         camController.setVelocity(UNITS_PER_METER);
         Gdx.input.setInputProcessor(camController);
         
