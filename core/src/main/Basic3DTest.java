@@ -19,6 +19,7 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
 /**
@@ -50,12 +51,13 @@ public class Basic3DTest extends ApplicationAdapter {
         instances = new Array<ModelInstance>();
         assets = new AssetManager();
         
-        // Set up a 3d perspective camera
+        // Set up a 3D perspective camera
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.position.set(3*UNITS_PER_METER, 2f*UNITS_PER_METER, 0f);
         camera.lookAt(0,0,0);
         camera.near = 0.25f*UNITS_PER_METER; // human eye sees between the range of 25cm to 
         camera.far = 20f*UNITS_PER_METER;
+        camera.up.set(Vector3.Y);
         camera.update();
         
         // Setup a camera controller to control the camera movements
