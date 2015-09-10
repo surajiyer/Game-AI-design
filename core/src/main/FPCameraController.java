@@ -13,7 +13,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
 
 /**
- *
+ * Used to control the camera.
  * @author S.S.Iyer
  */
 public class FPCameraController extends InputAdapter {
@@ -50,14 +50,27 @@ public class FPCameraController extends InputAdapter {
         return true;
     }
 
-    /** Sets the velocity in units per second for moving forward, backward and strafing left/right.
-     * @param velocity the velocity in units per second */
+    /** 
+     * Sets the velocity in units per second for moving forward, backward and 
+     * strafing left/right.
+     * @param velocity the velocity in units per second 
+     */
     public void setVelocity (float velocity) {
         this.velocity = velocity;
     }
+    
+    /** 
+     * Sets the turning speed of the camera for turning left/right.
+     * @param turnSpeed 
+     */
+    public void setRotationSpeed (float turnSpeed) {
+        this.turnSpeed = turnSpeed;
+    }
 
-    /** Sets how many degrees to rotate per pixel the mouse moved.
-    * @param degreesPerPixel */
+    /** 
+     * Sets how many degrees to rotate per pixel the mouse moved.
+     * @param degreesPerPixel 
+     */
     public void setDegreesPerPixel (float degreesPerPixel) {
         this.degreesPerPixel = degreesPerPixel;
     }
@@ -69,7 +82,7 @@ public class FPCameraController extends InputAdapter {
         camera.direction.rotate(camera.up, deltaX);
         tmp.set(camera.direction).crs(camera.up).nor();
         camera.direction.rotate(tmp, deltaY);
-// camera.up.rotate(tmp, deltaY);
+        // camera.up.rotate(tmp, deltaY);
         return true;
     }
 

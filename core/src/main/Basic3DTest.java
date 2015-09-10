@@ -56,13 +56,13 @@ public class Basic3DTest extends ApplicationAdapter {
         camera.position.set(3*UNITS_PER_METER, 2f*UNITS_PER_METER, 0f);
         camera.lookAt(0,0,0);
         camera.near = 0.25f*UNITS_PER_METER; // human eye sees between the range of 25cm to 
-        camera.far = 20f*UNITS_PER_METER;
+        camera.far = 10f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
         
         // Setup a camera controller to control the camera movements
         camController = new FPCameraController(camera);
-        camController.setVelocity(UNITS_PER_METER);
+        camController.setVelocity(1.5f*UNITS_PER_METER);
         Gdx.input.setInputProcessor(camController);
         
         // load a 3d Model
@@ -104,7 +104,7 @@ public class Basic3DTest extends ApplicationAdapter {
         }
         
         // Clear the color buffer and the depth buffer
-        Gdx.gl.glClearColor(1, 1, 1, 1);
+        Gdx.gl.glClearColor(0.13f, 0.13f, 0.13f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         
         // Set new viewport size and full screen
