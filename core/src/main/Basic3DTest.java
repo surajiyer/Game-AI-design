@@ -18,7 +18,6 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.utils.CameraInputController;
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 import com.badlogic.gdx.utils.Array;
@@ -30,6 +29,7 @@ import com.badlogic.gdx.utils.Array;
 public class Basic3DTest extends ApplicationAdapter {
     
     final static float UNITS_PER_METER = 96f;
+    final float HUMAN_HEIGHT = 0.5f*UNITS_PER_METER;
     SpriteBatch batch;
     PerspectiveCamera camera;
     FirstPersonCameraController camController;
@@ -96,6 +96,11 @@ public class Basic3DTest extends ApplicationAdapter {
         
         // Update the camera controller
         camController.update();
+        if(camera.position.y < terrain.getHeight()+HUMAN_HEIGHT) {
+            camera.position.set(camera.position.x, 
+                    terrain.getHeight()+HUMAN_HEIGHT, 
+                    camera.position.z);
+        }
         
         // Clear the color buffer and the depth buffer
         Gdx.gl.glClearColor(1, 1, 1, 1);

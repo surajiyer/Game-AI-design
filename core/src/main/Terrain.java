@@ -16,5 +16,15 @@ public abstract class Terrain {
     
     ModelInstance instance;
     
+    /**
+     * Update the position of the terrain w.r.t to the given vector point.
+     * @param pos Vector3 point
+     */
     public abstract void updatePos(Vector3 pos);
+    
+    /**
+     * Get the height of the center point of the terrain.
+     * @return 
+     */
+    public abstract float getHeight();
 }

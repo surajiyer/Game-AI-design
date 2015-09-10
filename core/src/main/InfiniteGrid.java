@@ -56,4 +56,9 @@ public class InfiniteGrid extends Terrain {
             instance.transform.setToTranslation(gridTranslation);
         }
     }
+
+    @Override
+    public float getHeight() {
+        return instance.transform.getTranslation(Vector3.Zero).y;
+    }
 }
