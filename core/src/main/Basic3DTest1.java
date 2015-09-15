@@ -20,9 +20,11 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import terrain.SimplexNoise;
+import terrain.TerrainGenerator;
 
 /**
  *
@@ -47,23 +49,25 @@ public class Basic3DTest1 extends ApplicationAdapter {
     boolean assetLoading;
     
     @Override
-    public void create() {
+    public void create() 
+    {       
         // Set up terrain batch to disply per frame
         modelBatch = new ModelBatch();
         instances = new Array<ModelInstance>();
         assets = new AssetManager();
         
-        // Set up a 3d perspective camera
+        // Set up a 3D perspective camera
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.position.set(3*UNITS_PER_METER, 2f*UNITS_PER_METER, 0f);
         camera.lookAt(0,0,0);
-        camera.near = 0.25f*UNITS_PER_METER; // human eye sees between the range of 25cm to 
-        camera.far = 20f*UNITS_PER_METER;
+        camera.near = 0.25f*UNITS_PER_METER;
+        camera.far = 10f*UNITS_PER_METER;
+        camera.up.set(Vector3.Y);
         camera.update();
         
         // Setup a camera controller to control the camera movements
         camController = new FPCameraController(camera);
-        camController.setVelocity(UNITS_PER_METER);
+        camController.setVelocity(1.5f*UNITS_PER_METER);
         Gdx.input.setInputProcessor(camController);
         
         // load a 3d Model
@@ -87,6 +91,9 @@ public class Basic3DTest1 extends ApplicationAdapter {
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
         environment.set(new ColorAttribute(ColorAttribute.Fog, 0.13f, 0.13f, 0.13f, 1f));
         environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
+        
+        float[][] f = SimplexNoise.generateSimplexNoise(750, 450);
+        SimplexNoise.createImage(f);
     }
     
     @Override
@@ -105,7 +112,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
         }
         
         // Clear the color buffer and the depth buffer
-        Gdx.gl.glClearColor(1, 1, 1, 1);
+        Gdx.gl.glClearColor(0.13f, 0.13f, 0.13f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         
         // Set new viewport size and full screen
@@ -130,8 +137,10 @@ public class Basic3DTest1 extends ApplicationAdapter {
         modelBatch.begin(camera);
         modelBatch.render(instances, environment);
         modelBatch.render(terrain.instance);
-        //if (skySphere != null)
-        //    modelBatch.render(skySphere);
+//        if (skySphere != null) {
+//            skySphere.transform.setToTranslation(camera.position);
+//            modelBatch.render(skySphere);
+//        }
         modelBatch.end();
     }
     
@@ -143,22 +152,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
     
     void assetLoading() {
         ModelInstance instance = new ModelInstance(assets.get("tower/tower.g3db", Model.class));
-        //instances.add(instance);
-        instance = new ModelInstance(assets.get("trees/tree1.g3db", Model.class));
-        instance.transform.setToTranslation(0, 0, -2*UNITS_PER_METER);
-        //instances.add(instance);
-        instance = new ModelInstance(assets.get("trees/tree2.g3db", Model.class));
-        instance.transform.setToTranslation(-2*UNITS_PER_METER, 0, -1*UNITS_PER_METER);
-       // instances.add(instance);
-        instance = new ModelInstance(assets.get("trees/tree3.g3db", Model.class));
-        instance.transform.setToTranslation(-2*UNITS_PER_METER, 0, UNITS_PER_METER);
-       // instances.add(instance);
-        instance = new ModelInstance(assets.get("trees/tree4.g3db", Model.class));
-        instance.transform.setToTranslation(0, 0, 2*UNITS_PER_METER);
-        //instances.add(instance);
-        instance = new ModelInstance(assets.get("flags/flagRed.g3db", Model.class));
-        instance.transform.setToTranslation(UNITS_PER_METER, 0, -0.5f*UNITS_PER_METER);
-        //instances.add(instance);
+        instances.add(instance);
         instance = new ModelInstance(assets.get("flags/flagNone.g3db", Model.class));
         instance.transform.setToTranslation(Randomizer.randFloat(-5,5)*UNITS_PER_METER, 0, Randomizer.randFloat(-5,5)*UNITS_PER_METER);
         instances.add(instance);
@@ -174,11 +168,8 @@ public class Basic3DTest1 extends ApplicationAdapter {
         instance = new ModelInstance(assets.get("flags/flagNone.g3db", Model.class));
         instance.transform.setToTranslation(Randomizer.randFloat(-5,5)*UNITS_PER_METER, 0, Randomizer.randFloat(-5,5)*UNITS_PER_METER);
         instances.add(instance);
-        instance = new ModelInstance(assets.get("flags/flagBlue.g3db", Model.class));
-        instance.transform.setToTranslation(UNITS_PER_METER, 0, 0.5f*UNITS_PER_METER);
-        //instances.add(instance);
         skySphere = new ModelInstance(assets.get("spacesphere/spacesphere.g3db", Model.class));
-        skySphere.transform.setToScaling(10, 10, 10);
+        skySphere.transform.setToScaling(10*UNITS_PER_METER, 10*UNITS_PER_METER, 10*UNITS_PER_METER);
         assetLoading = false;
     }
 }
