@@ -92,7 +92,8 @@ public class Basic3DTest1 extends ApplicationAdapter {
         environment.set(new ColorAttribute(ColorAttribute.Fog, 0.13f, 0.13f, 0.13f, 1f));
         environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
         
-        float[][] f = SimplexNoise.generateSimplexNoise(750, 450);
+        //float[][] f = SimplexNoise.generateSimplexNoise(750, 450);
+        float[][] f = SimplexNoise.generateOctavedSimplexNoise(750, 450, 3, 0.4f, 0.005f);
         SimplexNoise.createImage(f);
     }
     

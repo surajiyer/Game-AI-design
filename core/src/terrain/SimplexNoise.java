@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import static java.lang.Math.abs;
 import javax.imageio.ImageIO;
 
 public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
@@ -142,6 +143,39 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
         
         return simplexNoise;
     }
+    
+    public static float[][] generateOctavedSimplexNoise(int width, int height, int octaves, float roughness, float scale){
+      float[][] totalNoise = new float[width][height];
+       float layerFrequency = scale;
+       float layerWeight = 1;
+       float weightSum = 0;
+
+       for (int octave = 0; octave < octaves; octave++) {
+          //Calculate single layer/octave of simplex noise, then add it to total noise
+          for(int x = 0; x < width; x++){
+             for(int y = 0; y < height; y++){
+                totalNoise[x][y] += (float) noise(x * layerFrequency,y * layerFrequency) * layerWeight;
+             }
+          }
+          
+          //Increase variables with each incrementing octave
+           layerFrequency *= 2;
+           weightSum += layerWeight;
+           layerWeight *= roughness;
+           
+       }
+       
+       System.out.println("Simplex noise generated");
+        
+        for(int x = 0; x < width; x++){
+            for(int y = 0; y < height; y++){
+                System.out.print(totalNoise[x][y]+" ");
+            }
+            System.out.println("");
+        }
+       
+       return totalNoise;
+   }
     
     public static void createImage(float[][] simplexNoise) {
         int width = simplexNoise.length;
