@@ -5,6 +5,8 @@
  */
 package main;
 
+import terrain.Terrain;
+import terrain.InfiniteGrid;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;

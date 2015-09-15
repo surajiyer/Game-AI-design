@@ -5,6 +5,8 @@
  */
 package main;
 
+import terrain.Terrain;
+import terrain.InfiniteGrid;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -55,7 +57,7 @@ public class Basic3DTest extends ApplicationAdapter {
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.position.set(3*UNITS_PER_METER, 2f*UNITS_PER_METER, 0f);
         camera.lookAt(0,0,0);
-        camera.near = 0.25f*UNITS_PER_METER; // human eye sees between the range of 25cm to 
+        camera.near = 0.25f*UNITS_PER_METER;
         camera.far = 10f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
@@ -129,8 +131,10 @@ public class Basic3DTest extends ApplicationAdapter {
         modelBatch.begin(camera);
         modelBatch.render(instances, environment);
         modelBatch.render(terrain.instance);
-        //if (skySphere != null)
-        //    modelBatch.render(skySphere);
+//        if (skySphere != null) {
+//            skySphere.transform.setToTranslation(camera.position);
+//            modelBatch.render(skySphere);
+//        }
         modelBatch.end();
     }
     
@@ -165,7 +169,7 @@ public class Basic3DTest extends ApplicationAdapter {
         instance.transform.setToTranslation(UNITS_PER_METER, 0, 0.5f*UNITS_PER_METER);
         instances.add(instance);
         skySphere = new ModelInstance(assets.get("spacesphere/spacesphere.g3db", Model.class));
-        skySphere.transform.setToScaling(10, 10, 10);
+        skySphere.transform.setToScaling(10*UNITS_PER_METER, 10*UNITS_PER_METER, 10*UNITS_PER_METER);
         assetLoading = false;
     }
 }

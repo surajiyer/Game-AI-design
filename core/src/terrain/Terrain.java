@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package main;
+package terrain;
 
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Vector3;
@@ -14,7 +14,7 @@ import com.badlogic.gdx.math.Vector3;
  */
 public abstract class Terrain {
     
-    ModelInstance instance;
+    public ModelInstance instance;
     
     /**
      * Update the position of the terrain w.r.t to the given vector point.
