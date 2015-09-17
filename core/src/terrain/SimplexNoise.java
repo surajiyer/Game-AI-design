@@ -159,7 +159,7 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
           }
           
           //Increase variables with each incrementing octave
-           layerFrequency *= 2;
+           layerFrequency *= 1;
            weightSum += layerWeight;
            layerWeight *= roughness;
            
@@ -169,7 +169,7 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
         
         for(int x = 0; x < width; x++){
             for(int y = 0; y < height; y++){
-                System.out.print(totalNoise[x][y]+" ");
+                //System.out.print(totalNoise[x][y]+" ");
             }
             System.out.println("");
         }
@@ -187,7 +187,7 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
             for (int y = 0; y < height; y++) {
                 int grayscale = (int) (simplexNoise[x][y] * 255);
                 int rgb = 65536 * grayscale + 256 * grayscale + grayscale;
-                image.setRGB(x, y, rgb);
+                image.setRGB(x, y, abs(rgb));
             }
         }
 
