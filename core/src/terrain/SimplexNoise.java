@@ -6,21 +6,14 @@ import java.io.File;
 import java.io.IOException;
 import static java.lang.Math.abs;
 import javax.imageio.ImageIO;
+import java.util.*;
 
 public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
 
     private static int grad3[][] = {{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},
         {1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1},
         {0,1,1},{0,-1,1},{0,1,-1},{0,-1,-1}};
- 
-    private static int grad4[][]= {{0,1,1,1}, {0,1,1,-1}, {0,1,-1,1}, {0,1,-1,-1},
-        {0,-1,1,1}, {0,-1,1,-1}, {0,-1,-1,1}, {0,-1,-1,-1},
-        {1,0,1,1}, {1,0,1,-1}, {1,0,-1,1}, {1,0,-1,-1},
-        {-1,0,1,1}, {-1,0,1,-1}, {-1,0,-1,1}, {-1,0,-1,-1},
-        {1,1,0,1}, {1,1,0,-1}, {1,-1,0,1}, {1,-1,0,-1},
-        {-1,1,0,1}, {-1,1,0,-1}, {-1,-1,0,1}, {-1,-1,0,-1},
-        {1,1,1,0}, {1,1,-1,0}, {1,-1,1,0}, {1,-1,-1,0},
-        {-1,1,1,0}, {-1,1,-1,0}, {-1,-1,1,0}, {-1,-1,-1,0}};
+    
 
     private static int p[] = {151,160,137,91,90,15,
         131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
@@ -36,9 +29,22 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
         49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
         138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180};
     
+    static int[] shuffleArray(int[] ar) {
+    Random rnd = new Random();
+    
+    for (int i = ar.length - 1; i > 0; i--) {
+        int index = rnd.nextInt(i + 1);
+        // Simple swap
+        int a = ar[index];
+        ar[index] = ar[i];
+        ar[i] = a;
+        }
+        return ar;
+    }
+    
     // To remove the need for index wrapping, double the permutation table length
     private static int perm[] = new int[512];
-    static { for(int i=0; i<512; i++) perm[i]=p[i & 255]; }
+    static { for(int i=0; i<512; i++) perm[i]=shuffleArray(p)[i & 255]; }
  
     // This method is a *lot* faster than using (int)Math.floor(x)
     private static int fastfloor(double x) {
@@ -47,14 +53,6 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
     
     private static double dot(int g[], double x, double y) {
         return g[0]*x + g[1]*y; 
-    }
-    
-    private static double dot(int g[], double x, double y, double z) {
-        return g[0]*x + g[1]*y + g[2]*z; 
-    }
- 
-    private static double dot(int g[], double x, double y, double z, double w) {
-        return g[0]*x + g[1]*y + g[2]*z + g[3]*w; 
     }
     
     // 2D simplex noise
@@ -169,7 +167,7 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
         
         for(int x = 0; x < width; x++){
             for(int y = 0; y < height; y++){
-                //System.out.print(totalNoise[x][y]+" ");
+                System.out.print(totalNoise[x][y]+" ");
             }
             System.out.println("");
         }
@@ -180,7 +178,7 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
     public static void createImage(float[][] simplexNoise) {
         int width = simplexNoise.length;
         int height = simplexNoise[0].length;
-        String path = "Heightmap.png";
+        String path = "Heightmap22_newsettings.png";
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
     
         for (int x = 0; x < width; x++) {
