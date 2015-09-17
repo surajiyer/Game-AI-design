@@ -1,5 +1,4 @@
 ## Java
-
 *.class
 *.war
 *.ear
@@ -49,13 +48,13 @@ local.properties
 **/nbproject/private/
 build/
 nbbuild/
+.nb-gradle/
 dist/
 nbdist/
 nbactions.xml
 nb-configuration.xml
 
 ## Gradle
-
 .gradle
 gradle-app.setting
 build/
