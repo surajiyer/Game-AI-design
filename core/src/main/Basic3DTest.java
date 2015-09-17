@@ -12,7 +12,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.VertexAttribute;
+import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
@@ -20,7 +23,9 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 
@@ -45,12 +50,14 @@ public class Basic3DTest extends ApplicationAdapter {
     Terrain terrain;
     Environment environment;
     boolean assetLoading;
+    Mesh mesh;
+    ShaderProgram shaderProgram;
     
     @Override
     public void create() {
         // Set up terrain batch to disply per frame
         modelBatch = new ModelBatch();
-        instances = new Array<ModelInstance>();
+        instances = new Array<>();
         assets = new AssetManager();
         
         // Set up a 3D perspective camera
@@ -83,11 +90,25 @@ public class Basic3DTest extends ApplicationAdapter {
         terrain = new InfiniteGrid(160, 160, 0.125f*UNITS_PER_METER);
         terrain.instance.transform.setToTranslation(camera.position.x, 0, camera.position.z);
         
+        // create a triangle
+        mesh = new Mesh(true, 3, 3, new VertexAttribute(Usage.Position, 3, 
+                "a_position"));
+        mesh.setVertices(new float[] { 0, 1, -0.5f*UNITS_PER_METER,    //bottom-left
+                                       0, 1, 0.5f*UNITS_PER_METER,     //bottom-right
+                                       0, 0.5f*UNITS_PER_METER, 0});    //top
+        mesh.setIndices(new short[] { 0, 1, 2 });
+        
         // create the surrounding environment
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
         environment.set(new ColorAttribute(ColorAttribute.Fog, 0.13f, 0.13f, 0.13f, 1f));
         environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
+        
+        String vertexShader = Gdx.files.internal("vertex.glsl").readString();
+        vertexShader = DefaultShader.getDefaultVertexShader();
+        String fragmentShader = Gdx.files.internal("fragment.glsl").readString();
+        fragmentShader = DefaultShader.getDefaultFragmentShader();
+        shaderProgram = new ShaderProgram(vertexShader,fragmentShader);
     }
     
     @Override
@@ -108,6 +129,9 @@ public class Basic3DTest extends ApplicationAdapter {
         // Clear the color buffer and the depth buffer
         Gdx.gl.glClearColor(0.13f, 0.13f, 0.13f, 1f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        
+        // render triangle
+        mesh.render(shaderProgram, GL20.GL_TRIANGLES, 0, 3);
         
         // Set new viewport size and full screen
         if(Gdx.input.isKeyPressed(Input.Keys.F)) {
@@ -142,6 +166,7 @@ public class Basic3DTest extends ApplicationAdapter {
     public void dispose () {
         modelBatch.dispose();
         instances.clear();
+        shaderProgram.dispose();
     }
     
     void assetLoading() {
