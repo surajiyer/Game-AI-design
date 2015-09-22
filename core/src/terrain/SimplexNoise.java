@@ -166,7 +166,6 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
             //Increase variables with each incrementing octave
             layerFrequency *= 1;
             layerWeight *= roughness;
-
         }
 
         System.out.println("Simplex noise generated");

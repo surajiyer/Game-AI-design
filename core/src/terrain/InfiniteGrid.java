@@ -17,8 +17,9 @@ import com.badlogic.gdx.math.Vector3;
  *
  * @author S.S.Iyer
  */
-public class InfiniteGrid extends Terrain {
-
+public class InfiniteGrid {
+    
+    public ModelInstance instance;
     final float cellSize;
     
     public InfiniteGrid(int xSize, int ySize, float cellSize) {
@@ -30,7 +31,6 @@ public class InfiniteGrid extends Terrain {
         this.cellSize = cellSize;
     }
     
-    @Override
     public void updatePos(Vector3 pos) {
         Vector3 gridTranslation = instance.transform.getTranslation(Vector3.Zero);
         Vector3 diff = (new Vector3(pos).sub(gridTranslation));
@@ -56,8 +56,7 @@ public class InfiniteGrid extends Terrain {
             instance.transform.setToTranslation(gridTranslation);
         }
     }
-
-    @Override
+    
     public float getHeight() {
         return instance.transform.getTranslation(Vector3.Zero).y;
     }
