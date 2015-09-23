@@ -23,6 +23,7 @@ public class SimplexShader implements Shader {
     RenderContext context;
     int u_projViewTrans;
     int u_worldTrans;
+    int u_texture;
     
     @Override
     public void init() {
@@ -33,6 +34,7 @@ public class SimplexShader implements Shader {
             throw new GdxRuntimeException(shaderProgram.getLog());
         u_projViewTrans = shaderProgram.getUniformLocation("u_projViewTrans");
         u_worldTrans = shaderProgram.getUniformLocation("u_worldTrans");
+        u_texture = shaderProgram.getUniformLocation("u_texture");
     }
 
     @Override
@@ -51,6 +53,7 @@ public class SimplexShader implements Shader {
         this.context = context;
         shaderProgram.begin();
         shaderProgram.setUniformMatrix(u_projViewTrans, camera.combined);
+        shaderProgram.setUniformi(u_texture, 0);
     }
 
     @Override

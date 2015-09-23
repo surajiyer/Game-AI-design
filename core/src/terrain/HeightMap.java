@@ -18,63 +18,61 @@ public class HeightMap {
     /** The 2D array of heights for each data point */
     float[][] heights;
     
-    /** Computed minimum and maximum height in the heightmap */
+    /** Computed minimum height in the heightmap */
     float MIN_HEIGHT, MAX_HEIGHT;
-    
-    /** Number of points along the x-axis and the z-axis of the height map */
-    int WIDTH, DEPTH;
 
     /**
      * Creates a heightmap with default values
      * @param file - 8-bit PNG file heightmap data
      */
     public HeightMap(FileHandle file) {
-        this(file, true, 0);
+        this(file, 1f, 1f, true, 0);
     }
 
     /**
      *
      * @param file 8-bit PNG file heightmap data
+     * @param widthScale horizontal scaling on the x-z plane (distance between points)
+     * @param heightScale vertical scaling (y axis)
      * @param whiteHigh height is represented by white (instead of black)
      * @param smoothingPasses
      */
-    public HeightMap(FileHandle file, boolean whiteHigh, int smoothingPasses) {
-        // Load heightmap file
+    public HeightMap(FileHandle file, float widthScale, float heightScale, boolean whiteHigh, int smoothingPasses) {
+        // Load the heightmap file
         Pixmap pix = new Pixmap(file);
         if (pix.getFormat() != Pixmap.Format.Alpha) {
             throw new GdxRuntimeException("Pixmap must be format Pixmap.Alpha (8-bit Grayscale), not: " + pix.getFormat());
         }
         
-        // Get width and height of the heightmap
-        WIDTH = pix.getWidth();
-        DEPTH = pix.getHeight();
-        System.out.println("w,h: " + WIDTH + ", " + DEPTH);
+        // Get the Heightmap dimensions
+        int w = pix.getWidth();
+        int h = pix.getHeight();
         
-        // create new heightmap 2d array
-        heights = new float[WIDTH][DEPTH];
+        // Create a 2D array representation of the heightmap
+        heights = new float[h][w];
         
-        // load the heightmap into the 2d array
+        // Load the 2D heightmap array
         int height;
-        for (int x = 0; x < WIDTH; x++) {
-            for (int z = 0; z < DEPTH; z++) {
+        for (int z = 0; z < h; z++) {
+            for (int x = 0; x < w; x++) {
                 height = -1 * pix.getPixel(x, z);
-                if (whiteHigh)
+                if (whiteHigh) 
                     height = 256 - height;
-                heights[z][x] = height/256f;
+                heights[z][x] = height/255f;
             }
         }
         
-        // Smooth the terrain
+        // Smoothen the terrain heights
         smoothVertexPositions(smoothingPasses);
     }
-
+    
     /** Set the minimum and maximum height of the heightmap. */
     private void setMinMaxHeights() {
         MIN_HEIGHT = Float.MAX_VALUE;
         MAX_HEIGHT = Float.MIN_VALUE;
-        for (float[] height : heights) {
-            for (int z = 0; z < height.length; z++) {
-                float y = height[z];
+        for (int z = 0; z < heights.length; z++) {
+            for (int x = 0; x < heights[0].length; x++) {
+                float y = heights[z][x];
                 if (y < MIN_HEIGHT) MIN_HEIGHT = y;
                 if (y > MAX_HEIGHT) MAX_HEIGHT = y;
             }
@@ -88,23 +86,23 @@ public class HeightMap {
     private void smoothVertexPositions(int passes) {
         for (int i = 0; i < passes; i++) {
             // smooth along x
-            for (int x = 0; x < heights.length; x++) {
-                for (int z = 1; z < heights[0].length - 1; z++) {
-                    float prev = heights[x][z - 1];
-                    float y = heights[x][z];
-                    float next = heights[x][z + 1];
+            for (int z = 0; z < heights.length; z++) {
+                for (int x = 1; x < heights[z].length - 1; x += 1) {
+                    float prev = heights[z][x - 1];
+                    float y = heights[z][x];
+                    float next = heights[z][x + 1];
                     float yAvg = (next + prev) / 2f;
-                    heights[x][z] = (y + yAvg) / 2f;
+                    heights[z][x] = (y + yAvg) / 2f;
                 }
             }
             // smooth along z
-            for (int z = 0; z < heights[0].length; z++) {
-                for (int x = 1; x < heights.length - 1; x++) {
-                    float prev = heights[x - 1][z];
-                    float y = heights[x][z];
-                    float next = heights[x + 1][z];
+            for (int x = 0; x < heights[0].length; x++) {
+                for (int z = 1; z < heights.length - 1; z += 1) {
+                    float prev = heights[z - 1][x];
+                    float y = heights[z][x];
+                    float next = heights[z + 1][x];
                     float yAvg = (next + prev) / 2f;
-                    heights[x][z] = (y + yAvg) / 2f;
+                    heights[z][x] = (y + yAvg) / 2f;
                 }
             }
         }
@@ -121,53 +119,64 @@ public class HeightMap {
     private Vector3 tmp4 = new Vector3();
 
     /** 
-     * Get height for single point at (x,z) coordinates. It does not interpolate 
-     * using neighbors. Parameters assume heightmap starts at origin (0,0).
-     * 
-     * @param x
-     * @param z
+     * Get height for single point at x,z coords, accounting for scale, does 
+     * not interpolate using neighbors. parameters assume heightmap starts at 
+     * origin (0,0)
+     * @param xf
+     * @param zf
+     * @param WIDTH_SCALE
      * @return 
      */
-    public float getHeight(int x, int z) {
-        if (x < 0 || z < 0 || z >= DEPTH || x >= WIDTH) {
-            throw new IllegalArgumentException("Given heightmap coordinate does not exist.");
+    public float getHeight(float xf, float zf, float WIDTH_SCALE) {
+        int x = (int) Math.floor(xf / WIDTH_SCALE);
+        int z = (int) Math.floor(zf / WIDTH_SCALE);
+        if (x < 0) x = 0;
+        if (z < 0) z = 0;
+        if (z >= heights.length) {
+            z = heights.length - 1;
         }
-        return heights[x][z];
+        if (x >= heights[z].length) {
+            x = heights[z].length - 1;
+        }
+        return heights[z][x];
     }
 
     /**
-     * Get the interpolated height for (x,z) coordinates, accounting for scale, 
+     * Get the interpolated height for x,z coords, accounting for scale, 
      * interpolated using neighbors. This will give the interpolated height when 
      * the parameters lie somewhere between actual heightmap data points.
      * parameters assume heightmap's origin is at world coordinates (x:0, z:0)
+     * @param xf
+     * @param zf
+     * @param WIDTH_SCALE
      * @return the scale-adjusted interpolated height at specified world coordinates
      */
-//    public float getInterpolatedHeight(float xf, float zf) {
-//        Vector3 a = tmp;
-//        Vector3 b = tmp2;
-//        Vector3 c = tmp3;
-//        Vector3 d = tmp4;
-//
-//        float baseX = (float) Math.floor(xf / WIDTH_SCALE);
-//        float baseZ = (float) Math.floor(zf / WIDTH_SCALE);
-//        float x = baseX * WIDTH_SCALE;
-//        float z = baseZ * WIDTH_SCALE;
-//        float x2 = x + WIDTH_SCALE;
-//        float z2 = z + WIDTH_SCALE;
-//
-//        a.set(x,  getHeight(x , z2), z2);
-//        b.set(x,  getHeight(x ,  z),  z);
-//        c.set(x2, getHeight(x2,  z),  z);
-//        d.set(x2, getHeight(x2, z2), z2);
-//
-//        float zFrac = 1f - (zf - z) / WIDTH_SCALE;
-//        float xFrac = (xf - x) / WIDTH_SCALE;
-//
-//        float y = (1f - zFrac) * ((1-xFrac) * a.y + xFrac * d.y)
-//                  + zFrac * ((1-xFrac) * b.y + xFrac * c.y);
-//
-//        return y;
-//    }
+    public float getInterpolatedHeight(float xf, float zf, float WIDTH_SCALE) {
+        Vector3 a = tmp;
+        Vector3 b = tmp2;
+        Vector3 c = tmp3;
+        Vector3 d = tmp4;
+
+        float baseX = (float) Math.floor(xf / WIDTH_SCALE);
+        float baseZ = (float) Math.floor(zf / WIDTH_SCALE);
+        float x = baseX * WIDTH_SCALE;
+        float z = baseZ * WIDTH_SCALE;
+        float x2 = x + WIDTH_SCALE;
+        float z2 = z + WIDTH_SCALE;
+
+        a.set(x,  getHeight(x , z2, WIDTH_SCALE), z2);
+        b.set(x,  getHeight(x ,  z, WIDTH_SCALE),  z);
+        c.set(x2, getHeight(x2,  z, WIDTH_SCALE),  z);
+        d.set(x2, getHeight(x2, z2, WIDTH_SCALE), z2);
+
+        float zFrac = 1f - (zf - z) / WIDTH_SCALE;
+        float xFrac = (xf - x) / WIDTH_SCALE;
+
+        float y = (1f - zFrac) * ((1-xFrac) * a.y + xFrac * d.y)
+                  + zFrac * ((1-xFrac) * b.y + xFrac * c.y);
+
+        return y;
+    }
 
     /** @return lowest elevation in the height map */
     public float getMin() {
@@ -179,19 +188,19 @@ public class HeightMap {
         return MAX_HEIGHT;
     }
 
-    /** @return length of the map on the x axis in number of points */
+    /** @return length of the map on the x-axis in number of points */
     public int getWidth() {
-        return WIDTH;
+        return heights.length;
     }
 
-    /** @return length of the map on the z axis in number of points */
+    /** @return length of the map on the z-axis in number of points */
     public int getDepth() {
-        return DEPTH;
+        return heights[0].length;
     }
 
     /** @return the number of data points in the height map */
     public int getNumPoints() {
-        return WIDTH * DEPTH;
+        return getWidth() * getDepth();
     }
 
     @Override

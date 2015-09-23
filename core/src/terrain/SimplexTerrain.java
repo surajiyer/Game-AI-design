@@ -5,8 +5,10 @@
  */
 package terrain;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.Renderable;
@@ -30,8 +32,15 @@ public class SimplexTerrain extends Renderable {
     /** Normal vector attribute (N.x, N.y, N.z) */
     public static final int NORMAL_COMPONENTS = 3;
     
+    /** Texture coordinates attribute (T.u, T.v) */
+    public static final int TEXTURE_COMPONENTS = 2;
+    
     /** Total number of components */
-    public static final int NUM_COMPONENTS = POSITION_COMPONENTS + NORMAL_COMPONENTS;
+    public static final int NUM_COMPONENTS = POSITION_COMPONENTS 
+            /*+ NORMAL_COMPONENTS*/ + TEXTURE_COMPONENTS;
+    
+    /** The number of vertices per triangle */
+    public static final int VERTEICES_PER_TRIANGLE = 2;
     
     /** The maximum number of triangles our mesh will hold */
     public final int MAX_TRIS;
@@ -43,36 +52,40 @@ public class SimplexTerrain extends Renderable {
     static int generateCount = 0;
     
     /** Horizontal and vertical scaling factor for terrain */
-    final float WIDTH_SCALE, HEIGHT_SCALE;
+    float WIDTH_SCALE, HEIGHT_SCALE;
+    
+    /** Terrain coloring lookup texture */
+    public final Texture lookup;
     
     // temporary variables
     static Triangle tmp = new Triangle();
     static VertexInfo[] tmp1 = new VertexInfo[3];
     
-    public SimplexTerrain(HeightMap hm, float WIDTH_SCALE, float HEIGHT_SCALE) {
+    public SimplexTerrain(HeightMap hm, float WIDTH_SCALE, float HEIGHT_SCALE, FileHandle lookupFile) {
         heightMap = hm;
-        primitiveType = GL20.GL_TRIANGLE_STRIP;
-        MAX_TRIS = (hm.getWidth()-1)*hm.getDepth();
-        MAX_VERTS = MAX_TRIS * 3;
         this.WIDTH_SCALE = WIDTH_SCALE;
         this.HEIGHT_SCALE = HEIGHT_SCALE;
         for(int i=0; i < tmp1.length; i++) {
             tmp1[i] = new VertexInfo();
         }
-        shader = new SimplexShader();
+        primitiveType = GL20.GL_TRIANGLE_STRIP;
+        MAX_TRIS = hm.getWidth()*hm.getDepth();
+        MAX_VERTS = MAX_TRIS * VERTEICES_PER_TRIANGLE;
         meshPartOffset = NUM_COMPONENTS;
         meshPartSize = MAX_VERTS;
+        shader = new SimplexShader();
+        lookup = new Texture(lookupFile);
         this.generate();
     }
 
-    /** length of the map on the x axis in world units */
+    /** length of the map on the x-axis in world units */
     public float getWidth() {
-        return heightMap.getWidth()*WIDTH_SCALE;
+        return heightMap.getWidth() * WIDTH_SCALE;
     }
     
-    /** length of the map on the z axis in world units */
+    /** length of the map on the z-axis in world units */
     public float getDepth() {
-        return heightMap.getDepth()*HEIGHT_SCALE;
+        return heightMap.getDepth() * WIDTH_SCALE;
     }
     
     /** Get the minimum height of the terrain. */
@@ -90,7 +103,7 @@ public class SimplexTerrain extends Renderable {
      * @return 
      */
     public Vector3 getCenter() {
-        return new Vector3().set(getWidth() / 2f, 
+        return new Vector3(getWidth() / 2f, 
                 (getMinHeight() + getMaxHeight()) / 2f, 
                 getDepth() / 2f);
     }
@@ -107,54 +120,99 @@ public class SimplexTerrain extends Renderable {
         
         // 3 vertex per triangle
         float[] verts = new float[MAX_VERTS*NUM_COMPONENTS];
-        int i = 0;
-        float scale = heightMap.getNumPoints()/getWidth();
         
         // build a new terrain mesh
-        for(int x=0; x < heightMap.getWidth()-1; x++) {
-            for(int z=0; z < heightMap.getDepth()-1; z++) {
+        int k = 0;
+        int w = heightMap.getWidth();
+        int h = heightMap.getDepth();
+        int texWidth = lookup.getWidth();
+        for(int z=0; z < h; z++) {
+            for(int x=0; x < w; x++) {
                 // Set the 3 vertices of the triangle
-                tmp1[0].setPos(x*WIDTH_SCALE, 
-                        heightMap.getHeight(x, z)*HEIGHT_SCALE, 
-                        z*WIDTH_SCALE);
-                tmp1[1].setPos((x+1)*WIDTH_SCALE, 
-                        heightMap.getHeight(x+1, z)*HEIGHT_SCALE, 
-                        z*WIDTH_SCALE);
-                tmp1[2].setPos(x*WIDTH_SCALE, 
-                        heightMap.getHeight(x, z+1)*HEIGHT_SCALE, 
-                        (z+1)*WIDTH_SCALE);
+                tmp1[0].setPos(x,
+                        heightMap.getHeight(x, z, WIDTH_SCALE)*HEIGHT_SCALE, 
+                        z);
+                tmp1[1].setPos(x,
+                        heightMap.getHeight(x, z+(z==h-1?0:1), WIDTH_SCALE)*HEIGHT_SCALE, 
+                        z+1);
+                tmp1[2].setPos(x+1,
+                        heightMap.getHeight(x+(x==w-1?0:1), z, WIDTH_SCALE)*HEIGHT_SCALE, 
+                        z);
+                
+                // Set texture coordinates per vertex
+                tmp1[0].setUV(heightMap.getHeight(x, z, WIDTH_SCALE), 0);
+                tmp1[1].setUV(heightMap.getHeight(x+(x==w-1?0:1), z, WIDTH_SCALE), 0);
+                tmp1[2].setUV(heightMap.getHeight(x, z+(z==h-1?0:1), WIDTH_SCALE), 0);
                 
                 // create a new triangle (automatically sets the face normal)
                 tmp.set(tmp1[0], tmp1[1], tmp1[2]);
                 
-                // invert face normal if its the last triangle strip
-                if(z == heightMap.getDepth()-1) {
-                    tmp.faceNormal.scl(-1f);
-                }
-                
                 // for each vertex, set the facenormal and add it to the float 
                 // vertex array
-                for(VertexInfo v : tmp1) {
-                    v.setNor(tmp.faceNormal);
-                    verts[i++] = v.position.x;
-                    verts[i++] = v.position.y;
-                    verts[i++] = v.position.z;
-                    verts[i++] = v.normal.x;
-                    verts[i++] = v.normal.y;
-                    verts[i++] = v.normal.z;
+                for(int i=0; i<tmp1.length-1; i++) {
+                    tmp1[i].setNor(tmp.faceNormal);
+                    verts[k++] = tmp1[i].position.x;
+                    verts[k++] = tmp1[i].position.y;
+                    verts[k++] = tmp1[i].position.z;
+//                    verts[k++] = tmp1[i].normal.x;
+//                    verts[k++] = tmp1[i].normal.y;
+//                    verts[k++] = tmp1[i].normal.z;
+                    verts[k++] = tmp1[i].uv.x * texWidth;
+                    verts[k++] = tmp1[i].uv.y;
                 }
-           }
+            }
         }
         
+        // Calculate the normals in the mesh
+        //this.calcNormal(verts, w, h);
+        
+        // Generate a new mesh with the right attributes
         mesh = new Mesh( true, MAX_VERTS, 0,
                 new VertexAttribute( Usage.Position, POSITION_COMPONENTS, 
                         ShaderProgram.POSITION_ATTRIBUTE ),
-                new VertexAttribute( Usage.Normal, NORMAL_COMPONENTS, 
-                        ShaderProgram.NORMAL_ATTRIBUTE ) );
+//                new VertexAttribute( Usage.Normal, NORMAL_COMPONENTS, 
+//                        ShaderProgram.NORMAL_ATTRIBUTE ),
+                new VertexAttribute( Usage.TextureCoordinates, TEXTURE_COMPONENTS, 
+                        ShaderProgram.TEXCOORD_ATTRIBUTE+"0" ));
+        
+        // Set the vertices of the terrain in the mesh
         mesh.setVertices(verts);
         
-        // return the finalized mesh
+        // Scale the mesh according to the width and height scale factors
+        this.scale(WIDTH_SCALE);   
+        
+        // Return the finalized mesh
         return mesh;
+    }
+    
+    void calcNormal(float[] verts, int w, int h) {
+        float[] norms = new float[verts.length];
+        int k=0;
+        for(int i=0; i < verts.length; i+=2*POSITION_COMPONENTS) {
+            tmp1[0].setPos(verts[i], verts[i+1], verts[i+2]);
+            tmp1[1].setPos(verts[i+3], verts[i+4], verts[i+5]);
+            tmp1[1].setPos(verts[i+6], verts[i+7], verts[i+8]);
+            tmp.set(tmp1[0], tmp1[1], tmp1[2]);
+            for(int j = 0; j < NORMAL_COMPONENTS; j++) {
+                norms[k++] = tmp.faceNormal.x;
+                norms[k++] = tmp.faceNormal.y;
+                norms[k++] = tmp.faceNormal.z;
+            }
+            tmp1[0].setPos(verts[i+6], verts[i+7], verts[i+8]);
+            tmp1[2].setPos(verts[i+9], verts[i+10], verts[i+11]);
+            tmp.set(tmp1[0], tmp1[1], tmp1[2]);
+            for(int j = 0; j < NORMAL_COMPONENTS; j++) {
+                norms[k++] = tmp.faceNormal.x;
+                norms[k++] = tmp.faceNormal.y;
+                norms[k++] = tmp.faceNormal.z;
+            }
+        }
+    }
+    
+    public void scale(float widthScale) {
+        WIDTH_SCALE = widthScale;
+        if(mesh != null)
+            mesh.scale(WIDTH_SCALE, WIDTH_SCALE, WIDTH_SCALE);
     }
     
     public void dispose() {

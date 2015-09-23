@@ -33,12 +33,14 @@ import terrain.SimplexTerrain;
 public class Basic3DTest extends ApplicationAdapter {
     
     final static float UNITS_PER_METER = 16f;
-    final float HUMAN_HEIGHT = 0.5f*UNITS_PER_METER;
+    final float HUMAN_HEIGHT = 3f*UNITS_PER_METER;
     final float[] FOG_COLOR = new float[] {0.13f, 0.13f, 0.13f, 1f};
     SpriteBatch batch;
     PerspectiveCamera camera;
     FPCameraController camController;
     boolean fullscreen = false;
+    boolean descendLimit = true;
+    boolean enableWireframe = false;
     int oldWidth, oldHeight;
     ModelBatch modelBatch;
     ModelInstance skySphere;
@@ -52,6 +54,14 @@ public class Basic3DTest extends ApplicationAdapter {
     
     @Override
     public void create() {
+        // Enable blending
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        
+        // Enable depth testing
+        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
+        Gdx.gl.glDepthFunc(GL20.GL_LESS);
+        
         // Set up terrain batch to disply per frame
         modelBatch = new ModelBatch();
         instances = new Array<>();
@@ -62,7 +72,7 @@ public class Basic3DTest extends ApplicationAdapter {
         camera.position.set(18f*UNITS_PER_METER, 12f*UNITS_PER_METER, 0f);
         camera.lookAt(0,0,0);
         camera.near = 1.5f*UNITS_PER_METER;
-        camera.far = 60f*UNITS_PER_METER;
+        camera.far = 300f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
         
@@ -89,7 +99,7 @@ public class Basic3DTest extends ApplicationAdapter {
         
         // create a terrain shader program
         HeightMap hm = new HeightMap(Gdx.files.internal("heightmaps/Heightmap192x192.png"));
-        terra = new SimplexTerrain(hm, 120f*UNITS_PER_METER, 9f*UNITS_PER_METER);
+        terra = new SimplexTerrain(hm, 1f, 100f, Gdx.files.internal("heightmaps/heightmap_lookup.png"));
         terra.shader.init();
         renderContext = new RenderContext(new DefaultTextureBinder(DefaultTextureBinder.WEIGHTED, 1));
         
@@ -103,6 +113,16 @@ public class Basic3DTest extends ApplicationAdapter {
     
     @Override
     public void render () {
+        // Clear the color buffer and the depth buffer
+        Gdx.gl.glClearColor(FOG_COLOR[0], FOG_COLOR[1], FOG_COLOR[2], FOG_COLOR[3]);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
+        
+        // Check for user input
+        checkInput();
+        
+        // Set viewport
+        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        
         // Load assets once asset manager is done loading the asset
         if(assetLoading && assets.update()) {
             assetLoading();
@@ -110,35 +130,19 @@ public class Basic3DTest extends ApplicationAdapter {
         
         // Update the camera controller
         camController.update();
-        if(camera.position.y < grid.getHeight()+HUMAN_HEIGHT) {
-            camera.position.set(camera.position.x, 
-                    grid.getHeight()+HUMAN_HEIGHT, 
-                    camera.position.z);
+        if(descendLimit) {
+            if(camera.position.y < grid.getHeight()+HUMAN_HEIGHT) {
+                camera.position.set(camera.position.x, 
+                        grid.getHeight()+HUMAN_HEIGHT, 
+                        camera.position.z);
+            }
         }
-        
-        // Clear the color buffer and the depth buffer
-        Gdx.gl.glClearColor(FOG_COLOR[0], FOG_COLOR[1], FOG_COLOR[2], FOG_COLOR[3]);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         
         // Render terrain
-        terra.shader.begin(camera, renderContext);
-        terra.shader.render(terra);
-        terra.shader.end();
-        
-        // Set new viewport size and full screen
-        if(Gdx.input.isKeyPressed(Input.Keys.F)) {
-            // set resolution to default and set fullscreen to true
-            if(!fullscreen) {
-                oldWidth = Gdx.graphics.getWidth();
-                oldHeight = Gdx.graphics.getHeight();
-                Gdx.graphics.setDisplayMode(Gdx.graphics.getDesktopDisplayMode().width, 
-                        Gdx.graphics.getDesktopDisplayMode().height, true);
-            } else {
-                Gdx.graphics.setDisplayMode(oldWidth, oldHeight, false);
-            }
-            fullscreen = !fullscreen;
-        }
-        Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        if(enableWireframe)
+            terra.primitiveType = GL20.GL_LINE_STRIP;
+        else
+            terra.primitiveType = GL20.GL_TRIANGLE_STRIP;
         
         // Move the grid with the camera for an infinte grid
         grid.updatePos(camera.position);
@@ -152,6 +156,11 @@ public class Basic3DTest extends ApplicationAdapter {
 //            modelBatch.render(skySphere);
 //        }
         modelBatch.end();
+        
+        terra.lookup.bind();
+        terra.shader.begin(camera, renderContext);
+        terra.shader.render(terra);
+        terra.shader.end();
     }
     
     @Override
@@ -159,6 +168,26 @@ public class Basic3DTest extends ApplicationAdapter {
         modelBatch.dispose();
         instances.clear();
         terra.dispose();
+    }
+    
+    public void checkInput() {
+        if(Gdx.input.isKeyPressed(Input.Keys.H)) {
+           descendLimit = !descendLimit;
+        }
+        if(Gdx.input.isKeyPressed(Input.Keys.L)) {
+           enableWireframe = !enableWireframe;
+        }
+        if(Gdx.input.isKeyPressed(Input.Keys.F)) {
+            if(!fullscreen) { // set resolution to default and set fullscreen to true
+                oldWidth = Gdx.graphics.getWidth();
+                oldHeight = Gdx.graphics.getHeight();
+                Gdx.graphics.setDisplayMode(Gdx.graphics.getDesktopDisplayMode().width, 
+                        Gdx.graphics.getDesktopDisplayMode().height, true);
+            } else {
+                Gdx.graphics.setDisplayMode(oldWidth, oldHeight, false);
+            }
+            fullscreen = !fullscreen;
+        }
     }
     
     void assetLoading() {
