@@ -159,7 +159,7 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
             //Calculate single layer/octave of simplex noise, then add it to total noise
             for(int x = 0; x < width; x++) {
                 for(int y = 0; y < height; y++) {
-                    totalNoise[x][y] += (float) noise(x * layerFrequency,y * layerFrequency) * layerWeight;
+                    totalNoise[x][y] += abs((float) noise(x * layerFrequency,y * layerFrequency) * layerWeight);
                 }
             }
 
@@ -173,17 +173,17 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
         return totalNoise;
     }
 
-    public static void createImage(float[][] simplexNoise) {
+    public static void createImage(float[][] simplexNoise, String path) {
         int width = simplexNoise.length;
         int height = simplexNoise[0].length;
-        String path = "Heightmap22_newsettings.png";
+        //String path = "heightmaps/final_heightmap.png";
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 int grayscale = (int) (simplexNoise[x][y] * 255);
                 int rgb = 65536 * grayscale + 256 * grayscale + grayscale;
-                image.setRGB(x, y, abs(rgb));
+                image.setRGB(x, y, rgb);
             }
         }
 
