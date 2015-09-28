@@ -8,6 +8,14 @@ import javax.imageio.ImageIO;
 import java.util.*;
 
 public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
+    
+// PUT IN CREATE METHOD OF BASIC3DTEST
+//        float[][] t = SimplexNoise.generateOctavedSimplexNoise(280, 200, 6, 0.5f, 0.007f); // SIMPLEX NOISE
+//        float[][] r = SimplexNoise.generateRidgedNoise(280, 200, 0.002f); // RIDGED NOISE
+//        float[][] f = SimplexNoise.combineNoise(t, r);
+//        SimplexNoise.createImage(t, "heightmaps/111terrain.png");
+//        SimplexNoise.createImage(r, "heightmaps/111river.png");
+//        SimplexNoise.createImage(f, "heightmaps/111final.png");
 
     private static int grad3[][] = {{1,1,0},{-1,1,0},{1,-1,0},{-1,-1,0},
         {1,0,1},{-1,0,1},{1,0,-1},{-1,0,-1},
@@ -49,7 +57,6 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
         for(int i=0; i<512; i++) perm[i]=shuffleArray(p)[i & 255];
     }
 
-    // This method is a *lot* faster than using (int)Math.floor(x)
     private static int fastfloor(double x) {
         return x>0 ? (int)x : (int)x-1;
     }
@@ -140,48 +147,95 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
 
         System.out.println("Simplex noise generated");
 
-        for(int x = 0; x < width; x++) {
-            for(int y = 0; y < height; y++) {
-                System.out.print(simplexNoise[x][y]+" ");
-            }
-            System.out.println("");
-        }
-
         return simplexNoise;
     }
 
     public static float[][] generateOctavedSimplexNoise(int width, int height, int octaves, float roughness, float scale) {
-        float[][] totalNoise = new float[width][height];
+        int high = 255;
+        int low = 100;
+        float[][] terrainNoise = new float[width][height];
         float layerFrequency = scale;
         float layerWeight = 1;
+        float weightSum = 0;
 
         for (int octave = 0; octave < octaves; octave++) {
             //Calculate single layer/octave of simplex noise, then add it to total noise
             for(int x = 0; x < width; x++) {
                 for(int y = 0; y < height; y++) {
-                    totalNoise[x][y] += abs((float) noise(x * layerFrequency,y * layerFrequency) * layerWeight);
+                    terrainNoise[x][y] += ( (float) noise(x * layerFrequency,y * layerFrequency) * layerWeight);   
                 }
             }
 
             //Increase variables with each incrementing octave
-            layerFrequency *= 1;
+            weightSum += layerWeight;
             layerWeight *= roughness;
+            layerFrequency *= 2;
+        }
+        
+        //Normalize noise
+        for(int x = 0; x < width; x++) {
+            for(int y = 0; y < height; y++) {
+                terrainNoise[x][y] = (terrainNoise[x][y] / weightSum);
+                terrainNoise[x][y] = terrainNoise[x][y] * (high - low) / 2  + (high + low) / 2;
+                //System.out.println("Height value at " + x + "," + y + " is: " + terrainNoise[x][y]);
+            }
+        }
+        
+        System.out.println("Simplex noise generated");
+        return terrainNoise;
+    }
+    
+    
+    public static float[][] generateRidgedNoise(int width, int height, float scale) {
+        float[][] ridgedNoise = new float[width][height];
+        float layerFrequency = scale;
+        int high = 70;
+        int low = 0;
+
+            //Calculate single layer/octave of simplex noise, then add it to total noise
+            for(int x = 0; x < width; x++) {
+                for(int y = 0; y < height; y++) {
+                    ridgedNoise[x][y] = (1 - abs((float) noise(x * layerFrequency,y * layerFrequency)));
+                }
+            }
+
+            //Normalize noise
+            for(int x = 0; x < width; x++) {
+                for(int y = 0; y < height; y++) {
+                    ridgedNoise[x][y] = ridgedNoise[x][y] * (high - low) / 2  + (high + low) / 2;
+                    System.out.println("Height value at " + x + "," + y + " is: " + ridgedNoise[x][y]);
+            }
         }
 
-        System.out.println("Simplex noise generated");
+        System.out.println("Ridged noise generated");
 
+        return ridgedNoise;
+    }
+    
+    public static float[][] combineNoise(float[][] terrain, float[][] rivers) {
+        int width = terrain.length;
+        int height = terrain[0].length;
+        
+        float[][] totalNoise = new float[terrain.length][terrain[0].length];
+        
+        for(int x = 0; x < width; x++) {
+                for(int y = 0; y < height; y++) {
+                    totalNoise[x][y] = terrain[x][y] -  rivers[x][y];
+                }
+            }
+        
         return totalNoise;
     }
-
+    
     public static void createImage(float[][] simplexNoise, String path) {
         int width = simplexNoise.length;
         int height = simplexNoise[0].length;
-        //String path = "heightmaps/final_heightmap.png";
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                int grayscale = (int) (simplexNoise[x][y] * 255);
+                int grayscale = (int) (simplexNoise[x][y]);
+                //System.out.println(grayscale);
                 int rgb = 65536 * grayscale + 256 * grayscale + grayscale;
                 image.setRGB(x, y, rgb);
             }
