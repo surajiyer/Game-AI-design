@@ -14,45 +14,62 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.BinaryHeap;
 import com.badlogic.gdx.utils.BinaryHeap.Node;
 import com.badlogic.gdx.utils.IntArray;
+import java.util.Random; 
 
 /** @author Nathan Sweet */
 public class AstarTest extends ApplicationAdapter {
 	ShapeRenderer shapes;
 	Astar astar;
 	boolean[] map;
+        int nrOfFlags = 5;
+        int nrOfFlagCoordinates = nrOfFlags * 2;   // amount of x and y coordinates of flags
+        int[] flagLocations = new int[nrOfFlagCoordinates]; // place for the x and y coordinates of flags
         int widthField = 80;
-        int heigthField = 60;
+        int heightField = 60;
+        int pathCost; 
+        
+        
+        public AstarTest() {
+            // randomly generate flag coordinates
+            Random randomGenerator = new Random();
+            for(int i = 0; i < nrOfFlagCoordinates ; i+=2) {
+                flagLocations[i] = randomGenerator.nextInt(widthField);
+                flagLocations[i + 1] = randomGenerator.nextInt(heightField);
+            }
+        }
+        
 
         @Override
 	public void create () {
 		shapes = new ShapeRenderer();
-                    
-		map = new boolean[widthField * heigthField];
+                // randomly generate obstacles              
+		map = new boolean[widthField * heightField];
                 for(int i = 0; i < widthField; i++) {
-                    for(int j = 0; j < heigthField; j++) {
-                        if(Math.random() > 0.95) { 
+                    for(int j = 0; j < heightField; j++) {
+                        if(Math.random() > 0.9) { 
                             map[i + j * widthField] = true;
                         }
                     }
                 }
                
-		astar = new Astar(widthField, heigthField) {
+		astar = new Astar(widthField, heightField) {
                         @Override
 			protected boolean isValid (int x, int y) {
 				return !map[x + y * widthField];
 			}
 		};
+                
 	}
 
         @Override
 	public void resize (int width, int height) {
 		shapes.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
 	}
-
+      
+        
         @Override
 	public void render () {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
 		int width = Gdx.graphics.getWidth();
 		int height = Gdx.graphics.getHeight();
 		int mapWidth = astar.getWidth();
@@ -78,70 +95,48 @@ public class AstarTest extends ApplicationAdapter {
 		int startY = (height - Gdx.input.getY()) / cellHeight;
 		shapes.setColor(Color.GREEN);
 		shapes.rect(startX * cellWidth, startY * cellHeight, cellWidth, cellHeight);
-                // target 1
-		int targetX1 = 0; 
-		int targetY1 = 0;
-		shapes.setColor(Color.BLUE);
-		shapes.rect(targetX1 * cellWidth, targetY1 * cellHeight, cellWidth, cellHeight);
+                // draw the flags
+                for(int i = 0; i < nrOfFlagCoordinates; i+=2) {
+                    createFlag(flagLocations[i], flagLocations[i + 1], cellWidth, cellHeight);
+                }
+                // draw the paths from you to the flags
+                for(int i = 0; i < nrOfFlagCoordinates; i+=2) { 
+                drawPath(startX, startY, flagLocations[i], flagLocations[i + 1], cellWidth, cellHeight);
+                }
+                  // draw the path from all the flags to each others
                 
-                // target 2
-                int targetX2 = widthField - 1;
-		int targetY2 = heigthField - 1;
-		shapes.setColor(Color.PINK);
-		shapes.rect(targetX2 * cellWidth, targetY2 * cellHeight, cellWidth, cellHeight);
-                
-                // target 3
-                int targetX3 = widthField - 1;
-		int targetY3 = 0;
-		shapes.setColor(Color.PINK);
-		shapes.rect(targetX3 * cellWidth, targetY3 * cellHeight, cellWidth, cellHeight);
-                
-                // target 4
-                int targetX4 = 0;
-		int targetY4 = heigthField - 1;
-		shapes.setColor(Color.PINK);
-		shapes.rect(targetX4 * cellWidth, targetY4 * cellHeight, cellWidth, cellHeight);
-                
-                
-                
-                
-                                   
-                // draw path to all targets
-		if (startX >= 0 && startY >= 0 && startX < mapWidth && startY < mapHeight) { 
-			shapes.setColor(Color.BLUE);
-			IntArray path1 = astar.getPath(startX, startY, targetX1, targetY1);
-			for (int i = 0, n = path1.size; i < n; i += 2) {
-				int x = path1.get(i);
-				int y = path1.get(i + 1);
-				shapes.circle(x * cellWidth + cellWidth / 2, y * cellHeight + cellHeight / 2, cellWidth / 2, 30);
-			}
-                        shapes.setColor(Color.PINK);
-			IntArray path2 = astar.getPath(startX, startY, targetX2, targetY2);
-			for (int i = 0, n = path2.size; i < n; i += 2) {
-				int x = path2.get(i);
-				int y = path2.get(i + 1);
-				shapes.circle(x * cellWidth + cellWidth / 2, y * cellHeight + cellHeight / 2, cellWidth / 2, 30);
-			}
-                             shapes.setColor(Color.GREEN);
-			IntArray path3 = astar.getPath(startX, startY, targetX3, targetY3);
-			for (int i = 0, n = path3.size; i < n; i += 2) {
-				int x = path3.get(i);
-				int y = path3.get(i + 1);
-				shapes.circle(x * cellWidth + cellWidth / 2, y * cellHeight + cellHeight / 2, cellWidth / 2, 30);
-			}
-                             shapes.setColor(Color.RED);
-			IntArray path4 = astar.getPath(startX, startY, targetX4, targetY4);
-			for (int i = 0, n = path4.size; i < n; i += 2) {
-				int x = path4.get(i);
-				int y = path4.get(i + 1);
-				shapes.circle(x * cellWidth + cellWidth / 2, y * cellHeight + cellHeight / 2, cellWidth / 2, 30);
-			}
-		}
-                
-
+                for(int i = 0; i < nrOfFlagCoordinates; i+=2){
+                    for(int j = 0; j < nrOfFlagCoordinates; j+=2){
+                       drawPath(flagLocations[i], flagLocations[i + 1], flagLocations[j], flagLocations[j + 1], cellWidth, cellHeight);                        
+                    }
+                }
+                // give all the pathcosts
+                for(int i = 0; i < nrOfFlagCoordinates; i+=2) { 
+                pathCost = astar.getPathCost(flagLocations[i], flagLocations[i + 1]);
+                System.out.println("pathCost is: " + pathCost); 
+                }
+              
 		shapes.end();
-	}
-       
+                
+                
+            }      
+             
+             public void createFlag(int x, int y, int cellWidth, int cellHeight) {
+                shapes.setColor(Color.BLUE);
+                shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+             }
+             
+             public void drawPath(int startX, int startY, int targetX, int targetY, int cellWidth, int cellHeight) {
+                 shapes.setColor(Color.RED);
+                 IntArray path = astar.getPath(startX, startY, targetX, targetY);
+                 for (int i = 0, n = path.size; i < n; i += 2) {
+                    int x = path.get(i);
+                    int y = path.get(i + 1);
+                    shapes.circle(x * cellWidth + cellWidth / 2, y * cellHeight + cellHeight / 2, cellWidth / 3, 30);
+
+                    //System.out.println("Pathcost from: " + startX + "/" + startY " to" + targetX + "/" + targetY); 
+                 }
+             }
 
         static public class Astar {
 		private final int width, height;
@@ -166,8 +161,8 @@ public class AstarTest extends ApplicationAdapter {
              * @param targetY
              * @return  */
 		public IntArray getPath (int startX, int startY, int targetX, int targetY) {
-			this.targetX = targetX;
-			this.targetY = targetY;
+			//this.targetX = targetX;
+			//this.targetY = targetY;
 
 			path.clear();
 			open.clear();
@@ -261,6 +256,14 @@ public class AstarTest extends ApplicationAdapter {
 		public int getHeight () {
 			return height;
 		}
+                
+                public int getPathCost(int x, int y) {
+                    int pathCost; 
+                    int index = y * width + x;
+                    PathNode node = nodes[index];
+                    pathCost = node.pathCost;
+                    return pathCost; 
+                }
 
 		static private class PathNode extends Node {
 			int runID, closedID, x, y, pathCost;
