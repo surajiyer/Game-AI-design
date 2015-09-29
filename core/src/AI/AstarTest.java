@@ -26,6 +26,7 @@ public class AstarTest extends ApplicationAdapter {
         int[] flagLocations = new int[nrOfFlagCoordinates]; // place for the x and y coordinates of flags
         int widthField = 80;
         int heightField = 60;
+        private final int[] tileCost = new int[widthField * heightField];
         int pathCost; 
         
         
@@ -36,21 +37,31 @@ public class AstarTest extends ApplicationAdapter {
                 flagLocations[i] = randomGenerator.nextInt(widthField);
                 flagLocations[i + 1] = randomGenerator.nextInt(heightField);
             }
+            for(int x = 0; x < widthField; x++) {
+                for(int y = 0; y < heightField; y++) {
+                    int index = x + y * widthField;
+                    if(Math.random() > 0.7) {
+                        tileCost[index] = 2;
+                    } else {
+                        tileCost[index] = 1;
+                    }
+                }
+            }
         }
         
 
         @Override
 	public void create () {
-		shapes = new ShapeRenderer();
-                // randomly generate obstacles              
-		map = new boolean[widthField * heightField];
-                for(int i = 0; i < widthField; i++) {
-                    for(int j = 0; j < heightField; j++) {
-                        if(Math.random() > 0.9) { 
-                            map[i + j * widthField] = true;
-                        }
+            shapes = new ShapeRenderer();
+            // randomly generate obstacles              
+            map = new boolean[widthField * heightField];
+            for(int i = 0; i < widthField; i++) {
+                for(int j = 0; j < heightField; j++) {
+                    if(Math.random() > 0.9) { 
+                        map[i + j * widthField] = true;
                     }
                 }
+            }
                
 		astar = new Astar(widthField, heightField) {
                         @Override
@@ -63,7 +74,7 @@ public class AstarTest extends ApplicationAdapter {
 
         @Override
 	public void resize (int width, int height) {
-		shapes.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
+            shapes.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
 	}
       
         
@@ -80,16 +91,26 @@ public class AstarTest extends ApplicationAdapter {
 		shapes.setColor(Color.GRAY);
 		shapes.begin(ShapeType.Line);
 		for (int x = 0; x < mapWidth; x++)
-			shapes.line(x * cellWidth, 0, x * cellWidth, height);
+                    shapes.line(x * cellWidth, 0, x * cellWidth, height);
 		for (int y = 0; y < mapHeight; y++)
-			shapes.line(0, y * cellHeight, width, y * cellHeight);
+                    shapes.line(0, y * cellHeight, width, y * cellHeight);
 		shapes.end();
                 // dray obstacles
 		shapes.setColor(Color.PINK);
 		shapes.begin(ShapeType.Filled);
 		for (int x = 0; x < mapWidth; x++)
-			for (int y = 0; y < mapHeight; y++)
-				if (map[x + y * mapWidth]) shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                    for (int y = 0; y < mapHeight; y++)
+                        if (map[x + y * mapWidth]) shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                // draw all the tilecosts
+                shapes.setColor(Color.WHITE);
+		for (int x = 0; x < mapWidth; x++) {
+                    for (int y = 0; y < mapHeight; y++) {
+                        int index = x + mapWidth * y;
+                        if (tileCost[index] != 1)  {
+                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
+                        }
+                    }
+                }
                 //draw mouse pointer
 		int startX = Gdx.input.getX() / cellWidth;
 		int startY = (height - Gdx.input.getY()) / cellHeight;
@@ -101,19 +122,21 @@ public class AstarTest extends ApplicationAdapter {
                 }
                 // draw the paths from you to the flags
                 for(int i = 0; i < nrOfFlagCoordinates; i+=2) { 
-                drawPath(startX, startY, flagLocations[i], flagLocations[i + 1], cellWidth, cellHeight);
+                    drawPath(startX, startY, flagLocations[i], flagLocations[i + 1], cellWidth, cellHeight);
+                
                 }
                   // draw the path from all the flags to each others
                 
                 for(int i = 0; i < nrOfFlagCoordinates; i+=2){
                     for(int j = 0; j < nrOfFlagCoordinates; j+=2){
-                       drawPath(flagLocations[i], flagLocations[i + 1], flagLocations[j], flagLocations[j + 1], cellWidth, cellHeight);                        
+                       drawPath(flagLocations[i], flagLocations[i + 1], flagLocations[j], flagLocations[j + 1], cellWidth, cellHeight);                                   
                     }
                 }
+                
+             
                 // give all the pathcosts
                 for(int i = 0; i < nrOfFlagCoordinates; i+=2) { 
                 pathCost = astar.getPathCost(flagLocations[i], flagLocations[i + 1]);
-                System.out.println("pathCost is: " + pathCost); 
                 }
               
 		shapes.end();
@@ -128,13 +151,11 @@ public class AstarTest extends ApplicationAdapter {
              
              public void drawPath(int startX, int startY, int targetX, int targetY, int cellWidth, int cellHeight) {
                  shapes.setColor(Color.RED);
-                 IntArray path = astar.getPath(startX, startY, targetX, targetY);
+                 IntArray path = astar.getPath(startX, startY, targetX, targetY, tileCost);
                  for (int i = 0, n = path.size; i < n; i += 2) {
                     int x = path.get(i);
                     int y = path.get(i + 1);
                     shapes.circle(x * cellWidth + cellWidth / 2, y * cellHeight + cellHeight / 2, cellWidth / 3, 30);
-
-                    //System.out.println("Pathcost from: " + startX + "/" + startY " to" + targetX + "/" + targetY); 
                  }
              }
 
@@ -151,7 +172,7 @@ public class AstarTest extends ApplicationAdapter {
 			this.width = width;
 			this.height = height;
 			open = new BinaryHeap(width, false);
-			nodes = new PathNode[width * height];
+			nodes = new PathNode[width * height];  
 		}
 
 		/** Returns x,y pairs that are the path from the target to the start.
@@ -160,9 +181,9 @@ public class AstarTest extends ApplicationAdapter {
              * @param targetX
              * @param targetY
              * @return  */
-		public IntArray getPath (int startX, int startY, int targetX, int targetY) {
-			//this.targetX = targetX;
-			//this.targetY = targetY;
+		public IntArray getPath (int startX, int startY, int targetX, int targetY, int[] tileCost) {
+			this.targetX = targetX;
+			this.targetY = targetY;
 
 			path.clear();
 			open.clear();
@@ -197,18 +218,19 @@ public class AstarTest extends ApplicationAdapter {
 				node.closedID = runID;
 				int x = node.x;
 				int y = node.y;
+                                int nodeIndex = x + y * width; 
 				if (x < lastColumn) {
-					addNode(node, x + 1, y, 10);
-					if (y < lastRow) addNode(node, x + 1, y + 1, 14); // Diagonals cost more, roughly equivalent to sqrt(2).
-					if (y > 0) addNode(node, x + 1, y - 1, 14);
+					addNode(node, x + 1, y, 10 * tileCost[nodeIndex]);
+					if (y < lastRow) addNode(node, x + 1, y + 1, 14 * tileCost[nodeIndex]); // Diagonals cost more, roughly equivalent to sqrt(2).
+					if (y > 0) addNode(node, x + 1, y - 1, 14 * tileCost[nodeIndex]);
 				}
 				if (x > 0) {
-					addNode(node, x - 1, y, 10);
-					if (y < lastRow) addNode(node, x - 1, y + 1, 14);
-					if (y > 0) addNode(node, x - 1, y - 1, 14);
+					addNode(node, x - 1, y, 10 * tileCost[nodeIndex]);
+					if (y < lastRow) addNode(node, x - 1, y + 1, 14 * tileCost[nodeIndex]);
+					if (y > 0) addNode(node, x - 1, y - 1, 14 * tileCost[nodeIndex]);
 				}
-				if (y < lastRow) addNode(node, x, y + 1, 10);
-				if (y > 0) addNode(node, x, y - 1, 10);
+				if (y < lastRow) addNode(node, x, y + 1, 10 * tileCost[nodeIndex]);
+				if (y > 0) addNode(node, x, y - 1, 10 * tileCost[nodeIndex]);
 				i++;
 			}
 			return path;
@@ -263,7 +285,24 @@ public class AstarTest extends ApplicationAdapter {
                     PathNode node = nodes[index];
                     pathCost = node.pathCost;
                     return pathCost; 
-                }
+                }   
+                 /*public int getTileCost(int x, int y) {
+                    int tileCost;
+                    int index = y * width + x;
+                    PathNode node = nodes[index];
+                    tileCost = node.tileCost;
+                    return tileCost; 
+                }   
+                
+                public final void setTileCost(int x, int y) {
+                    int tileCost = 1;
+                    if(Math.random() > 0.7) {
+                        tileCost = 10;
+                    }
+                    int index = y * width + x;
+                    PathNode node = nodes[index];
+                    node.tileCost = tileCost; 
+                }*/
 
 		static private class PathNode extends Node {
 			int runID, closedID, x, y, pathCost;
