@@ -4,6 +4,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 import main.Basic3DTest;
 import terrain.VoxelTest;
+import AI.AstarTest;
 
 public class DesktopLauncher {
     public static void main (String[] arg) {
@@ -15,5 +16,6 @@ public class DesktopLauncher {
         config.resizable = false;
         new LwjglApplication(new Basic3DTest(), config);
         //new LwjglApplication(new VoxelTest(), config);
+        //new LwjglApplication(new AstarTest(), config);
     }
 }
