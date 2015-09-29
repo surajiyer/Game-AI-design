@@ -22,6 +22,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import terrain.HeightMap;
 import terrain.SimplexTerrain;
+import utils.MultipleAnimationsController;
 
 /**
  *
@@ -35,6 +36,7 @@ public class Basic3DTest extends ApplicationAdapter {
     ModelBatch modelBatch;
     PerspectiveCamera camera;
     FPCameraController camController;
+    MultipleAnimationsController blueWalkController;
     boolean fullscreen = false;
     boolean descendLimit = true;
     int oldWidth, oldHeight;
@@ -48,10 +50,14 @@ public class Basic3DTest extends ApplicationAdapter {
     
     @Override
     public void create() {
-        // Set up terrain batch to disply per frame
+        // Misc.
         modelBatch = new ModelBatch();
         instances = new Array<>();
         assets = new AssetManager();
+        
+        // Set up an animation controller for the walking action of the blue player
+        blueWalkController = new MultipleAnimationsController();
+        blueWalkController.animationSpeed = 2f;
         
         // Set up a 3D perspective camera
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -77,6 +83,7 @@ public class Basic3DTest extends ApplicationAdapter {
         assets.load("trees/tree3.g3db", Model.class);
         assets.load("trees/tree4.g3db", Model.class);
         assets.load("spacesphere/spacesphere.g3db", Model.class);
+        assets.load("characters/BlueWalk.g3db", Model.class);
         assetLoading = true;
         
         // create a 3d box terrain
@@ -123,6 +130,7 @@ public class Basic3DTest extends ApplicationAdapter {
         }
         
         // Render everything
+        blueWalkController.update();
         modelBatch.begin(camera);
 //        if (skySphere != null) {
 //            skySphere.transform.setToTranslation(camera.position);
@@ -188,6 +196,16 @@ public class Basic3DTest extends ApplicationAdapter {
         instances.add(instance);
         instance = new ModelInstance(assets.get("flags/flagBlue.g3db", Model.class));
         instance.transform.setToTranslation(6*UNITS_PER_METER, 0, 3f*UNITS_PER_METER);
+        instances.add(instance);
+        instance = new ModelInstance(assets.get("characters/BlueWalk.g3db", Model.class));
+        instance.transform.setToTranslation(8*UNITS_PER_METER, 0, 0);
+        blueWalkController.addAnimations(new String[] {
+            "Head|HeadAction",
+            "Torso|TorsoAction",
+            "Right Hand|Right HandAction",
+            "Left Hand|Left HandAction",
+            "Right Leg|Right LegAction",
+            "Left Leg|Left LegAction"}, instance);
         instances.add(instance);
         skySphere = new ModelInstance(assets.get("spacesphere/spacesphere.g3db", Model.class));
         skySphere.transform.setToScaling(60*UNITS_PER_METER, 60*UNITS_PER_METER, 60*UNITS_PER_METER);

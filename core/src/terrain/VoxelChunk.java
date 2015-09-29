@@ -97,6 +97,7 @@ public class VoxelChunk {
                 }
             }
         }
+        
         return vertexOffset / VERTEX_SIZE;
     }
 

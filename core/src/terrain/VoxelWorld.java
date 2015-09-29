@@ -5,13 +5,16 @@
  */
 package terrain;
 
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
+import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
@@ -41,10 +44,19 @@ public class VoxelWorld implements RenderableProvider {
     public final int voxelsZ;
     public int renderedChunks;
     public int numChunks;
-    private final TextureRegion[] tiles;
+    
+    /** Textures for each face of a voxel */
+    private final TextureRegion[][] tiles;
+    
+    /** The primitive type, OpenGL constant */
+    public boolean drawWireFrame;
+    
+    /** The {@link Shader} to be used to render this */
+    public boolean useShader = true;
+    public Shader shader;
 
-    public VoxelWorld (TextureRegion[] tiles, int chunksX, int chunksY, int chunksZ) {
-        this.tiles = tiles;
+    public VoxelWorld (FileHandle textures, int chunksX, int chunksY, int chunksZ) {
+        this.tiles = TextureRegion.split(new Texture(textures), 32, 32);
         this.chunksX = chunksX;
         this.chunksY = chunksY;
         this.chunksZ = chunksZ;
@@ -53,6 +65,8 @@ public class VoxelWorld implements RenderableProvider {
         this.voxelsX = chunksX * CHUNK_SIZE_X;
         this.voxelsY = chunksY * CHUNK_SIZE_Y;
         this.voxelsZ = chunksZ * CHUNK_SIZE_Z;
+        shader = new VoxelShader();
+        shader.init();
         int i = 0;
         for (int y = 0; y < chunksY; y++) {
             for (int z = 0; z < chunksZ; z++) {
@@ -192,7 +206,14 @@ public class VoxelWorld implements RenderableProvider {
             renderable.mesh = mesh;
             renderable.meshPartOffset = 0;
             renderable.meshPartSize = numVertices[i];
-            renderable.primitiveType = GL20.GL_TRIANGLES;
+            if(drawWireFrame) {
+                renderable.primitiveType = GL20.GL_LINE_STRIP;
+            } else {
+                renderable.primitiveType = GL20.GL_TRIANGLES;
+            }
+            if(useShader) {
+                renderable.shader = shader;
+            }
             renderables.add(renderable);
             renderedChunks++;
         }

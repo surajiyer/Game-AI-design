@@ -139,8 +139,8 @@ public class SimplexTerrain implements RenderableProvider {
             vertexCount = 0;
             for(int x=0; x < w; x++) {
                 // VERTICES
-                tmp1[0].setPos(x, heightMap.getHeight(x,   z)*HEIGHT_SCALE,   z);
-                tmp1[1].setPos(x, heightMap.getHeight(x, z+1)*HEIGHT_SCALE, z+1);
+                tmp1[0].setPos(x, heightMap.getHeight(x,   z),   z);
+                tmp1[1].setPos(x, heightMap.getHeight(x, z+1), z+1);
                 
                 // TEXTURE COORDINATES
                 tmp1[0].setUV(heightMap.getHeight(x,   z), 0);
@@ -150,7 +150,7 @@ public class SimplexTerrain implements RenderableProvider {
                 // vertex array
                 for (VertexInfo v : tmp1) {
                     verts[vertexCount++] = v.position.x;
-                    verts[vertexCount++] = v.position.y;
+                    verts[vertexCount++] = v.position.y * HEIGHT_SCALE;
                     verts[vertexCount++] = v.position.z;
                     verts[vertexCount++] = v.uv.x * texWidth;
                     verts[vertexCount++] = v.uv.y;
@@ -169,8 +169,12 @@ public class SimplexTerrain implements RenderableProvider {
 
     @Override
     public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
-        Renderable renderable = pool.obtain();
+        Material m = new Material(new ColorAttribute(ColorAttribute.Diffuse,
+                    MathUtils.random(0.5f, 1f),
+                    MathUtils.random(0.5f, 1f), 
+                    MathUtils.random(0.5f, 1f), 1));
         for (Mesh mesh : meshes) {
+            Renderable renderable = pool.obtain();
             renderable.mesh = mesh;
             renderable.meshPartOffset = 0;
             renderable.meshPartSize = mesh.getNumVertices();
@@ -182,10 +186,7 @@ public class SimplexTerrain implements RenderableProvider {
             renderable.userData = lookup;
             if(useShader)
                 renderable.shader = shader;
-            renderable.material = new Material(new ColorAttribute(ColorAttribute.Diffuse,
-                    MathUtils.random(0.5f, 1f),
-                    MathUtils.random(0.5f, 1f), 
-                    MathUtils.random(0.5f, 1f), 1));
+            renderable.material = m;
             renderables.add(renderable);
         }
     }
