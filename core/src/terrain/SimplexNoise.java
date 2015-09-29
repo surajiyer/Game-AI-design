@@ -1,11 +1,13 @@
 package terrain;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import static java.lang.Math.abs;
 import javax.imageio.ImageIO;
 import java.util.*;
+
 
 public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
     
@@ -189,21 +191,22 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
     public static float[][] generateRidgedNoise(int width, int height, float scale) {
         float[][] ridgedNoise = new float[width][height];
         float layerFrequency = scale;
-        int high = 70;
+        int high = 255;
         int low = 0;
 
             //Calculate single layer/octave of simplex noise, then add it to total noise
             for(int x = 0; x < width; x++) {
                 for(int y = 0; y < height; y++) {
-                    ridgedNoise[x][y] = (1 - abs((float) noise(x * layerFrequency,y * layerFrequency)));
+                    ridgedNoise[x][y] = 255 * (1 - abs((float) noise(x * layerFrequency,y * layerFrequency)));
+                    //System.out.println("Height value at " + x + "," + y + " is: " + ridgedNoise[x][y]);
                 }
             }
 
             //Normalize noise
             for(int x = 0; x < width; x++) {
                 for(int y = 0; y < height; y++) {
-                    ridgedNoise[x][y] = ridgedNoise[x][y] * (high - low) / 2  + (high + low) / 2;
-                    System.out.println("Height value at " + x + "," + y + " is: " + ridgedNoise[x][y]);
+                    //ridgedNoise[x][y] = ridgedNoise[x][y] * (high - low) / 2  + (high + low) / 2;
+                    //System.out.println("Height value at " + x + "," + y + " is: " + ridgedNoise[x][y]);
             }
         }
 
@@ -217,10 +220,16 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
         int height = terrain[0].length;
         
         float[][] totalNoise = new float[terrain.length][terrain[0].length];
+        float store = 0;
         
         for(int x = 0; x < width; x++) {
                 for(int y = 0; y < height; y++) {
-                    totalNoise[x][y] = terrain[x][y] -  rivers[x][y];
+                    store =  (terrain[x][y] + 2*rivers[x][y])/3;
+//                    if(store > 255) {
+//                        store -= 255;
+//                    }
+                    store = -1*(store-255);
+                    totalNoise[x][y] = store;
                 }
             }
         
@@ -230,14 +239,19 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
     public static void createImage(float[][] simplexNoise, String path) {
         int width = simplexNoise.length;
         int height = simplexNoise[0].length;
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
-
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Color blue = new Color(0,0,255);
+        
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
+                if(simplexNoise[x][y] < 50) {
+                    image.setRGB(x, y, blue.getRGB());
+                } else {
                 int grayscale = (int) (simplexNoise[x][y]);
                 //System.out.println(grayscale);
                 int rgb = 65536 * grayscale + 256 * grayscale + grayscale;
                 image.setRGB(x, y, rgb);
+                }
             }
         }
 
