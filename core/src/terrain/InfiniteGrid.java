@@ -5,6 +5,7 @@
  */
 package terrain;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.VertexAttributes;
 import com.badlogic.gdx.graphics.g3d.Material;
@@ -31,9 +32,9 @@ public class InfiniteGrid {
         this.cellSize = cellSize;
     }
     
-    public void updatePos(Vector3 pos) {
+    public void updatePos(Camera camera) {
         Vector3 gridTranslation = instance.transform.getTranslation(Vector3.Zero);
-        Vector3 diff = (new Vector3(pos).sub(gridTranslation));
+        Vector3 diff = (new Vector3(camera.position).sub(gridTranslation));
         boolean moveGrid = false;
 
         if (diff.x > cellSize / 2f) {
@@ -43,7 +44,7 @@ public class InfiniteGrid {
             gridTranslation.x -= cellSize;
             moveGrid = true;
         }
-         if (diff.z > cellSize / 2f) {
+        if (diff.z > cellSize / 2f) {
             gridTranslation.z += cellSize;
             moveGrid = true;
         } else if (diff.z < -cellSize / 2f) {

@@ -140,6 +140,13 @@ public class HeightMap {
         }
         return heights[z][x];
     }
+    
+    public float getHeight(int x, int z) {
+        if (x < 0 || z < 0 || z >= heights.length || x >= heights[z].length) {
+            throw new IllegalArgumentException("Heightmap does not contain given point.");
+        }
+        return heights[z][x];
+    }
 
     /**
      * Get the interpolated height for x,z coords, accounting for scale, 

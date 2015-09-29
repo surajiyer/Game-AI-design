@@ -12,15 +12,12 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
-import com.badlogic.gdx.graphics.g3d.utils.DefaultTextureBinder;
-import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import terrain.HeightMap;
@@ -35,14 +32,12 @@ public class Basic3DTest extends ApplicationAdapter {
     final static float UNITS_PER_METER = 16f;
     final float HUMAN_HEIGHT = 3f*UNITS_PER_METER;
     final float[] FOG_COLOR = new float[] {0.13f, 0.13f, 0.13f, 1f};
-    SpriteBatch batch;
+    ModelBatch modelBatch;
     PerspectiveCamera camera;
     FPCameraController camController;
     boolean fullscreen = false;
     boolean descendLimit = true;
-    boolean enableWireframe = false;
     int oldWidth, oldHeight;
-    ModelBatch modelBatch;
     ModelInstance skySphere;
     AssetManager assets;
     boolean assetLoading;
@@ -50,18 +45,9 @@ public class Basic3DTest extends ApplicationAdapter {
     Environment environment;
     InfiniteGrid grid;
     SimplexTerrain terra;
-    RenderContext renderContext;
     
     @Override
     public void create() {
-        // Enable blending
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        
-        // Enable depth testing
-        Gdx.gl.glEnable(GL20.GL_DEPTH_TEST);
-        Gdx.gl.glDepthFunc(GL20.GL_LESS);
-        
         // Set up terrain batch to disply per frame
         modelBatch = new ModelBatch();
         instances = new Array<>();
@@ -72,7 +58,7 @@ public class Basic3DTest extends ApplicationAdapter {
         camera.position.set(18f*UNITS_PER_METER, 12f*UNITS_PER_METER, 0f);
         camera.lookAt(0,0,0);
         camera.near = 1.5f*UNITS_PER_METER;
-        camera.far = 300f*UNITS_PER_METER;
+        camera.far = 60f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
         
@@ -100,8 +86,6 @@ public class Basic3DTest extends ApplicationAdapter {
         // create a terrain shader program
         HeightMap hm = new HeightMap(Gdx.files.internal("heightmaps/Heightmap192x192.png"));
         terra = new SimplexTerrain(hm, 1f, 100f, Gdx.files.internal("heightmaps/heightmap_lookup.png"));
-        terra.shader.init();
-        renderContext = new RenderContext(new DefaultTextureBinder(DefaultTextureBinder.WEIGHTED, 1));
         
         // create the surrounding environment
         environment = new Environment();
@@ -138,29 +122,17 @@ public class Basic3DTest extends ApplicationAdapter {
             }
         }
         
-        // Render terrain
-        if(enableWireframe)
-            terra.primitiveType = GL20.GL_LINE_STRIP;
-        else
-            terra.primitiveType = GL20.GL_TRIANGLE_STRIP;
-        
-        // Move the grid with the camera for an infinte grid
-        grid.updatePos(camera.position);
-        
-        // Load the models
+        // Render everything
         modelBatch.begin(camera);
-        modelBatch.render(instances, environment);
-        modelBatch.render(grid.instance);
 //        if (skySphere != null) {
 //            skySphere.transform.setToTranslation(camera.position);
 //            modelBatch.render(skySphere);
 //        }
+        modelBatch.render(terra);
+        modelBatch.render(instances, environment);
+        //grid.updatePos(camera); // Move the grid with the camera for an infinte grid
+        modelBatch.render(grid.instance);
         modelBatch.end();
-        
-        terra.lookup.bind();
-        terra.shader.begin(camera, renderContext);
-        terra.shader.render(terra);
-        terra.shader.end();
     }
     
     @Override
@@ -171,11 +143,11 @@ public class Basic3DTest extends ApplicationAdapter {
     }
     
     public void checkInput() {
-        if(Gdx.input.isKeyPressed(Input.Keys.H)) {
-           descendLimit = !descendLimit;
+        if(Gdx.input.isKeyPressed(Input.Keys.NUM_1)) {
+           terra.drawWireFrame = !terra.drawWireFrame;
         }
-        if(Gdx.input.isKeyPressed(Input.Keys.L)) {
-           enableWireframe = !enableWireframe;
+        if(Gdx.input.isKeyPressed(Input.Keys.NUM_2)) {
+           descendLimit = !descendLimit;
         }
         if(Gdx.input.isKeyPressed(Input.Keys.F)) {
             if(!fullscreen) { // set resolution to default and set fullscreen to true
@@ -187,6 +159,9 @@ public class Basic3DTest extends ApplicationAdapter {
                 Gdx.graphics.setDisplayMode(oldWidth, oldHeight, false);
             }
             fullscreen = !fullscreen;
+        }
+        if(Gdx.input.isKeyPressed(Input.Keys.NUM_3)) {
+           terra.useShader = !terra.useShader;
         }
     }
     

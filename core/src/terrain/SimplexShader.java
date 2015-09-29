@@ -7,6 +7,8 @@ package terrain;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
@@ -53,12 +55,14 @@ public class SimplexShader implements Shader {
         this.context = context;
         shaderProgram.begin();
         shaderProgram.setUniformMatrix(u_projViewTrans, camera.combined);
-        shaderProgram.setUniformi(u_texture, 0);
+        context.setDepthTest(GL20.GL_LEQUAL);
+        context.setCullFace(GL20.GL_BACK);
     }
 
     @Override
     public void render(Renderable renderable) {
         shaderProgram.setUniformMatrix(u_worldTrans, renderable.worldTransform);
+        shaderProgram.setUniformi(u_texture, context.textureBinder.bind((Texture) renderable.userData));
         renderable.mesh.render(shaderProgram,
             renderable.primitiveType,
             renderable.meshPartOffset,

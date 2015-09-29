@@ -4,16 +4,16 @@
   <auxiliary>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-      <group>
-        <file>file:/D:/Documents/NetBeansProjects/IISTeam3/core/src/utils/Triangle.java</file>
-        <file>file:/D:/Documents/NetBeansProjects/IISTeam3/core/src/terrain/HeightMapModel.java</file>
-        <file>file:/D:/Documents/NetBeansProjects/IISTeam3/core/src/main/Basic3DTest.java</file>
-        <file>file:/D:/Documents/NetBeansProjects/IISTeam3/core/src/terrain/SimplexTerrain.java</file>
-      </group>
+      <group/>
     </open-files>
     <editor-bookmarks lastBookmarkId="0" xmlns="http://www.netbeans.org/ns/editor-bookmarks/2"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-      <group/>
+      <group>
+        <file>file:/D:/Documents/DevProjects/NetBeansProjects/IISTeam3/core/src/terrain/VoxelWorld.java</file>
+        <file>file:/D:/Documents/DevProjects/NetBeansProjects/IISTeam3/core/src/terrain/SimplexShader.java</file>
+        <file>file:/D:/Documents/DevProjects/NetBeansProjects/IISTeam3/core/src/terrain/SimplexTerrain.java</file>
+        <file>file:/D:/Documents/DevProjects/NetBeansProjects/IISTeam3/core/src/main/Basic3DTest.java</file>
+      </group>
     </open-files>
   </auxiliary>
 </gradle-project-properties>

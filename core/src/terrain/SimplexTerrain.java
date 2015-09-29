@@ -10,37 +10,42 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttribute;
-import com.badlogic.gdx.graphics.VertexAttributes.Usage;
+import com.badlogic.gdx.graphics.VertexAttributes;
+import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.RenderableProvider;
+import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
-import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Pool;
 import utils.Triangle;
 
 /**
  *
  * @author S.S.Iyer
  */
-public class SimplexTerrain extends Renderable {
-    
+public class SimplexTerrain implements RenderableProvider {
     /** The height map */
     final HeightMap heightMap;
     
-    /** Position attribute (P.x, P.y, P.z) */
-    public static final int POSITION_COMPONENTS = 3;
+    /** The primitive type, OpenGL constant */
+    public boolean drawWireFrame;
     
-    /** Normal vector attribute (N.x, N.y, N.z) */
-    public static final int NORMAL_COMPONENTS = 3;
+    /** The {@link Shader} to be used to render this */
+    public boolean useShader = true;
+    public Shader shader;
     
-    /** Texture coordinates attribute (T.u, T.v) */
-    public static final int TEXTURE_COMPONENTS = 2;
-    
-    /** Total number of components */
-    public static final int NUM_COMPONENTS = POSITION_COMPONENTS 
-            /*+ NORMAL_COMPONENTS*/ + TEXTURE_COMPONENTS;
+    /** Total number of components per vertex */
+    public static final int NUM_COMPONENTS = 
+            VertexAttribute.Position().numComponents 
+            /*+ VertexAttribute.Normal().numComponents*/ 
+            + VertexAttribute.TexCoords(0).numComponents;
     
     /** The number of vertices per triangle */
-    public static final int VERTEICES_PER_TRIANGLE = 2;
+    public static final int VERTICES_PER_TRIANGLE = 2;
     
     /** The maximum number of triangles our mesh will hold */
     public final int MAX_TRIS;
@@ -54,26 +59,27 @@ public class SimplexTerrain extends Renderable {
     /** Horizontal and vertical scaling factor for terrain */
     float WIDTH_SCALE, HEIGHT_SCALE;
     
+    public final Mesh[] meshes;
+    
     /** Terrain coloring lookup texture */
     public final Texture lookup;
     
-    // temporary variables
+    /** Temporary variables */
     static Triangle tmp = new Triangle();
-    static VertexInfo[] tmp1 = new VertexInfo[3];
+    static VertexInfo[] tmp1 = new VertexInfo[VERTICES_PER_TRIANGLE];
     
     public SimplexTerrain(HeightMap hm, float WIDTH_SCALE, float HEIGHT_SCALE, FileHandle lookupFile) {
         heightMap = hm;
+        meshes = new Mesh[hm.getDepth()-1];
         this.WIDTH_SCALE = WIDTH_SCALE;
         this.HEIGHT_SCALE = HEIGHT_SCALE;
         for(int i=0; i < tmp1.length; i++) {
             tmp1[i] = new VertexInfo();
         }
-        primitiveType = GL20.GL_TRIANGLE_STRIP;
         MAX_TRIS = hm.getWidth()*hm.getDepth();
-        MAX_VERTS = MAX_TRIS * VERTEICES_PER_TRIANGLE;
-        meshPartOffset = NUM_COMPONENTS;
-        meshPartSize = MAX_VERTS;
+        MAX_VERTS = MAX_TRIS * VERTICES_PER_TRIANGLE;
         shader = new SimplexShader();
+        shader.init();
         lookup = new Texture(lookupFile);
         this.generate();
     }
@@ -109,114 +115,78 @@ public class SimplexTerrain extends Renderable {
     }
     
     /**
-     * Generate the terrain from the provided height map.
-     * @return a mesh containing the terrain
+     * Generates a meshes which contain the terrain from the provided 
+     * height map.
      */
-    public Mesh generate() {
+    public void generate() {
         // if terrain is already generated
         if(generateCount++ > 0) {
-            return mesh;
+            return;
         }
         
         // 3 vertex per triangle
-        float[] verts = new float[MAX_VERTS*NUM_COMPONENTS];
-        
-        // build a new terrain mesh
-        int k = 0;
+        int vertexCount;
         int w = heightMap.getWidth();
         int h = heightMap.getDepth();
         int texWidth = lookup.getWidth();
-        for(int z=0; z < h; z++) {
+        float[] verts = new float[2*w*NUM_COMPONENTS];
+        VertexAttributes va = new VertexAttributes(VertexAttribute.Position(), 
+                                                   //VertexAttribute.Normal(),
+                                                   VertexAttribute.TexCoords(0));
+        
+        // build a new terrain mesh
+        for(int z=0; z < h-1; z++) {
+            vertexCount = 0;
             for(int x=0; x < w; x++) {
-                // Set the 3 vertices of the triangle
-                tmp1[0].setPos(x,
-                        heightMap.getHeight(x, z, WIDTH_SCALE)*HEIGHT_SCALE, 
-                        z);
-                tmp1[1].setPos(x,
-                        heightMap.getHeight(x, z+(z==h-1?0:1), WIDTH_SCALE)*HEIGHT_SCALE, 
-                        z+1);
-                tmp1[2].setPos(x+1,
-                        heightMap.getHeight(x+(x==w-1?0:1), z, WIDTH_SCALE)*HEIGHT_SCALE, 
-                        z);
+                // VERTICES
+                tmp1[0].setPos(x, heightMap.getHeight(x,   z)*HEIGHT_SCALE,   z);
+                tmp1[1].setPos(x, heightMap.getHeight(x, z+1)*HEIGHT_SCALE, z+1);
                 
-                // Set texture coordinates per vertex
-                tmp1[0].setUV(heightMap.getHeight(x, z, WIDTH_SCALE), 0);
-                tmp1[1].setUV(heightMap.getHeight(x+(x==w-1?0:1), z, WIDTH_SCALE), 0);
-                tmp1[2].setUV(heightMap.getHeight(x, z+(z==h-1?0:1), WIDTH_SCALE), 0);
+                // TEXTURE COORDINATES
+                tmp1[0].setUV(heightMap.getHeight(x,   z), 0);
+                tmp1[1].setUV(heightMap.getHeight(x, z+1), 0);
                 
-                // create a new triangle (automatically sets the face normal)
-                tmp.set(tmp1[0], tmp1[1], tmp1[2]);
-                
-                // for each vertex, set the facenormal and add it to the float 
+                // For each vertex, set the facenormal and add it to the float 
                 // vertex array
-                for(int i=0; i<tmp1.length-1; i++) {
-                    tmp1[i].setNor(tmp.faceNormal);
-                    verts[k++] = tmp1[i].position.x;
-                    verts[k++] = tmp1[i].position.y;
-                    verts[k++] = tmp1[i].position.z;
-//                    verts[k++] = tmp1[i].normal.x;
-//                    verts[k++] = tmp1[i].normal.y;
-//                    verts[k++] = tmp1[i].normal.z;
-                    verts[k++] = tmp1[i].uv.x * texWidth;
-                    verts[k++] = tmp1[i].uv.y;
+                for (VertexInfo v : tmp1) {
+                    verts[vertexCount++] = v.position.x;
+                    verts[vertexCount++] = v.position.y;
+                    verts[vertexCount++] = v.position.z;
+                    verts[vertexCount++] = v.uv.x * texWidth;
+                    verts[vertexCount++] = v.uv.y;
                 }
             }
+            meshes[z] = new Mesh(true, verts.length, 0, va).setVertices(verts);
         }
-        
-        // Calculate the normals in the mesh
-        //this.calcNormal(verts, w, h);
-        
-        // Generate a new mesh with the right attributes
-        mesh = new Mesh( true, MAX_VERTS, 0,
-                new VertexAttribute( Usage.Position, POSITION_COMPONENTS, 
-                        ShaderProgram.POSITION_ATTRIBUTE ),
-//                new VertexAttribute( Usage.Normal, NORMAL_COMPONENTS, 
-//                        ShaderProgram.NORMAL_ATTRIBUTE ),
-                new VertexAttribute( Usage.TextureCoordinates, TEXTURE_COMPONENTS, 
-                        ShaderProgram.TEXCOORD_ATTRIBUTE+"0" ));
-        
-        // Set the vertices of the terrain in the mesh
-        mesh.setVertices(verts);
-        
-        // Scale the mesh according to the width and height scale factors
-        this.scale(WIDTH_SCALE);   
-        
-        // Return the finalized mesh
-        return mesh;
-    }
-    
-    void calcNormal(float[] verts, int w, int h) {
-        float[] norms = new float[verts.length];
-        int k=0;
-        for(int i=0; i < verts.length; i+=2*POSITION_COMPONENTS) {
-            tmp1[0].setPos(verts[i], verts[i+1], verts[i+2]);
-            tmp1[1].setPos(verts[i+3], verts[i+4], verts[i+5]);
-            tmp1[1].setPos(verts[i+6], verts[i+7], verts[i+8]);
-            tmp.set(tmp1[0], tmp1[1], tmp1[2]);
-            for(int j = 0; j < NORMAL_COMPONENTS; j++) {
-                norms[k++] = tmp.faceNormal.x;
-                norms[k++] = tmp.faceNormal.y;
-                norms[k++] = tmp.faceNormal.z;
-            }
-            tmp1[0].setPos(verts[i+6], verts[i+7], verts[i+8]);
-            tmp1[2].setPos(verts[i+9], verts[i+10], verts[i+11]);
-            tmp.set(tmp1[0], tmp1[1], tmp1[2]);
-            for(int j = 0; j < NORMAL_COMPONENTS; j++) {
-                norms[k++] = tmp.faceNormal.x;
-                norms[k++] = tmp.faceNormal.y;
-                norms[k++] = tmp.faceNormal.z;
-            }
-        }
-    }
-    
-    public void scale(float widthScale) {
-        WIDTH_SCALE = widthScale;
-        if(mesh != null)
-            mesh.scale(WIDTH_SCALE, WIDTH_SCALE, WIDTH_SCALE);
     }
     
     public void dispose() {
         shader.dispose();
-        mesh.dispose();
+        for (Mesh mesh : meshes) {
+            mesh.dispose();
+        }
+    }
+
+    @Override
+    public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
+        Renderable renderable = pool.obtain();
+        for (Mesh mesh : meshes) {
+            renderable.mesh = mesh;
+            renderable.meshPartOffset = 0;
+            renderable.meshPartSize = mesh.getNumVertices();
+            if(drawWireFrame) {
+                renderable.primitiveType = GL20.GL_LINE_STRIP;
+            } else {
+                renderable.primitiveType = GL20.GL_TRIANGLE_STRIP;
+            }
+            renderable.userData = lookup;
+            if(useShader)
+                renderable.shader = shader;
+            renderable.material = new Material(new ColorAttribute(ColorAttribute.Diffuse,
+                    MathUtils.random(0.5f, 1f),
+                    MathUtils.random(0.5f, 1f), 
+                    MathUtils.random(0.5f, 1f), 1));
+            renderables.add(renderable);
+        }
     }
 }
