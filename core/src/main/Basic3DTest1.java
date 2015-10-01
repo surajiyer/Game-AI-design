@@ -43,7 +43,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
     ModelBatch modelBatch;
     SpriteBatch spriteBatch;
     PerspectiveCamera camera;
-    FPCameraController camController;
+    BobController camController;
     boolean fullscreen = false;
     boolean descendLimit = true;
     int oldWidth, oldHeight;
@@ -59,6 +59,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
     long startTime;
     long elapsedTime;
     FlagList flagList;
+    ModelInstance bobber;
     
     @Override
     public void create() {
@@ -87,7 +88,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
         flagList.setOccupant(4,"Player");
         
         // Setup a camera controller to control the camera movements
-        camController = new FPCameraController(camera);
+        camController = new BobController(camera);
         camController.setVelocity(9f*UNITS_PER_METER);
         Gdx.input.setInputProcessor(camController);
         
@@ -155,6 +156,10 @@ public class Basic3DTest1 extends ApplicationAdapter {
 //        }
         modelBatch.render(terra);
         modelBatch.render(instances, environment);
+        if(bobber != null) {
+            bobber.transform.setToTranslation(camera.position.x, 0, camera.position.z);
+            modelBatch.render(bobber);
+        }
         //grid.updatePos(camera); // Move the grid with the camera for an infinte grid
         modelBatch.render(grid.instance);
         modelBatch.end();
@@ -230,7 +235,6 @@ public class Basic3DTest1 extends ApplicationAdapter {
         instances.add(instance);
         skySphere = new ModelInstance(assets.get("spacesphere/spacesphere.g3db", Model.class));
         skySphere.transform.setToScaling(60*UNITS_PER_METER, 60*UNITS_PER_METER, 60*UNITS_PER_METER);
-        assetLoading = false;
         for(int i = 0; i < flagList.getList().length; i++) {
             instance = new ModelInstance(assets.get("flags/flagNone.g3db", Model.class));
             int[] coor = flagList.getCoordinates(i);
@@ -240,6 +244,10 @@ public class Basic3DTest1 extends ApplicationAdapter {
                     coor[2]*UNITS_PER_METER);
             instances.add(instance);
         }
+        bobber = new ModelInstance(assets.get("trees/tree1.g3db", Model.class));
+        bobber.transform.setToTranslation(camera.position.x, 0, camera.position.z);
+        assetLoading = false;
+
     }
     
     public void addFlag(ModelInstance flag) {

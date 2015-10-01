@@ -5,21 +5,27 @@
  */
 package utils;
 
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector3;
+
 /**
  *
  * @author s138699
  */
 public class Player {
 
-    private int x;
-    private int y;
-    private int z;
-    private int flags;
+//    private int x;
+//    private int y;
+//    private int z;
+//    private int flags;
+    Vector3 position = new Vector3();
+    Rectangle bounds = new Rectangle();
+    static final float SIZE = 0.5f; // half a unit
 
-    public Player(int x, int y, int z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+    public Player(Vector3 position) {
+        this.position = position;
+        this.bounds.height = SIZE;
+        this.bounds.width = SIZE;
     }
-    
+
 }
