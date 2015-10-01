@@ -12,7 +12,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
@@ -21,13 +20,12 @@ import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
-import terrain.HeightMap;
 import terrain.SimplexTerrain;
-import utils.Flag;
+import utils.Drawables;
 import utils.FlagList;
 import utils.Score;
 
@@ -59,11 +57,13 @@ public class Basic3DTest1 extends ApplicationAdapter {
     long startTime;
     long elapsedTime;
     FlagList flagList;
-    ModelInstance bobber;
+    ModelInstance bobber, bobberBox;
+    ShapeRenderer shapeRenderer;
     
     @Override
     public void create() {
         // Set up terrain batch to disply per frame
+        shapeRenderer = new ShapeRenderer();
         modelBatch = new ModelBatch();
         spriteBatch = new SpriteBatch();
         instances = new Array<>();
@@ -92,25 +92,13 @@ public class Basic3DTest1 extends ApplicationAdapter {
         camController.setVelocity(9f*UNITS_PER_METER);
         Gdx.input.setInputProcessor(camController);
         
-        // load a 3d Model
-        assets.load("tower/tower.g3db", Model.class);
-        assets.load("flags/flagBlue.g3db", Model.class);
-        assets.load("flags/flagNone.g3db", Model.class);
-        assets.load("flags/flagRed.g3db", Model.class);
+        // load a 3d Model  
         assets.load("trees/tree1.g3db", Model.class);
-        assets.load("trees/tree2.g3db", Model.class);
-        assets.load("trees/tree3.g3db", Model.class);
-        assets.load("trees/tree4.g3db", Model.class);
-        assets.load("spacesphere/spacesphere.g3db", Model.class);
+        assets.load("flags/flagNone.g3db", Model.class);
         assetLoading = true;
         
-        // create a 3d box terrain
+        // create a grid
         grid = new InfiniteGrid(160, 160, UNITS_PER_METER);
-        grid.instance.transform.setToTranslation(camera.position.x, 0, camera.position.z);
-        
-        // create a terrain shader program
-        HeightMap hm = new HeightMap(Gdx.files.internal("heightmaps/Heightmap192x192.png"));
-        terra = new SimplexTerrain(hm, 1f, 100f, Gdx.files.internal("heightmaps/heightmap_lookup.png"));
         
         // create the surrounding environment
         environment = new Environment();
@@ -146,19 +134,20 @@ public class Basic3DTest1 extends ApplicationAdapter {
                         camera.position.z);
             }
         }
+       
+        // Time
         elapsedTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
         score.updateScore(elapsedTime, flagList);
+        
         // Render everything
         modelBatch.begin(camera);
-//        if (skySphere != null) {
-//            skySphere.transform.setToTranslation(camera.position);
-//            modelBatch.render(skySphere);
-//        }
-        modelBatch.render(terra);
         modelBatch.render(instances, environment);
         if(bobber != null) {
             bobber.transform.setToTranslation(camera.position.x, 0, camera.position.z);
+            if(bobberBox != null)
+                bobberBox.transform.setToTranslation(bobber.transform.getTranslation(new Vector3()));
             modelBatch.render(bobber);
+            modelBatch.render(bobberBox);
         }
         //grid.updatePos(camera); // Move the grid with the camera for an infinte grid
         modelBatch.render(grid.instance);
@@ -177,6 +166,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
         font.draw(spriteBatch, "4: " + flagList.getOccupant(3), 15, 560);
         font.draw(spriteBatch, "5: " + flagList.getOccupant(4), 15, 540);
         spriteBatch.end();
+        
     }
     
     @Override
@@ -210,31 +200,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
     }
     
     void assetLoading() {
-        ModelInstance instance = new ModelInstance(assets.get("tower/tower.g3db", Model.class));
-        instances.add(instance);
-        instance = new ModelInstance(assets.get("trees/tree1.g3db", Model.class));
-        instance.transform.setToTranslation(0, 0, -12*UNITS_PER_METER);
-        instances.add(instance);
-        instance = new ModelInstance(assets.get("trees/tree2.g3db", Model.class));
-        instance.transform.setToTranslation(-12*UNITS_PER_METER, 0, -6*UNITS_PER_METER);
-        instances.add(instance);
-        instance = new ModelInstance(assets.get("trees/tree3.g3db", Model.class));
-        instance.transform.setToTranslation(-12*UNITS_PER_METER, 0, 6*UNITS_PER_METER);
-        instances.add(instance);
-        instance = new ModelInstance(assets.get("trees/tree4.g3db", Model.class));
-        instance.transform.setToTranslation(0, 0, 12*UNITS_PER_METER);
-        instances.add(instance);
-        instance = new ModelInstance(assets.get("flags/flagRed.g3db", Model.class));
-        instance.transform.setToTranslation(6*UNITS_PER_METER, 0, -3f*UNITS_PER_METER);
-        instances.add(instance);
-        instance = new ModelInstance(assets.get("flags/flagNone.g3db", Model.class));
-        instance.transform.setToTranslation(6*UNITS_PER_METER, 0, 0);
-        instances.add(instance);
-        instance = new ModelInstance(assets.get("flags/flagBlue.g3db", Model.class));
-        instance.transform.setToTranslation(6*UNITS_PER_METER, 0, 3f*UNITS_PER_METER);
-        instances.add(instance);
-        skySphere = new ModelInstance(assets.get("spacesphere/spacesphere.g3db", Model.class));
-        skySphere.transform.setToScaling(60*UNITS_PER_METER, 60*UNITS_PER_METER, 60*UNITS_PER_METER);
+        ModelInstance instance;
         for(int i = 0; i < flagList.getList().length; i++) {
             instance = new ModelInstance(assets.get("flags/flagNone.g3db", Model.class));
             int[] coor = flagList.getCoordinates(i);
@@ -246,6 +212,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
         }
         bobber = new ModelInstance(assets.get("trees/tree1.g3db", Model.class));
         bobber.transform.setToTranslation(camera.position.x, 0, camera.position.z);
+        bobberBox = Drawables.drawBoundingBox(bobber, true);
         assetLoading = false;
 
     }
