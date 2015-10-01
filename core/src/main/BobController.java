@@ -21,16 +21,12 @@ public class BobController extends InputAdapter {
     private final Camera camera;
     private final Player bob;
     private final IntIntMap keys = new IntIntMap();
-    private int TURN_LEFT = Keys.LEFT;
-    private int TURN_RIGHT = Keys.RIGHT;
-    private int STRAFE_LEFT = Keys.A;
-    private int STRAFE_RIGHT = Keys.D;
+    private int STRAFE_LEFT = Keys.Q;
+    private int STRAFE_RIGHT = Keys.E;
     private int FORWARD = Keys.W;
     private int BACKWARD = Keys.S;
-    private int UP = Keys.Q;
-    private int DOWN = Keys.Z;
-    private int LOOK_UP = Keys.UP;
-    private int LOOK_DOWN = Keys.DOWN;
+    private int TURN_LEFT = Keys.A;
+    private int TURN_RIGHT = Keys.D;
     private float turnSpeed = 120f;
     private float velocity = 5;
     private float degreesPerPixel = 0.5f;
@@ -44,6 +40,7 @@ public class BobController extends InputAdapter {
     public Vector3 getPos() {
         return camera.position;
     }
+    
     @Override
     public boolean keyDown (int keycode) {
         keys.put(keycode, keycode);
@@ -81,22 +78,17 @@ public class BobController extends InputAdapter {
         this.degreesPerPixel = degreesPerPixel;
     }
 
-    @Override
-    public boolean touchDragged (int screenX, int screenY, int pointer) {
-        float deltaX = -Gdx.input.getDeltaX() * degreesPerPixel;
-        float deltaY = -Gdx.input.getDeltaY() * degreesPerPixel;
-        camera.direction.rotate(camera.up, deltaX);
-        tmp.set(camera.direction).crs(camera.up).nor();
-        camera.direction.rotate(tmp, deltaY);
-        // camera.up.rotate(tmp, deltaY);
-        return true;
-    }
-
     public void update () {
         update(Gdx.graphics.getDeltaTime());
     }
 
     public void update(float deltaTime) {
+         if (keys.containsKey(TURN_LEFT)) {
+            camera.direction.rotate(camera.up, deltaTime * turnSpeed);
+        }
+        if (keys.containsKey(TURN_RIGHT)) {
+            camera.direction.rotate(camera.up, -deltaTime * turnSpeed);
+        }
         if (keys.containsKey(FORWARD)) {
             tmp.set(camera.direction).nor().scl(deltaTime * velocity);
             camera.position.add(tmp);
@@ -105,34 +97,12 @@ public class BobController extends InputAdapter {
             tmp.set(camera.direction).nor().scl(-deltaTime * velocity);
             camera.position.add(tmp);
         }
-        if (keys.containsKey(TURN_LEFT)) {
-            camera.direction.rotate(camera.up, deltaTime * turnSpeed);
-        }
-        if (keys.containsKey(TURN_RIGHT)) {
-            camera.direction.rotate(camera.up, -deltaTime * turnSpeed);
-        }
-        if (keys.containsKey(LOOK_UP)) {
-            camera.direction.rotate(tmp.set(camera.direction).crs(camera.up).nor(), 
-                    deltaTime * turnSpeed);
-        }
-        if (keys.containsKey(LOOK_DOWN)) {
-            camera.direction.rotate(tmp.set(camera.direction).crs(camera.up).nor(), 
-                    -deltaTime * turnSpeed);
-        }
         if (keys.containsKey(STRAFE_LEFT)) {
             tmp.set(camera.direction).crs(camera.up).nor().scl(-deltaTime * velocity);
             camera.position.add(tmp);
         }
         if (keys.containsKey(STRAFE_RIGHT)) {
             tmp.set(camera.direction).crs(camera.up).nor().scl(deltaTime * velocity);
-            camera.position.add(tmp);
-        }
-        if (keys.containsKey(UP)) {
-            tmp.set(camera.up).nor().scl(deltaTime * velocity);
-            camera.position.add(tmp);
-        }
-        if (keys.containsKey(DOWN)) {
-            tmp.set(camera.up).nor().scl(-deltaTime * velocity);
             camera.position.add(tmp);
         }
         camera.update(true);
