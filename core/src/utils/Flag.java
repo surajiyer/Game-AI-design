@@ -5,6 +5,8 @@
  */
 package utils;
 
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
+
 /**
  *
  * @author s138699
@@ -17,7 +19,9 @@ public class Flag {
     private int number;
     private int scoreWeight;
     private String occupant;
-
+    private ModelInstance flagBox;
+    private ModelInstance captureBox;
+    
     public Flag(int x, int y, int z, int number, int scoreWeight) {
         this.x = x;
         this.y = y;
@@ -46,6 +50,22 @@ public class Flag {
     public int[] getCoordinates() {
         int[] coordinates = {x,y,z};
         return coordinates;
+    }
+    
+    public void setFlagBox(ModelInstance instance) {
+        flagBox = Drawables.drawBoundingBox(instance, true);
+    }
+    
+    public ModelInstance getFlagBox() {
+        return flagBox;
+    }
+    
+    public void setCaptureBox(ModelInstance instance) {
+        captureBox = Drawables.drawBoundingBox(instance, true, true);
+    }
+    
+    public ModelInstance getCaptureBox() {
+        return captureBox;
     }
 
 }

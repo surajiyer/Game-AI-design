@@ -26,6 +26,7 @@ import com.badlogic.gdx.utils.Array;
 import java.util.concurrent.TimeUnit;
 import terrain.SimplexTerrain;
 import utils.Drawables;
+import utils.Flag;
 import utils.FlagList;
 import utils.Score;
 
@@ -149,6 +150,23 @@ public class Basic3DTest1 extends ApplicationAdapter {
             modelBatch.render(bobber);
             modelBatch.render(bobberBox);
         }
+        
+        Flag[] flags = flagList.getList();
+        for(int i = 0; i < flags.length; i++) {
+            ModelInstance temp = flags[i].getFlagBox();
+            ModelInstance colTemp = flags[i].getCaptureBox();
+           if(temp != null) {
+               int[] coor = flagList.getCoordinates(i);
+               temp.transform.setToTranslation(coor[0]*UNITS_PER_METER, 
+                    coor[1]*UNITS_PER_METER, 
+                    coor[2]*UNITS_PER_METER);
+                              colTemp.transform.setToTranslation(coor[0]*UNITS_PER_METER, 
+                    coor[1]*UNITS_PER_METER, 
+                    coor[2]*UNITS_PER_METER);
+               modelBatch.render(temp);
+               modelBatch.render(colTemp);
+           }
+        }
         //grid.updatePos(camera); // Move the grid with the camera for an infinte grid
         modelBatch.render(grid.instance);
         modelBatch.end();
@@ -201,15 +219,19 @@ public class Basic3DTest1 extends ApplicationAdapter {
     
     void assetLoading() {
         ModelInstance instance;
-        for(int i = 0; i < flagList.getList().length; i++) {
+        Flag[] flags = flagList.getList();
+        for(int i = 0; i < flags.length; i++) {
             instance = new ModelInstance(assets.get("flags/flagNone.g3db", Model.class));
             int[] coor = flagList.getCoordinates(i);
+            flags[i].setFlagBox(instance);
+            flags[i].setCaptureBox(instance);
             instance.transform.setToTranslation(
                     coor[0]*UNITS_PER_METER, 
                     coor[1]*UNITS_PER_METER, 
                     coor[2]*UNITS_PER_METER);
             instances.add(instance);
         }
+        
         bobber = new ModelInstance(assets.get("trees/tree1.g3db", Model.class));
         bobber.transform.setToTranslation(camera.position.x, 0, camera.position.z);
         bobberBox = Drawables.drawBoundingBox(bobber, true);
