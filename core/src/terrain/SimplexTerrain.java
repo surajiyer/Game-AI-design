@@ -16,12 +16,10 @@ import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
-import com.badlogic.gdx.graphics.g3d.utils.MeshPartBuilder.VertexInfo;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import utils.Triangle;
 
 /**
  *
@@ -31,56 +29,38 @@ public class SimplexTerrain implements RenderableProvider {
     /** The height map */
     final HeightMap heightMap;
     
-    /** The primitive type, OpenGL constant */
-    public boolean drawWireFrame;
+    /** Meshes array which is used to store the terrain mesh */
+    public final Mesh[] meshes;
+    
+    /** Horizontal and vertical scaling factor for terrain */
+    float WIDTH_SCALE, HEIGHT_SCALE;
+    
+    /** Number of times the terrain has been generated. */
+    static int generateCount = 0;
+    
+    /** Terrain coloring lookup texture */
+    public final Texture lookup;
     
     /** The {@link Shader} to be used to render this */
     public boolean useShader = true;
     public Shader shader;
     
-    /** Total number of components per vertex */
-    public static final int NUM_COMPONENTS = 
-            VertexAttribute.Position().numComponents 
-            /*+ VertexAttribute.Normal().numComponents*/ 
-            + VertexAttribute.TexCoords(0).numComponents;
+    /** The primitive type, OpenGL constant */
+    public boolean drawWireFrame;
     
-    /** The number of vertices per triangle */
-    public static final int VERTICES_PER_TRIANGLE = 2;
+    public final boolean hasNormal, hasTexture;
     
-    /** The maximum number of triangles our mesh will hold */
-    public final int MAX_TRIS;
-
-    /** The maximum number of vertices our mesh will hold */
-    public final int MAX_VERTS;
-    
-    /** Number of times the terrain has been generated. */
-    static int generateCount = 0;
-    
-    /** Horizontal and vertical scaling factor for terrain */
-    float WIDTH_SCALE, HEIGHT_SCALE;
-    
-    public final Mesh[] meshes;
-    
-    /** Terrain coloring lookup texture */
-    public final Texture lookup;
-    
-    /** Temporary variables */
-    static Triangle tmp = new Triangle();
-    static VertexInfo[] tmp1 = new VertexInfo[VERTICES_PER_TRIANGLE];
-    
-    public SimplexTerrain(HeightMap hm, float WIDTH_SCALE, float HEIGHT_SCALE, FileHandle lookupFile) {
+    public SimplexTerrain(HeightMap hm, float WIDTH_SCALE, float HEIGHT_SCALE, 
+            boolean useNormal, FileHandle lookupFile) {
         heightMap = hm;
         meshes = new Mesh[hm.getDepth()-1];
         this.WIDTH_SCALE = WIDTH_SCALE;
         this.HEIGHT_SCALE = HEIGHT_SCALE;
-        for(int i=0; i < tmp1.length; i++) {
-            tmp1[i] = new VertexInfo();
-        }
-        MAX_TRIS = hm.getWidth()*hm.getDepth();
-        MAX_VERTS = MAX_TRIS * VERTICES_PER_TRIANGLE;
         shader = new SimplexShader();
         shader.init();
-        lookup = new Texture(lookupFile);
+        hasTexture = lookupFile != null;
+        lookup = hasTexture ? new Texture(lookupFile) : null;
+        hasNormal = useNormal;
         this.generate();
     }
 
@@ -129,32 +109,65 @@ public class SimplexTerrain implements RenderableProvider {
         int w = heightMap.getWidth();
         int h = heightMap.getDepth();
         int texWidth = lookup.getWidth();
-        float[] verts = new float[2*w*NUM_COMPONENTS];
-        VertexAttributes va = new VertexAttributes(VertexAttribute.Position(), 
-                                                   //VertexAttribute.Normal(),
-                                                   VertexAttribute.TexCoords(0));
+        VertexAttributes va = new VertexAttributes(
+                VertexAttribute.Position(),
+                VertexAttribute.TexCoords(0),
+                VertexAttribute.Normal());
+        float[] verts = new float[2*w*va.vertexSize/Float.BYTES];
+        Vector3 vertex, upper, lower, left, right, 
+                north, east, south, west, normal, tmp;
         
         // build a new terrain mesh
         for(int z=0; z < h-1; z++) {
             vertexCount = 0;
             for(int x=0; x < w; x++) {
-                // VERTICES
-                tmp1[0].setPos(x, heightMap.getHeight(x,   z),   z);
-                tmp1[1].setPos(x, heightMap.getHeight(x, z+1), z+1);
+                // SET LOWER VERTEX
+                vertex = new Vector3(x, heightMap.getHeight(x, z), z);
+                verts[vertexCount++] = vertex.x;
+                verts[vertexCount++] = vertex.y * HEIGHT_SCALE;
+                verts[vertexCount++] = vertex.z;
                 
-                // TEXTURE COORDINATES
-                tmp1[0].setUV(heightMap.getHeight(x,   z), 0);
-                tmp1[1].setUV(heightMap.getHeight(x, z+1), 0);
+                // SET TEXTURE COORDINATES OF LOWER VERTEX
+                verts[vertexCount++] = vertex.y * texWidth;
+                verts[vertexCount++] = 0;
                 
-                // For each vertex, set the facenormal and add it to the float 
-                // vertex array
-                for (VertexInfo v : tmp1) {
-                    verts[vertexCount++] = v.position.x;
-                    verts[vertexCount++] = v.position.y * HEIGHT_SCALE;
-                    verts[vertexCount++] = v.position.z;
-                    verts[vertexCount++] = v.uv.x * texWidth;
-                    verts[vertexCount++] = v.uv.y;
-                }
+                // SET NORMALS OF LOWER VERTEX
+                upper = new Vector3(x, heightMap.getHeight(x, z+1), z+1);
+                lower = (z < 1 ? null : new Vector3(x, heightMap.getHeight(x, z-1), z-1));
+                left = (x < 1 ? null : new Vector3(x-1, heightMap.getHeight(x-1, z), z));
+                right = (x < w-1 ? new Vector3(x+1, heightMap.getHeight(x+1, z), z) : null);
+                north = upper.sub(vertex);
+                east = right == null ? Vector3.Zero : right.sub(vertex);
+                south = lower == null ? Vector3.Zero : lower.sub(vertex);
+                west = left == null ? Vector3.Zero : left.sub(vertex);
+                normal = north.add(east).add(south).add(west).nor();
+                verts[vertexCount++] = normal.x;
+                verts[vertexCount++] = normal.y;
+                verts[vertexCount++] = normal.z;
+                
+                // SET UPPER VERTEX
+                verts[vertexCount++] = upper.x;
+                verts[vertexCount++] = upper.y * HEIGHT_SCALE;
+                verts[vertexCount++] = upper.z;
+                
+                // SET TEXTURE COORDINATES OF UPPER VERTEX
+                verts[vertexCount++] = upper.y * texWidth;
+                verts[vertexCount++] = 0;
+                
+                // SET NORMALS OF UPPER VERTEX
+                tmp = upper;
+                upper = (z < h-2 ? new Vector3(x, heightMap.getHeight(x, z+2), z+2): null);
+                lower = vertex;
+                left = (x < 1 ? null : new Vector3(x-1, heightMap.getHeight(x-1, z+1), z+1));
+                right = (x < w-1 ? new Vector3(x+1, heightMap.getHeight(x+1, z+1), z+1) : null);
+                north = upper == null ? Vector3.Zero : upper.sub(tmp);
+                east = right == null ? Vector3.Zero : right.sub(tmp);
+                south = lower.sub(tmp);
+                west = left == null ? Vector3.Zero : left.sub(tmp);
+                normal = north.add(east).add(south).add(west).nor();
+                verts[vertexCount++] = normal.x;
+                verts[vertexCount++] = normal.y;
+                verts[vertexCount++] = normal.z;
             }
             meshes[z] = new Mesh(true, verts.length, 0, va).setVertices(verts);
         }

@@ -19,16 +19,15 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import static terrain.VoxelTest.UNITS_PER_METER;
 
 /**
  * Adapted from https://github.com/libgdx/libgdx/blob/master/tests/gdx-tests/src/com/badlogic/gdx/tests/g3d/voxel/VoxelWorld.java
  * @author S.S.Iyer
  */
 public class VoxelWorld implements RenderableProvider {
-    public static final int CHUNK_SIZE_X = UNITS_PER_METER;
-    public static final int CHUNK_SIZE_Y = UNITS_PER_METER;
-    public static final int CHUNK_SIZE_Z = UNITS_PER_METER;
+    public static final int CHUNK_SIZE_X = 16;
+    public static final int CHUNK_SIZE_Y = 16;
+    public static final int CHUNK_SIZE_Z = 16;
 
     public final VoxelChunk[] chunks;
     public final Mesh[] meshes;
@@ -52,7 +51,7 @@ public class VoxelWorld implements RenderableProvider {
     public boolean drawWireFrame;
     
     /** The {@link Shader} to be used to render this */
-    public boolean useShader = true;
+    public boolean useShader = false;
     public Shader shader;
 
     public VoxelWorld (FileHandle textures, int chunksX, int chunksY, int chunksZ) {
@@ -104,6 +103,7 @@ public class VoxelWorld implements RenderableProvider {
 
         this.vertices = new float[VoxelChunk.VERTEX_SIZE * 6 * CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z];
         this.materials = new Material[chunksX * chunksY * chunksZ];
+        MathUtils.random.setSeed(0);
         for (i = 0; i < materials.length; i++) {
             materials[i] = new Material(new ColorAttribute(ColorAttribute.Diffuse, 
                     MathUtils.random(0.5f, 1f),

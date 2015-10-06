@@ -16,7 +16,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 import java.util.Iterator;
 
-public class Main extends ApplicationAdapter {
+public class Drops2D extends ApplicationAdapter {
     public static final int V_WIDTH = 720;
     public static final int V_HEIGHT = 1280;
     

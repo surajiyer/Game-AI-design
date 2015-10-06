@@ -5,6 +5,7 @@
  */
 package main;
 
+import utils.FPCameraController;
 import terrain.InfiniteGrid;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -70,7 +71,7 @@ public class Basic3DTest extends ApplicationAdapter {
         
         // Setup a camera controller to control the camera movements
         camController = new FPCameraController(camera);
-        camController.setVelocity(9f*UNITS_PER_METER);
+        //camController.setVelocity(9f*UNITS_PER_METER);
         Gdx.input.setInputProcessor(camController);
         
         // load a 3d Model
@@ -92,7 +93,7 @@ public class Basic3DTest extends ApplicationAdapter {
         
         // create a terrain shader program
         HeightMap hm = new HeightMap(Gdx.files.internal("heightmaps/Heightmap192x192.png"));
-        terra = new SimplexTerrain(hm, 1f, 100f, Gdx.files.internal("heightmaps/heightmap_lookup.png"));
+        terra = new SimplexTerrain(hm, 1f, 20f, true, Gdx.files.internal("heightmaps/heightmap_lookup.png"));
         
         // create the surrounding environment
         environment = new Environment();
@@ -136,6 +137,7 @@ public class Basic3DTest extends ApplicationAdapter {
 //            skySphere.transform.setToTranslation(camera.position);
 //            modelBatch.render(skySphere);
 //        }
+        modelBatch.flush();
         modelBatch.render(terra);
         modelBatch.render(instances, environment);
         //grid.updatePos(camera); // Move the grid with the camera for an infinte grid

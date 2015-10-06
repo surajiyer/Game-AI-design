@@ -6,10 +6,12 @@
 package terrain;
 
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
+import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.graphics.g3d.utils.RenderContext;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
@@ -37,7 +39,6 @@ public class VoxelShader implements Shader {
         u_projViewTrans = shaderProgram.getUniformLocation("u_projViewTrans");
         u_worldTrans = shaderProgram.getUniformLocation("u_worldTrans");
         u_texture = shaderProgram.getUniformLocation("u_texture");
-        
     }
 
     @Override
@@ -63,6 +64,8 @@ public class VoxelShader implements Shader {
     @Override
     public void render(Renderable renderable) {
         shaderProgram.setUniformMatrix(u_worldTrans, renderable.worldTransform);
+        Color c = ((ColorAttribute) renderable.material.get(ColorAttribute.Diffuse)).color;
+        shaderProgram.setAttributef("a_color", c.r, c.g, c.b, c.a);
         //shaderProgram.setUniformi(u_texture, context.textureBinder.bind((Texture) renderable.userData));
         renderable.mesh.render(shaderProgram,
             renderable.primitiveType,
