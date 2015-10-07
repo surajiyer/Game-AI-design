@@ -34,7 +34,7 @@ public class BobController extends InputAdapter {
 
     public BobController(Camera camera) {
         this.camera = camera;
-        bob = new Player(camera.position);
+        bob = null;//new Player(camera.position);
     }
     
     public Vector3 getPos() {

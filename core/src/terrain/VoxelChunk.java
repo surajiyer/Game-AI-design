@@ -6,6 +6,7 @@
 package terrain;
 
 import com.badlogic.gdx.math.Vector3;
+import terrain.VoxelWorld.Items;
 
 
 /**
@@ -14,6 +15,7 @@ import com.badlogic.gdx.math.Vector3;
  */
 public class VoxelChunk {
     public static final int VERTEX_SIZE = 6;
+    public final Items TYPE;
     public final byte[] voxels;
     public final int width;
     public final int height;
@@ -39,6 +41,7 @@ public class VoxelChunk {
         this.frontOffset = -width;
         this.backOffset = width;
         this.widthTimesHeight = width * height;
+        this.TYPE = Items.DIRT;
     }
 
     public byte get (int x, int y, int z) {

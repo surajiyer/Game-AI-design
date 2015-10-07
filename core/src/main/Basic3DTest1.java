@@ -5,7 +5,6 @@
  */
 package main;
 
-import utils.FPCameraController;
 import terrain.InfiniteGrid;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;

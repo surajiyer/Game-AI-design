@@ -22,7 +22,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import terrain.HeightMap;
 import terrain.SimplexTerrain;
-import utils.FPCameraController;
 import utils.MultipleAnimationsController;
 
 /**
@@ -36,7 +35,6 @@ public class Basic3DTest extends ApplicationAdapter {
     final float[] FOG_COLOR = new float[] {0.13f, 0.13f, 0.13f, 1f};
     ModelBatch modelBatch;
     PerspectiveCamera camera;
-    FPCameraController camController;
     MultipleAnimationsController blueWalkController;
     MultipleAnimationsController blueIdleController;
     MultipleAnimationsController redWalkController;
@@ -129,10 +127,6 @@ public class Basic3DTest extends ApplicationAdapter {
         camera.up.set(Vector3.Y);
         camera.update();
         
-        // Setup a camera controller to control the camera movements
-        camController = new FPCameraController(camera);
-        Gdx.input.setInputProcessor(camController);
-        
         // load a 3d Model
         assets.load("tower/tower.g3db", Model.class);
         assets.load("flags/flagBlue.g3db", Model.class);
@@ -183,7 +177,6 @@ public class Basic3DTest extends ApplicationAdapter {
         }
         
         // Update the camera controller
-        camController.update();
         if(descendLimit) {
             if(camera.position.y < grid.getHeight()+HUMAN_HEIGHT) {
                 camera.position.set(camera.position.x, 

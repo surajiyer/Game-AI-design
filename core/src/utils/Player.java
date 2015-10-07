@@ -5,6 +5,7 @@
  */
 package utils;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -29,49 +30,48 @@ public class Player {
     }    
     
     public final GameObject model;
-    public Vector3 position;
-    public Vector3 bodyDirection;
-    public Vector3 headDirection;
+    public final Vector3 position, oldPosition = new Vector3();
+    public final Vector3 headDirection, oldHeadDirection = new Vector3();
+    public final Vector3 bodyDirection, oldBodyDirection = new Vector3();
+    public final Vector3 up;
     public int flags;
 
-    public Player(GameObject model, Vector3 position) {
-        this(model, position.x, position.y, position.z);
-    }
-    
-    public Player(GameObject model, float x, float y, float z) {
+    public Player(GameObject model, Camera camera, Vector3 initPosition) {
         this.model = model;
-        position = new Vector3(x, y, z);
-        this.model.transform.setToTranslation(x,y,z);
-        bodyDirection = Vector3.X;
-        headDirection = Vector3.X;
+        position = new Vector3(initPosition);
+        this.model.transform.trn(position);
+        bodyDirection = new Vector3(camera.direction);
+        headDirection = new Vector3(camera.direction);
+        up = new Vector3(Vector3.Y);
     }
     
-    Vector3 oldHeadDirection;
-    Vector3 oldBodyDirection;
+    private final Vector3 tmp = new Vector3();
     
-    public void setHeadDirection(Vector3 tmp) {
-        oldHeadDirection = headDirection;
-        headDirection = tmp.nor();
+    public void setDirection(Vector3 tmp) {
+        oldHeadDirection.set(headDirection);
+        oldBodyDirection.set(bodyDirection);
+        headDirection.set(tmp.nor());
+        bodyDirection.set(tmp.set(headDirection).sub(up));
     }
     
     public void setBodyDirection(Vector3 tmp) {
-        oldBodyDirection = bodyDirection;
-        bodyDirection = tmp.nor();
+        oldBodyDirection.set(bodyDirection);
+        bodyDirection.set(tmp.nor());
     }
     
     public void update() {
         // Position
-        model.transform.trn(position);
+        model.transform.trn(tmp.set(position).sub(oldPosition));
+        oldPosition.set(position);
         
-        // Head rotation
-        model.nodes.get(PlayerParts.HEAD_PART.nodeNr).
-                calculateWorldTransform().rotate(oldHeadDirection, headDirection);
-        
-        // Rest of the body rotation
+        // Body rotation
         for(PlayerParts p : PlayerParts.values()) {
-            if(p == PlayerParts.HEAD_PART) continue;
-            model.nodes.get(p.nodeNr).
-                    calculateWorldTransform().rotate(oldBodyDirection, bodyDirection);
+            if(p == PlayerParts.HEAD_PART) 
+                model.nodes.get(PlayerParts.HEAD_PART.nodeNr).
+                        calculateWorldTransform().rotate(oldHeadDirection, headDirection);
+            else
+                model.nodes.get(p.nodeNr).
+                        calculateWorldTransform().rotate(oldBodyDirection, bodyDirection);
         }
     }
 

@@ -7,13 +7,13 @@ package main;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.ModelLoader;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
@@ -27,11 +27,11 @@ import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
-import utils.FPCameraController;
 import utils.GameObject;
 import terrain.SimplexNoise;
 import terrain.VoxelWorld;
-import utils.MultipleAnimationsController;
+import utils.EnvironmentCubeMap;
+import utils.GameController;
 import utils.Player;
 import utils.PlayerController;
 
@@ -41,7 +41,7 @@ import utils.PlayerController;
  */
 public class VoxelTest extends ApplicationAdapter {
     
-    final static float UNITS_PER_METER = 16;
+    public final static int UNITS_PER_METER = 16;
     final float HUMAN_HEIGHT = 3f*UNITS_PER_METER;
     final float[] FOG_COLOR = new float[] {0.13f, 0.13f, 0.13f, 1f};
     SpriteBatch spriteBatch;
@@ -49,12 +49,9 @@ public class VoxelTest extends ApplicationAdapter {
     ModelBatch modelBatch;
     PerspectiveCamera camera;
     Environment environment;
-    FPCameraController camController;
     VoxelWorld voxelWorld;
-    boolean fullscreen = false;
-    boolean descendLimit = true;
-    boolean enableWireframe = false;
-    int oldWidth, oldHeight;
+    EnvironmentCubeMap skyBox;
+    GameController gameController;
     ModelInstance skySphere;
     AssetManager assets;
     boolean assetLoading;
@@ -62,8 +59,8 @@ public class VoxelTest extends ApplicationAdapter {
     int visibleCount;
     Player player;
     PlayerController playerController;
-    MultipleAnimationsController playerAnimsController;
-
+    private final Vector3 tmp = new Vector3();
+     
     @Override
     public void create () {
         // Misc.
@@ -84,12 +81,12 @@ public class VoxelTest extends ApplicationAdapter {
         // Set up a 3D perspective camera
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 1.5f;
-        camera.far = 360f;
+        camera.far = 360f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
         
-        // Setup a camera controller to control the camera movements
-        camController = new FPCameraController(camera);
+        // Create a skybox
+        skyBox = new EnvironmentCubeMap(new Pixmap(Gdx.files.internal("skybox.png")));
         
         // Load a 3d Model
         assets.load("tower/tower.g3db", Model.class);
@@ -101,6 +98,7 @@ public class VoxelTest extends ApplicationAdapter {
         assets.load("trees/tree3.g3db", Model.class);
         assets.load("trees/tree4.g3db", Model.class);
         assets.load("spacesphere/spacesphere.g3db", Model.class);
+        assets.load("skyDome/skydome.g3db", Model.class);
         assets.load("characters/BlueWalk.g3db", Model.class);
         assetLoading = true;
 
@@ -115,40 +113,27 @@ public class VoxelTest extends ApplicationAdapter {
         
         // Load the player player
         GameObject instance = new GameObject(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj")));
-        instance.transform.scl(1/UNITS_PER_METER);
-        player = new Player(instance, Vector3.Zero);
-        playerController = new PlayerController(player, new Vector3(-4, 5, 0));
-        playerController.setVelocity(16);
-        
-        // Set up an animation controller for the walking action of the player player
-        playerAnimsController = new MultipleAnimationsController();
-        playerAnimsController.animationSpeed = 2;
-        playerAnimsController.addAnimations(new String[] {
-            "Head|HeadAction",
-            "Torso|TorsoAction",
-            "Right Hand|Right HandAction",
-            "Left Hand|Left HandAction",
-            "Right Leg|Right LegAction",
-            "Left Leg|Left LegAction"}, player.model);
+        player = new Player(instance, camera, Vector3.Zero);
+        playerController = new PlayerController(player, camera, 
+                new Vector3(0, 3*UNITS_PER_METER, -5*UNITS_PER_METER));
+        playerController.setVelocity(24*UNITS_PER_METER);
         
         // Set the initial camera position
         camera.position.set(new Vector3().set(player.position).add(playerController.cameraOffset));
         
         // Setup all input sources
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
+        gameController = new GameController(voxelWorld);
+        inputMultiplexer.addProcessor(gameController);
         inputMultiplexer.addProcessor(playerController);
-        inputMultiplexer.addProcessor(camController);
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
-
+    
     @Override
     public void render () {
         // Clear the color buffer and the depth buffer
         Gdx.gl.glClearColor(FOG_COLOR[0], FOG_COLOR[1], FOG_COLOR[2], FOG_COLOR[3]);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
-        
-        // Check for user input
-        checkInput();
         
         // Set viewport
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -158,11 +143,18 @@ public class VoxelTest extends ApplicationAdapter {
             assetsLoading();
         }
         
-        // Render all 3D stuff
+        // Update the camera, the player and the player's animation
+        gameController.update();
+        playerController.update();
+        player.update();
+        
+        // Render all 3D stuff        
         visibleCount = 0;
+        skyBox.render(camera);
         modelBatch.begin(camera);
         DefaultShader.defaultCullFace = GL20.GL_FRONT;
         modelBatch.render(voxelWorld, environment);
+        modelBatch.flush();
         DefaultShader.defaultCullFace = GL20.GL_BACK;
         for(GameObject instance : instances) {
             if(isVisible(camera, instance)) {
@@ -174,14 +166,12 @@ public class VoxelTest extends ApplicationAdapter {
             modelBatch.render(player.model);
             visibleCount++;
         }
+        if(skySphere != null) {
+            modelBatch.render(skySphere);
+            skySphere.transform.setTranslation(camera.position);
+        }
         modelBatch.end();
         
-        // Update the camera, the player and the player's animation
-        camController.update();
-        playerController.update(camera);
-        playerAnimsController.update();
-        player.update();
-
         // Render the 2D text
         spriteBatch.begin();
         font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond() 
@@ -190,11 +180,10 @@ public class VoxelTest extends ApplicationAdapter {
         spriteBatch.end();
     }
     
-    private Vector3 objectPosition = new Vector3();
     public boolean isVisible(final Camera cam, final GameObject instance) {
-        instance.transform.getTranslation(objectPosition);
-        objectPosition.add(instance.center);
-        return cam.frustum.sphereInFrustum(objectPosition, instance.radius);
+        instance.transform.getTranslation(tmp);
+        tmp.add(instance.center);
+        return cam.frustum.sphereInFrustum(tmp, instance.radius);
     }
 
     @Override
@@ -212,80 +201,51 @@ public class VoxelTest extends ApplicationAdapter {
         assets.dispose();
     }
     
-    public void checkInput() {
-        if(Gdx.input.isKeyPressed(Input.Keys.NUM_1)) {
-           voxelWorld.drawWireFrame = !voxelWorld.drawWireFrame;
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.NUM_2)) {
-           descendLimit = !descendLimit;
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.F)) {
-            if(!fullscreen) { // set resolution to default and set fullscreen to true
-                oldWidth = Gdx.graphics.getWidth();
-                oldHeight = Gdx.graphics.getHeight();
-                Gdx.graphics.setDisplayMode(Gdx.graphics.getDesktopDisplayMode().width, 
-                        Gdx.graphics.getDesktopDisplayMode().height, true);
-            } else {
-                Gdx.graphics.setDisplayMode(oldWidth, oldHeight, false);
-            }
-            fullscreen = !fullscreen;
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.NUM_3)) {
-           voxelWorld.useShader = !voxelWorld.useShader;
-        }
-    }
-    
     void assetsLoading() {
         // Load the tower
         GameObject instance = new GameObject(assets.get("tower/tower.g3db", Model.class));
-        instance.transform.scl(1/UNITS_PER_METER);
-        instances.add(instance);
+        //instances.add(instance);
         
         // Load tree 1
         instance = new GameObject(assets.get("trees/tree1.g3db", Model.class));
-        instance.transform.scl(1/UNITS_PER_METER);
-        instance.transform.trn(0, 0, -12);
+        instance.transform.trn(0, 0, -12*UNITS_PER_METER);
         instances.add(instance);
         
         // Load tree 2
         instance = new GameObject(assets.get("trees/tree2.g3db", Model.class));
-        instance.transform.scl(1/UNITS_PER_METER);
-        instance.transform.trn(-12, 0, -6);
+        instance.transform.trn(-12*UNITS_PER_METER, 0, -6*UNITS_PER_METER);
         instances.add(instance);
         
         // Load tree 3
         instance = new GameObject(assets.get("trees/tree3.g3db", Model.class));
-        instance.transform.scl(1/UNITS_PER_METER);
-        instance.transform.trn(-12, 0, 6);
+        instance.transform.trn(-12*UNITS_PER_METER, 0, 6*UNITS_PER_METER);
         instances.add(instance);
         
         // Load tree 4
         instance = new GameObject(assets.get("trees/tree4.g3db", Model.class));
-        instance.transform.scl(1/UNITS_PER_METER);
-        instance.transform.trn(0, 0, 12);
+        instance.transform.trn(0, 0, 12*UNITS_PER_METER);
         instances.add(instance);
         
         // Load the red flag
         instance = new GameObject(assets.get("flags/flagRed.g3db", Model.class));
-        instance.transform.scl(1/UNITS_PER_METER);
-        instance.transform.trn(6, 0, -3f);
+        instance.transform.trn(6*UNITS_PER_METER, 0, -3*UNITS_PER_METER);
         instances.add(instance);
         
         // Load the uncaptured flag
         instance = new GameObject(assets.get("flags/flagNone.g3db", Model.class));
-        instance.transform.scl(1/UNITS_PER_METER);
-        instance.transform.trn(6, 0, 0);
+        instance.transform.trn(6*UNITS_PER_METER, 0, 0);
         instances.add(instance);
         
         // Load the blur flag
         instance = new GameObject(assets.get("flags/flagBlue.g3db", Model.class));
-        instance.transform.scl(1/UNITS_PER_METER);
-        instance.transform.trn(6, 0, 3);
+        instance.transform.trn(6*UNITS_PER_METER, 0, 3*UNITS_PER_METER);
         instances.add(instance);
         
         // Load the sky box
-        skySphere = new ModelInstance(assets.get("spacesphere/spacesphere.g3db", Model.class));
-        skySphere.transform.scl(60, 60, 60);
+//        skySphere = new ModelInstance(assets.get("spacesphere/spacesphere.g3db", Model.class));
+//        skySphere.transform.scl(60*UNITS_PER_METER, 60*UNITS_PER_METER, 60*UNITS_PER_METER);
+        //skySphere = new ModelInstance(assets.get("skyDome/skydome.g3db", Model.class));
+        //skySphere.transform.scl(UNITS_PER_METER, UNITS_PER_METER, UNITS_PER_METER);
         
         // Done loading assets
         assetLoading = false;

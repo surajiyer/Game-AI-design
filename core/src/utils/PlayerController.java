@@ -9,7 +9,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
 
@@ -18,18 +17,42 @@ import com.badlogic.gdx.utils.IntIntMap;
  * @author S.S.Iyer
  */
 public class PlayerController extends InputAdapter {
+    
     private final Player player;
+    MultipleAnimationsController playerAnimsController;
+    private final Camera camera;
     public final Vector3 cameraOffset;
     private final IntIntMap keys = new IntIntMap();
     private int FORWARD = Keys.W;
     private int STRAFE_LEFT = Keys.A;
     private int BACKWARD = Keys.S;
     private int STRAFE_RIGHT = Keys.D;
+    private int UP = Keys.Q;
+    private int DOWN = Keys.Z;
+    private int LOOK_UP = Keys.UP;
+    private int LOOK_DOWN = Keys.DOWN;
+    private int TURN_LEFT = Keys.LEFT;
+    private int TURN_RIGHT = Keys.RIGHT;
     private float velocity = 5;
     private float degreesPerPixel = 0.5f;
+    private float turnSpeed = 120f;
+    private final Vector3 tmp = new Vector3();
 
-    public PlayerController(Player player, Vector3 cameraOffset) {
+    public PlayerController(Player player, Camera camera, Vector3 cameraOffset) {
         this.player = player;
+        
+        // Set up an animation controller for the walking action of the player
+        playerAnimsController = new MultipleAnimationsController();
+        playerAnimsController.addAnimations(new String[] {
+            "Head|HeadAction",
+            "Torso|TorsoAction",
+            "Right Hand|Right HandAction",
+            "Left Hand|Left HandAction",
+            "Right Leg|Right LegAction",
+            "Left Leg|Left LegAction"}, player.model);
+        
+        // Set the camera
+        this.camera = camera;
         this.cameraOffset = cameraOffset;
     }
 
@@ -44,6 +67,19 @@ public class PlayerController extends InputAdapter {
         keys.remove(keycode, 0);
         return true;
     }
+    
+    @Override
+    public boolean mouseMoved (int screenX, int screenY) {
+        if(GameController.cursorCaught) {
+            float deltaX = -Gdx.input.getDeltaX() * degreesPerPixel;
+            float deltaY = -Gdx.input.getDeltaY() * degreesPerPixel;
+            camera.direction.rotate(camera.up, deltaX);
+            tmp.set(camera.direction).crs(camera.up).nor();
+            camera.direction.rotate(tmp, deltaY);
+            return true;
+        }
+        return false;
+    }
 
     /** 
      * Sets the velocity in units per second for moving forward, backward and 
@@ -54,50 +90,74 @@ public class PlayerController extends InputAdapter {
         this.velocity = velocity;
     }
 
-    public void update (Camera camera) {
-        update(camera, Gdx.graphics.getDeltaTime());
+    public void update () {
+        update(Gdx.graphics.getDeltaTime());
     }
     
-    private final Vector3 tmp = new Vector3();
-    private final Quaternion tmp1 = new Quaternion();
-    private final Vector3 position = new Vector3();
-    
-    public void update(Camera camera, float deltaTime) {
+    public void update(float deltaTime) {
         // Rotate player head to face the direction of the camera
-        player.setHeadDirection(camera.direction);
-        if() {
-            
-        }
-        player.setBodyDirection(player.model.transform.getRotation(tmp1, true)
-                .transform(new Vector3()));
+        player.setDirection(tmp.set(camera.direction));
         
-        // Move the player and the camera following him forward/backward
+        // Move forward
         if (keys.containsKey(FORWARD)) {
-            tmp.set(player.direction).nor().scl(deltaTime * velocity);
+            tmp.set(player.headDirection).nor().scl(deltaTime * velocity);
             player.position.add(tmp);
-            position.set(player.position);
-            camera.position.set(position.add(cameraOffset));
-        }
-        if (keys.containsKey(BACKWARD)) {
-            tmp.set(player.direction).nor().scl(-deltaTime * velocity);
-            player.position.add(tmp);
-            position.set(player.position);
-            camera.position.set(position.add(cameraOffset));
+            tmp.set(player.position);
+            camera.position.set(tmp.add(cameraOffset));
+            playerAnimsController.animationSpeed = 2;
+            playerAnimsController.update();
         }
         
-        // Strafe left/right
+        // Move backward
+        if (keys.containsKey(BACKWARD)) {
+            tmp.set(player.headDirection).nor().scl(-deltaTime * velocity);
+            player.position.add(tmp);
+            tmp.set(player.position);
+            camera.position.set(tmp.add(cameraOffset));
+            playerAnimsController.animationSpeed = -2;
+            playerAnimsController.update();
+        }
+        
+        // Strafe left
         if (keys.containsKey(STRAFE_LEFT)) {
-            tmp.set(player.direction).crs(camera.up).nor().scl(-deltaTime * velocity);
+            tmp.set(player.headDirection).crs(camera.up).nor().scl(-deltaTime * velocity);
             player.position.add(tmp);
-            position.set(player.position);
-            camera.position.set(position.add(cameraOffset));
+            player.setBodyDirection(tmp.set(player.headDirection).rotate(player.up, 60));
+            tmp.set(player.position);
+            camera.position.set(tmp.add(cameraOffset));
         }
+        
+        // Strafe right
         if (keys.containsKey(STRAFE_RIGHT)) {
-            tmp.set(player.direction).crs(camera.up).nor().scl(deltaTime * velocity);
+            tmp.set(player.headDirection).crs(camera.up).nor().scl(deltaTime * velocity);
             player.position.add(tmp);
-            position.set(player.position);
-            camera.position.set(position.add(cameraOffset));
+            player.setBodyDirection(tmp.set(player.headDirection).rotate(player.up, -60));
+            tmp.set(player.position);
+            camera.position.set(tmp.add(cameraOffset));
         }
+        
+        // Turn left
+        if (keys.containsKey(TURN_LEFT)) {
+            camera.direction.rotate(camera.up, deltaTime * turnSpeed);
+        }
+        
+        // Turn right
+        if (keys.containsKey(TURN_RIGHT)) {
+            camera.direction.rotate(camera.up, -deltaTime * turnSpeed);
+        }
+        
+        // Look up
+        if (keys.containsKey(LOOK_UP)) {
+            camera.direction.rotate(tmp.set(camera.direction).crs(camera.up).nor(), 
+                    deltaTime * turnSpeed);
+        }
+        
+        // Look down
+        if (keys.containsKey(LOOK_DOWN)) {
+            camera.direction.rotate(tmp.set(camera.direction).crs(camera.up).nor(), 
+                    -deltaTime * turnSpeed);
+        }
+        
         camera.update(true);
     }
 }

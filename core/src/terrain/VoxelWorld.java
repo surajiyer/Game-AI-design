@@ -17,17 +17,36 @@ import com.badlogic.gdx.graphics.g3d.RenderableProvider;
 import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import static main.VoxelTest.UNITS_PER_METER;
+import utils.GameController;
 
 /**
  * Adapted from https://github.com/libgdx/libgdx/blob/master/tests/gdx-tests/src/com/badlogic/gdx/tests/g3d/voxel/VoxelWorld.java
  * @author S.S.Iyer
  */
 public class VoxelWorld implements RenderableProvider {
-    public static final int CHUNK_SIZE_X = 16;
-    public static final int CHUNK_SIZE_Y = 16;
-    public static final int CHUNK_SIZE_Z = 16;
+    
+    /** Voxel chunk type */
+    public enum Items {
+        GRASS(0),
+        SAND(1),
+        STONE(2),
+        DIRT(3), 
+        WATER(4);
+        
+        int type;
+        
+        private Items(int type) {
+            this.type = type;
+        }
+    }
+    
+    public static final int CHUNK_SIZE_X = UNITS_PER_METER;
+    public static final int CHUNK_SIZE_Y = UNITS_PER_METER;
+    public static final int CHUNK_SIZE_Z = UNITS_PER_METER;
 
     public final VoxelChunk[] chunks;
     public final Mesh[] meshes;
@@ -46,9 +65,6 @@ public class VoxelWorld implements RenderableProvider {
     
     /** Textures for each face of a voxel */
     private final TextureRegion[][] tiles;
-    
-    /** The primitive type, OpenGL constant */
-    public boolean drawWireFrame;
     
     /** The {@link Shader} to be used to render this */
     public boolean useShader = false;
@@ -187,6 +203,7 @@ public class VoxelWorld implements RenderableProvider {
             }
         }
     }
+    Vector3 tmp = new Vector3();
 
     @Override
     public void getRenderables (Array<Renderable> renderables, Pool<Renderable> pool) {
@@ -198,15 +215,17 @@ public class VoxelWorld implements RenderableProvider {
                 int numVerts = chunk.calculateVertices(vertices);
                 numVertices[i] = numVerts / 4 * 6;
                 mesh.setVertices(vertices, 0, numVerts * VoxelChunk.VERTEX_SIZE);
+                //mesh.scale(UNITS_PER_METER, UNITS_PER_METER, UNITS_PER_METER);
                 dirty[i] = false;
             }
             if (numVertices[i] == 0) continue;
             Renderable renderable = pool.obtain();
+            renderable.worldTransform.idt();
             renderable.material = materials[i];
             renderable.mesh = mesh;
             renderable.meshPartOffset = 0;
             renderable.meshPartSize = numVertices[i];
-            if(drawWireFrame) {
+            if(GameController.enableWireframe) {
                 renderable.primitiveType = GL20.GL_LINE_STRIP;
             } else {
                 renderable.primitiveType = GL20.GL_TRIANGLES;
