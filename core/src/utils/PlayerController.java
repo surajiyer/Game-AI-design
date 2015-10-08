@@ -22,17 +22,18 @@ public class PlayerController extends InputAdapter {
     MultipleAnimationsController playerAnimsController;
     private final Camera camera;
     public final Vector3 cameraOffset;
+    public boolean isFirstPerson;
     private final IntIntMap keys = new IntIntMap();
-    private int FORWARD = Keys.W;
-    private int STRAFE_LEFT = Keys.A;
-    private int BACKWARD = Keys.S;
-    private int STRAFE_RIGHT = Keys.D;
-    private int UP = Keys.Q;
-    private int DOWN = Keys.Z;
-    private int LOOK_UP = Keys.UP;
-    private int LOOK_DOWN = Keys.DOWN;
-    private int TURN_LEFT = Keys.LEFT;
-    private int TURN_RIGHT = Keys.RIGHT;
+    private final int FORWARD = Keys.W;
+    private final int STRAFE_LEFT = Keys.A;
+    private final int BACKWARD = Keys.S;
+    private final int STRAFE_RIGHT = Keys.D;
+    private final int UP = Keys.Q;
+    private final int DOWN = Keys.Z;
+    private final int LOOK_UP = Keys.UP;
+    private final int LOOK_DOWN = Keys.DOWN;
+    private final int TURN_LEFT = Keys.LEFT;
+    private final int TURN_RIGHT = Keys.RIGHT;
     private float velocity = 5;
     private float degreesPerPixel = 0.5f;
     private float turnSpeed = 120f;
@@ -54,6 +55,7 @@ public class PlayerController extends InputAdapter {
         // Set the camera
         this.camera = camera;
         this.cameraOffset = cameraOffset;
+        this.isFirstPerson = false;
     }
 
     @Override
@@ -73,9 +75,18 @@ public class PlayerController extends InputAdapter {
         if(GameController.cursorCaught) {
             float deltaX = -Gdx.input.getDeltaX() * degreesPerPixel;
             float deltaY = -Gdx.input.getDeltaY() * degreesPerPixel;
-            camera.direction.rotate(camera.up, deltaX);
-            tmp.set(camera.direction).crs(camera.up).nor();
-            camera.direction.rotate(tmp, deltaY);
+            if(isFirstPerson) {
+                camera.direction.rotate(camera.up, deltaX);
+                tmp.set(camera.direction).crs(camera.up).nor();
+                camera.direction.rotate(tmp, deltaY);
+            } else {
+                camera.rotateAround(player.position, player.up, deltaX);
+                camera.rotateAround(player.position, 
+                        tmp.set(camera.direction).crs(player.up).nor(), deltaY);
+                cameraOffset.set(tmp.set(camera.position).sub(player.position));
+                camera.lookAt(player.position);
+                camera.up.set(Vector3.Y);
+            }
             return true;
         }
         return false;
@@ -84,7 +95,7 @@ public class PlayerController extends InputAdapter {
     /** 
      * Sets the velocity in units per second for moving forward, backward and 
      * strafing left/right.
-     * @param velocity the velocity in units per second 
+     * @param velocity the velocity in units per second
      */
     public void setVelocity (float velocity) {
         this.velocity = velocity;
@@ -102,9 +113,8 @@ public class PlayerController extends InputAdapter {
         if (keys.containsKey(FORWARD)) {
             tmp.set(player.headDirection).nor().scl(deltaTime * velocity);
             player.position.add(tmp);
-            tmp.set(player.position);
-            camera.position.set(tmp.add(cameraOffset));
-            playerAnimsController.animationSpeed = 2;
+            camera.position.set(tmp.set(player.position).add(cameraOffset));
+            playerAnimsController.animationSpeed = 4;
             playerAnimsController.update();
         }
         
@@ -112,9 +122,8 @@ public class PlayerController extends InputAdapter {
         if (keys.containsKey(BACKWARD)) {
             tmp.set(player.headDirection).nor().scl(-deltaTime * velocity);
             player.position.add(tmp);
-            tmp.set(player.position);
-            camera.position.set(tmp.add(cameraOffset));
-            playerAnimsController.animationSpeed = -2;
+            camera.position.set(tmp.set(player.position).add(cameraOffset));
+            playerAnimsController.animationSpeed = -4;
             playerAnimsController.update();
         }
         

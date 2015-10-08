@@ -6,6 +6,7 @@
 package utils;
 
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.math.Vector3;
 
 /**
@@ -15,12 +16,18 @@ import com.badlogic.gdx.math.Vector3;
 public class Player {
     
     public enum PlayerParts {
-        RIGHT_HAND_PART(0), 
-        LEFT_HAND_PART(1), 
-        RIGHT_LEG_PART(2),
-        LEFT_LEG_PART(3),
-        TORSO_PART(4),
-        HEAD_PART(5);
+        RIGHT_HAND_PART1(0),
+        RIGHT_HAND_PART2(1),
+        LEFT_HAND_PART1(2),
+        LEFT_HAND_PART2(3),
+        RIGHT_LEG_PART1(4),
+        RIGHT_LEG_PART2(5),
+        LEFT_LEG_PART1(6),
+        LEFT_LEG_PART2(7),
+        TORSO_PART1(8),
+        TORSO_PART2(9),
+        HEAD_PART1(10),
+        HEAD_PART2(11);
         
         int nodeNr;
         
@@ -65,13 +72,14 @@ public class Player {
         oldPosition.set(position);
         
         // Body rotation
+        Node n;
         for(PlayerParts p : PlayerParts.values()) {
-            if(p == PlayerParts.HEAD_PART) 
-                model.nodes.get(PlayerParts.HEAD_PART.nodeNr).
-                        calculateWorldTransform().rotate(oldHeadDirection, headDirection);
+            n = model.nodes.get(p.nodeNr);
+            if(p == PlayerParts.HEAD_PART1) 
+                n.localTransform.rotate(up, 30);
             else
-                model.nodes.get(p.nodeNr).
-                        calculateWorldTransform().rotate(oldBodyDirection, bodyDirection);
+                n.globalTransform.rotate(oldBodyDirection, bodyDirection);
+            n.calculateTransforms(false);
         }
     }
 

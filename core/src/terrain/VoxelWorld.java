@@ -103,24 +103,19 @@ public class VoxelWorld implements RenderableProvider {
             indices[i + 4] = (short)(j + 3);
             indices[i + 5] = (short)(j + 0);
         }
+        
+        MathUtils.random.setSeed(0);
+        this.vertices = new float[VoxelChunk.VERTEX_SIZE * 6 * CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z];
         this.meshes = new Mesh[chunksX * chunksY * chunksZ];
+        this.dirty = new boolean[chunksX * chunksY * chunksZ];
+        this.numVertices = new int[chunksX * chunksY * chunksZ];
+        this.materials = new Material[chunksX * chunksY * chunksZ];
         for (i = 0; i < meshes.length; i++) {
             meshes[i] = new Mesh(true, CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z * 6 * 4,
                     len, VertexAttribute.Position(), VertexAttribute.Normal());
             meshes[i].setIndices(indices);
-        }
-        this.dirty = new boolean[chunksX * chunksY * chunksZ];
-        for (i = 0; i < dirty.length; i++)
             dirty[i] = true;
-
-        this.numVertices = new int[chunksX * chunksY * chunksZ];
-        for (i = 0; i < numVertices.length; i++)
             numVertices[i] = 0;
-
-        this.vertices = new float[VoxelChunk.VERTEX_SIZE * 6 * CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z];
-        this.materials = new Material[chunksX * chunksY * chunksZ];
-        MathUtils.random.setSeed(0);
-        for (i = 0; i < materials.length; i++) {
             materials[i] = new Material(new ColorAttribute(ColorAttribute.Diffuse, 
                     MathUtils.random(0.5f, 1f),
                     MathUtils.random(0.5f, 1f),

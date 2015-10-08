@@ -204,7 +204,7 @@ public class VoxelTest extends ApplicationAdapter {
     void assetsLoading() {
         // Load the tower
         GameObject instance = new GameObject(assets.get("tower/tower.g3db", Model.class));
-        //instances.add(instance);
+        instances.add(instance);
         
         // Load tree 1
         instance = new GameObject(assets.get("trees/tree1.g3db", Model.class));
