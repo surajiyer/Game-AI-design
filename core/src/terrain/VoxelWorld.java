@@ -112,7 +112,7 @@ public class VoxelWorld implements RenderableProvider {
         this.materials = new Material[chunksX * chunksY * chunksZ];
         for (i = 0; i < meshes.length; i++) {
             meshes[i] = new Mesh(true, CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z * 6 * 4,
-                    len, VertexAttribute.Position(), VertexAttribute.Normal());
+                    len, VertexAttribute.Position(), VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
             meshes[i].setIndices(indices);
             dirty[i] = true;
             numVertices[i] = 0;
@@ -176,7 +176,7 @@ public class VoxelWorld implements RenderableProvider {
         }
     }
 
-    public void setCube (float x, float y, float z, float width, float height, float depth, byte voxel) {
+    public void setVoxelChunk (float x, float y, float z, float width, float height, float depth, byte voxel) {
         int ix = (int)x;
         int iy = (int)y;
         int iz = (int)z;

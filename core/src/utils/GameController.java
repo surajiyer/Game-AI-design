@@ -22,11 +22,13 @@ public class GameController extends InputAdapter {
     public static boolean descendLimit = true;
     public static boolean enableWireframe = false;
     public static boolean cursorCaught = true;
+    public static boolean isFirstPerson = false;
     int oldWidth, oldHeight;
     private final IntIntMap keys = new IntIntMap();
     private final int TOGGLE_WIREFRAME = Keys.NUM_1;
     private final int TOGGLE_DESCEND_LIMIT = Keys.NUM_2;
     private final int TOGGLE_VOXEL_SHADERS = Keys.NUM_3;
+    private final int TOGGLE_FIRST_PERSON = Keys.NUM_4;
     private final int TOGGLE_FULLSCREEN = Keys.F;
     private final int RELEASE_CURSOR = Keys.ESCAPE;
 
@@ -62,6 +64,11 @@ public class GameController extends InputAdapter {
         if(keys.containsKey(RELEASE_CURSOR) && !fullScreen) {
             cursorCaught = false;
             Gdx.input.setCursorCatched(cursorCaught);
+        }
+        
+        // Toggle catching the cursor
+        if(keys.containsKey(TOGGLE_FIRST_PERSON)) {
+            isFirstPerson = !isFirstPerson;
         }
         
         // Toggle wireframe output for VoxelWorld

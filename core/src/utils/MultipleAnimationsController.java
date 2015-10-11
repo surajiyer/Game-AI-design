@@ -33,7 +33,7 @@ public class MultipleAnimationsController {
     
     public void addAnimation(String animation, ModelInstance target) {
         AnimationController controller = new AnimationController(target);
-        controller.setAnimation(animation, loopCount, animationSpeed, null);
+        controller.setAnimation(animation, loopCount, null);
         controllerPool.put(animation, controller);
     }
     
@@ -41,10 +41,11 @@ public class MultipleAnimationsController {
         controllerPool.remove(animation);
     }
     
-    public void update() {
+    public void update(float animsSpeed) {
+        animationSpeed = animsSpeed;
         float deltaTime = Gdx.graphics.getDeltaTime();
         for(String animation : controllerPool.keySet()) {
-            controllerPool.get(animation).update(deltaTime);
+            controllerPool.get(animation).update(animationSpeed*deltaTime);
         }
     }
 }

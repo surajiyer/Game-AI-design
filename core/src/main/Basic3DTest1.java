@@ -27,9 +27,9 @@ import java.util.concurrent.TimeUnit;
 import terrain.HeightMap;
 import terrain.SimplexTerrain;
 import utils.Drawables;
-import utils.Flag;
-import utils.FlagList;
-import utils.Score;
+import mechanics.Flag;
+import mechanics.FlagList;
+import mechanics.Score;
 
 /**
  *

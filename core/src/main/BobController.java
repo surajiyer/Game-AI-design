@@ -11,7 +11,7 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
-import utils.Player;
+import mechanics.Player;
 
 /**
  * Used to control the camera.

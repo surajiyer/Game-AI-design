@@ -150,10 +150,10 @@ public class Basic3DTest2 extends ApplicationAdapter {
         }
         
         // Render everything
-        blueWalkController.update();
-        redWalkController.update();
-        blueIdleController.update();
-        redIdleController.update();
+//        blueWalkController.update();
+//        redWalkController.update();
+//        blueIdleController.update();
+//        redIdleController.update();
        
         modelBatch.begin(camera);
         //modelBatch.render(terra);

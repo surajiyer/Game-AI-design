@@ -10,16 +10,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.ModelLoader;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
@@ -27,13 +26,16 @@ import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
-import utils.GameObject;
+import terrain.Chunk;
+import utils.Cube;
 import terrain.SimplexNoise;
 import terrain.VoxelWorld;
+import terrain.Chunk.CubeType;
+import utils.ConcreteGameObject;
 import utils.EnvironmentCubeMap;
 import utils.GameController;
-import utils.Player;
-import utils.PlayerController;
+import mechanics.Player;
+import mechanics.PlayerController;
 
 /**
  *
@@ -52,14 +54,15 @@ public class VoxelTest extends ApplicationAdapter {
     VoxelWorld voxelWorld;
     EnvironmentCubeMap skyBox;
     GameController gameController;
-    ModelInstance skySphere;
     AssetManager assets;
     boolean assetLoading;
-    Array<GameObject> instances;
+    Array<ConcreteGameObject> instances;
     int visibleCount;
     Player player;
     PlayerController playerController;
-    private final Vector3 tmp = new Vector3();
+    Cube cube;
+    Texture texture;
+    Chunk chunk;
      
     @Override
     public void create () {
@@ -103,6 +106,7 @@ public class VoxelTest extends ApplicationAdapter {
         assetLoading = true;
 
         // create a voxel terrain
+        texture = new Texture(Gdx.files.internal("tiles.png"));
         voxelWorld = new VoxelWorld(Gdx.files.internal("tiles.png"), 20, 4, 20);
         SimplexNoise.generateHeightMap(voxelWorld, 0, 64, 10, 0.5f, 0.007f, 0.002f);
 //        PerlinNoiseGenerator.generateVoxels(voxelWorld, 0, 64, 10);
@@ -112,14 +116,15 @@ public class VoxelTest extends ApplicationAdapter {
 //        camera.position.set(camX, camY, camZ);
         
         // Load the player player
-        GameObject instance = new GameObject(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj")));
-        player = new Player(instance, camera, Vector3.Zero);
+        player = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
+                , Vector3.Zero, camera.direction);
         playerController = new PlayerController(player, camera, 
                 new Vector3(0, 3*UNITS_PER_METER, -5*UNITS_PER_METER));
         playerController.setVelocity(24*UNITS_PER_METER);
         
         // Set the initial camera position
-        camera.position.set(new Vector3().set(player.position).add(playerController.cameraOffset));
+        camera.position.set(new Vector3().set(player.getPosition())
+                .add(playerController.cameraOffset));
         
         // Setup all input sources
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
@@ -127,6 +132,11 @@ public class VoxelTest extends ApplicationAdapter {
         inputMultiplexer.addProcessor(gameController);
         inputMultiplexer.addProcessor(playerController);
         Gdx.input.setInputProcessor(inputMultiplexer);
+        
+        // Create a cube
+        cube = new Cube(CubeType.GRASS);
+        cube.setScale(UNITS_PER_METER);
+        chunk = new Chunk();
     }
     
     @Override
@@ -146,44 +156,53 @@ public class VoxelTest extends ApplicationAdapter {
         // Update the camera, the player and the player's animation
         gameController.update();
         playerController.update();
-        player.update();
         
         // Render all 3D stuff        
         visibleCount = 0;
+        // Render the skybox
         skyBox.render(camera);
         modelBatch.begin(camera);
         DefaultShader.defaultCullFace = GL20.GL_FRONT;
+        // Render the voxel terrain
         modelBatch.render(voxelWorld, environment);
         modelBatch.flush();
         DefaultShader.defaultCullFace = GL20.GL_BACK;
-        for(GameObject instance : instances) {
-            if(isVisible(camera, instance)) {
-                modelBatch.render(instance);
+        // Render cube
+        if(cube.isVisible(camera)) {
+            texture.bind();
+            modelBatch.render(cube);
+            visibleCount++;
+        }
+//        if(chunk.isVisible(camera)) {
+//            modelBatch.render(chunk);
+//            visibleCount++;
+//        }
+        // Render all loaded models
+        for(ConcreteGameObject gameObject : instances) {
+            if(gameObject.isVisible(camera)) {
+                modelBatch.render(gameObject);
                 visibleCount++;
             }
         }
-        if(isVisible(camera, player.model)) {
-            modelBatch.render(player.model);
+        // Render the player character
+        if(player.isVisible(camera)) {
+            modelBatch.render(player);
             visibleCount++;
-        }
-        if(skySphere != null) {
-            modelBatch.render(skySphere);
-            skySphere.transform.setTranslation(camera.position);
         }
         modelBatch.end();
         
         // Render the 2D text
         spriteBatch.begin();
-        font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond() 
-                + ", #visible chunks: " + voxelWorld.renderedChunks
-                + "/" + voxelWorld.numChunks + ", #visible objects: "+visibleCount, 10, 20);
+        font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 10, 
+                camera.viewportHeight - 10);
+        font.draw(spriteBatch, "#visible chunks: " + voxelWorld.renderedChunks 
+                + "/" + voxelWorld.numChunks, 10, camera.viewportHeight - 25);
+        font.draw(spriteBatch, "#visible objects: "+visibleCount, 10, camera.viewportHeight - 40);
+        font.draw(spriteBatch, "First person mode (Num 4): "+GameController.isFirstPerson, 10, 
+                camera.viewportHeight - 55);
+        font.draw(spriteBatch, "Velocity (scroll): "+playerController.getVelocity()/UNITS_PER_METER, 10, 
+                camera.viewportHeight - 70);
         spriteBatch.end();
-    }
-    
-    public boolean isVisible(final Camera cam, final GameObject instance) {
-        instance.transform.getTranslation(tmp);
-        tmp.add(instance.center);
-        return cam.frustum.sphereInFrustum(tmp, instance.radius);
     }
 
     @Override
@@ -201,51 +220,47 @@ public class VoxelTest extends ApplicationAdapter {
         assets.dispose();
     }
     
+    Vector3 tmp = new Vector3();
+    
     void assetsLoading() {
         // Load the tower
-        GameObject instance = new GameObject(assets.get("tower/tower.g3db", Model.class));
-        instances.add(instance);
+        ConcreteGameObject gameObject = new ConcreteGameObject(assets.get("tower/tower.g3db", Model.class));
+        instances.add(gameObject);
         
         // Load tree 1
-        instance = new GameObject(assets.get("trees/tree1.g3db", Model.class));
-        instance.transform.trn(0, 0, -12*UNITS_PER_METER);
-        instances.add(instance);
+        gameObject = new ConcreteGameObject(assets.get("trees/tree1.g3db", Model.class));
+        gameObject.setPosition(tmp.set(0, 0, -12*UNITS_PER_METER));
+        instances.add(gameObject);
         
         // Load tree 2
-        instance = new GameObject(assets.get("trees/tree2.g3db", Model.class));
-        instance.transform.trn(-12*UNITS_PER_METER, 0, -6*UNITS_PER_METER);
-        instances.add(instance);
+        gameObject = new ConcreteGameObject(assets.get("trees/tree2.g3db", Model.class));
+        gameObject.setPosition(tmp.set(-12*UNITS_PER_METER, 0, -6*UNITS_PER_METER));
+        instances.add(gameObject);
         
         // Load tree 3
-        instance = new GameObject(assets.get("trees/tree3.g3db", Model.class));
-        instance.transform.trn(-12*UNITS_PER_METER, 0, 6*UNITS_PER_METER);
-        instances.add(instance);
+        gameObject = new ConcreteGameObject(assets.get("trees/tree3.g3db", Model.class));
+        gameObject.setPosition(tmp.set(-12*UNITS_PER_METER, 0, 6*UNITS_PER_METER));
+        instances.add(gameObject);
         
         // Load tree 4
-        instance = new GameObject(assets.get("trees/tree4.g3db", Model.class));
-        instance.transform.trn(0, 0, 12*UNITS_PER_METER);
-        instances.add(instance);
+        gameObject = new ConcreteGameObject(assets.get("trees/tree4.g3db", Model.class));
+        gameObject.setPosition(tmp.set(0, 0, 12*UNITS_PER_METER));
+        instances.add(gameObject);
         
         // Load the red flag
-        instance = new GameObject(assets.get("flags/flagRed.g3db", Model.class));
-        instance.transform.trn(6*UNITS_PER_METER, 0, -3*UNITS_PER_METER);
-        instances.add(instance);
+        gameObject = new ConcreteGameObject(assets.get("flags/flagRed.g3db", Model.class));
+        gameObject.setPosition(tmp.set(6*UNITS_PER_METER, 0, -3*UNITS_PER_METER));
+        instances.add(gameObject);
         
         // Load the uncaptured flag
-        instance = new GameObject(assets.get("flags/flagNone.g3db", Model.class));
-        instance.transform.trn(6*UNITS_PER_METER, 0, 0);
-        instances.add(instance);
+        gameObject = new ConcreteGameObject(assets.get("flags/flagNone.g3db", Model.class));
+        gameObject.setPosition(tmp.set(6*UNITS_PER_METER, 0, 0));
+        instances.add(gameObject);
         
         // Load the blur flag
-        instance = new GameObject(assets.get("flags/flagBlue.g3db", Model.class));
-        instance.transform.trn(6*UNITS_PER_METER, 0, 3*UNITS_PER_METER);
-        instances.add(instance);
-        
-        // Load the sky box
-//        skySphere = new ModelInstance(assets.get("spacesphere/spacesphere.g3db", Model.class));
-//        skySphere.transform.scl(60*UNITS_PER_METER, 60*UNITS_PER_METER, 60*UNITS_PER_METER);
-        //skySphere = new ModelInstance(assets.get("skyDome/skydome.g3db", Model.class));
-        //skySphere.transform.scl(UNITS_PER_METER, UNITS_PER_METER, UNITS_PER_METER);
+        gameObject = new ConcreteGameObject(assets.get("flags/flagBlue.g3db", Model.class));
+        gameObject.setPosition(tmp.set(6*UNITS_PER_METER, 0, 3*UNITS_PER_METER));
+        instances.add(gameObject);
         
         // Done loading assets
         assetLoading = false;

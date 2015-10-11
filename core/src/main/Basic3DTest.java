@@ -186,21 +186,21 @@ public class Basic3DTest extends ApplicationAdapter {
         }
         
         // Render everything
-        blueWalkController.update();
-        redWalkController.update();
-        blueIdleController.update();
-        redIdleController.update();
-        
-        //dance
-        redIdleController1.update();
-        redIdleController2.update();
-        redIdleController3.update();
-        redIdleController4.update();
-        redIdleController5.update();
-        redIdleController6.update();
-        redIdleController7.update();
-        redIdleController8.update();
-        redIdleController9.update();
+//        blueWalkController.update();
+//        redWalkController.update();
+//        blueIdleController.update();
+//        redIdleController.update();
+//        
+//        //dance
+//        redIdleController1.update();
+//        redIdleController2.update();
+//        redIdleController3.update();
+//        redIdleController4.update();
+//        redIdleController5.update();
+//        redIdleController6.update();
+//        redIdleController7.update();
+//        redIdleController8.update();
+//        redIdleController9.update();
         //end dance
         modelBatch.begin(camera);
 //        if (skySphere != null) {

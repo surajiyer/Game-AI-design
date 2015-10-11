@@ -113,7 +113,8 @@ public class SimplexTerrain implements RenderableProvider {
                 VertexAttribute.Position(),
                 VertexAttribute.TexCoords(0),
                 VertexAttribute.Normal());
-        float[] verts = new float[2*w*va.vertexSize/Float.BYTES];
+        int stride = va.vertexSize/Float.BYTES;
+        float[] verts = new float[2*w*stride];
         Vector3 vertex, upper, lower, left, right, 
                 north, east, south, west, normal, tmp;
         
@@ -169,7 +170,7 @@ public class SimplexTerrain implements RenderableProvider {
                 verts[vertexCount++] = normal.y;
                 verts[vertexCount++] = normal.z;
             }
-            meshes[z] = new Mesh(true, verts.length, 0, va).setVertices(verts);
+            meshes[z] = new Mesh(true, verts.length / stride , 0, va).setVertices(verts);
         }
     }
     
@@ -188,6 +189,7 @@ public class SimplexTerrain implements RenderableProvider {
                     MathUtils.random(0.5f, 1f), 1));
         for (Mesh mesh : meshes) {
             Renderable renderable = pool.obtain();
+            renderable.worldTransform.idt();
             renderable.mesh = mesh;
             renderable.meshPartOffset = 0;
             renderable.meshPartSize = mesh.getNumVertices();

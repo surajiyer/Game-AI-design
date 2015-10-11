@@ -14,7 +14,7 @@ import terrain.VoxelWorld.Items;
  * @author S.S.Iyer
  */
 public class VoxelChunk {
-    public static final int VERTEX_SIZE = 6;
+    public static final int VERTEX_SIZE = 8;
     public final Items TYPE;
     public final byte[] voxels;
     public final int width;
@@ -112,6 +112,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x + 1;
         vertices[vertexOffset++] = offset.y + y + 1;
@@ -119,6 +121,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x + 1;
         vertices[vertexOffset++] = offset.y + y + 1;
@@ -126,6 +130,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 1;
 
         vertices[vertexOffset++] = offset.x + x;
         vertices[vertexOffset++] = offset.y + y + 1;
@@ -133,6 +139,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
         return vertexOffset;
     }
 
@@ -144,6 +152,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x;
         vertices[vertexOffset++] = offset.y + y;
@@ -151,6 +161,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x + 1;
         vertices[vertexOffset++] = offset.y + y;
@@ -158,6 +170,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 1;
 
         vertices[vertexOffset++] = offset.x + x + 1;
         vertices[vertexOffset++] = offset.y + y;
@@ -165,6 +179,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
         return vertexOffset;
     }
 
@@ -176,6 +192,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x;
         vertices[vertexOffset++] = offset.y + y + 1;
@@ -183,6 +201,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x;
         vertices[vertexOffset++] = offset.y + y + 1;
@@ -190,6 +210,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 1;
 
         vertices[vertexOffset++] = offset.x + x;
         vertices[vertexOffset++] = offset.y + y;
@@ -197,6 +219,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
         return vertexOffset;
     }
 
@@ -208,6 +232,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x + 1;
         vertices[vertexOffset++] = offset.y + y;
@@ -215,6 +241,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x + 1;
         vertices[vertexOffset++] = offset.y + y + 1;
@@ -222,6 +250,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 1;
 
         vertices[vertexOffset++] = offset.x + x + 1;
         vertices[vertexOffset++] = offset.y + y + 1;
@@ -229,6 +259,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
         return vertexOffset;
     }
 
@@ -240,6 +272,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x + 1;
         vertices[vertexOffset++] = offset.y + y;
@@ -247,6 +281,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x + 1;
         vertices[vertexOffset++] = offset.y + y + 1;
@@ -254,11 +290,15 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 1;
 
         vertices[vertexOffset++] = offset.x + x;
         vertices[vertexOffset++] = offset.y + y + 1;
         vertices[vertexOffset++] = offset.z + z;
         vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         return vertexOffset;
@@ -272,6 +312,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x;
         vertices[vertexOffset++] = offset.y + y + 1;
@@ -279,6 +321,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 0;
 
         vertices[vertexOffset++] = offset.x + x + 1;
         vertices[vertexOffset++] = offset.y + y + 1;
@@ -286,6 +330,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
+        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = 1;
 
         vertices[vertexOffset++] = offset.x + x + 1;
         vertices[vertexOffset++] = offset.y + y;
@@ -293,6 +339,8 @@ public class VoxelChunk {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
+        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = 1;
         return vertexOffset;
     }
 }

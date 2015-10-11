@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package utils;
+package mechanics;
 
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import utils.Drawables;
 
 /**
  *
@@ -61,7 +62,7 @@ public class Flag {
     }
     
     public void setCaptureBox(ModelInstance instance) {
-        captureBox = Drawables.drawBoundingBox(instance, true, true);
+        captureBox = Drawables.drawBoundingBox(instance, true);
     }
     
     public ModelInstance getCaptureBox() {
