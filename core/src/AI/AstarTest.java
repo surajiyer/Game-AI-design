@@ -5,6 +5,12 @@
  */
 package AI;
 
+/**
+ * Based on the work of Nathan Sweet at https://gist.github.com/NathanSweet/7587981
+ * @author Mike de Brouwer
+ * 
+ */
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -21,7 +27,7 @@ public class AstarTest extends ApplicationAdapter {
 	Astar astar;
         PathCostArray pathcostarray;
 	boolean[] map;
-        int nrOfFlags = 4;
+        int nrOfFlags = 5;
         int nrOfFlagCoordinates = nrOfFlags * 2;   // amount of x and y coordinates of flags
         int[] flagLocations = new int[nrOfFlagCoordinates]; // place for the x and y coordinates of flags
         int widthField = 80;
@@ -32,6 +38,7 @@ public class AstarTest extends ApplicationAdapter {
         private final int[] heightMap = new int[widthField * heightField];
         float[][] tileCost = new float[heightField * widthField][nrDirections];
         double[][] pathCostArray = new double[nrOfFlags][nrOfFlags];
+        int[] closestFlagArray = new int[nrOfFlags];
         float pathCost; 
         
 
@@ -63,7 +70,7 @@ public class AstarTest extends ApplicationAdapter {
         // generate heightmap
         for(int i = 0; i < widthField; i++) {
             for(int j = 0; j < heightField; j++) {
-                    heightMap[i + j * widthField] = (int)(f[i][j] / 10); 
+                    heightMap[i + j * widthField] = (int)(f[i][j]); 
                     //System.out.println(heightMap[i + j * widthField]);
             }
         }
@@ -72,12 +79,13 @@ public class AstarTest extends ApplicationAdapter {
         // Pathcost from all flags to all flags.
         pathcostarray = new PathCostArray(widthField, heightField, flagLocations, nrOfFlags, nrOfFlagCoordinates, tileCost);
         pathCostArray = pathcostarray.generatePathCostArray();
-        
+        closestFlagArray = pathcostarray.generateClosestFlagArray(1);
+        /*
         for(int m = 0; m < nrOfFlags; m++) {
                 for(int k = 0; k < nrOfFlags; k++){
                     System.out.println("Pathcost of " + m + " to " + k + " is: " + pathCostArray[m][k]);     
                 }
-        }
+        }*/
 
 		astar = new Astar(widthField, heightField) {
                         @Override

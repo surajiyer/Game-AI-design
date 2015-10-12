@@ -3,6 +3,10 @@ package AI;
 import com.badlogic.gdx.utils.BinaryHeap;
 import com.badlogic.gdx.utils.IntArray;
 
+/**
+ * Based on the work of Nathan Sweet at https://gist.github.com/NathanSweet/7587981
+ * @author Mike de Brouwer 
+ */
    public class Astar {
         private final int width, height;
         private final BinaryHeap<PathNode> open;

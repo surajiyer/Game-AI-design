@@ -1,14 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package AI;
 
 import com.badlogic.gdx.utils.IntArray;
+import java.util.Arrays;
 /**
  *
- * @author Administrator
+ * @author Mike de Brouwer
+ * Gives the path costs from a flag to every other flag
+ * in a float[][] array. [1][2] is the distance from flag 1 to flag 2
  */
 public class PathCostArray {
     Astar astar;
@@ -56,8 +55,7 @@ public class PathCostArray {
                         } if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == 0)) {
                             pathCost = pathCost + (tileCost[index][7] * 10);
                         }
-                }
-                //pathCostArray[((i * nrOfFlags)/2) + (j/2)] = pathCost; 
+                } 
                 pathCostArray[i / 2][j / 2] = pathCost;
             }
         }  
@@ -68,5 +66,32 @@ public class PathCostArray {
             }
         }*/
         return pathCostArray;
+    } 
+    public int[] generateClosestFlagArray(int currentFlag) {
+        final double[][] interMediaryArray = new double[nrOfFlags][2];   // Tracks pathcosts and nr of the flag
+        final int[] closestFlagArray = new int[nrOfFlags - 1];
+        double[][] pathCostArray = generatePathCostArray(); 
+        for (int i = 0; i < nrOfFlags; i++) {
+            interMediaryArray[i][1] = i + 1;
+            interMediaryArray[i][0] = pathCostArray[currentFlag - 1][i];  
+        }
+        for (final double[] arr : interMediaryArray) {
+            System.out.println(Arrays.toString(arr));
+        }
+        java.util.Arrays.sort(interMediaryArray, new java.util.Comparator<double[]>() {
+            @Override
+            public int compare(double[] a, double[] b) {
+                return Double.compare(a[0], b[0]);
+            }
+        });
+        for (final double[] arr : interMediaryArray) {
+            System.out.println(Arrays.toString(arr));
+        }
+        for (int i = 0; i < nrOfFlags - 1; i++) {
+            closestFlagArray[i] = (int)interMediaryArray[i + 1][1]; 
+            System.out.println(closestFlagArray[i]);
+        }
+        
+    return closestFlagArray; 
     }
 }
