@@ -214,6 +214,7 @@ public class VoxelChunk extends GameObject {
         } else {
             renderable.primitiveType = GL20.GL_TRIANGLES;
         }
+        renderables.add(renderable);
     }
 
     /** 

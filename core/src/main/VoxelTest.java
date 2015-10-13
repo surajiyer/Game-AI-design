@@ -36,6 +36,15 @@ import utils.EnvironmentCubeMap;
 import utils.GameController;
 import mechanics.Player;
 import mechanics.PlayerController;
+import mechanics.Flag;
+import mechanics.FlagList;
+import mechanics.Score;
+import java.util.concurrent.TimeUnit;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import utils.GameInfo;
+
 
 /**
  *
@@ -59,6 +68,28 @@ public class VoxelTest extends ApplicationAdapter {
     Cube cube;
     Chunk chunk;
      
+    public static final int miniWidth = 800;
+    public static final int miniHeight = 480;
+    public static final int miniScale = 4;
+    public static final int markerSize = 20;
+    public static final int miniMapLeft = 0;
+    public static final int miniMapRight = 200;
+    public static final int miniMapTop = 480;
+    public static final int miniMapBottom = 280;
+    private Texture playerMarker;
+    private Texture heightMap;
+    private Sprite mapSprite;
+    private Texture flagMarkerBlue;
+    private Texture flagMarkerRed;
+    private Texture flagMarkerGrey;
+    private Texture hudMap;
+    private Texture hudScore;
+    private Texture flagTexture;
+    private Sprite hudMapSprite;
+    Score score;
+    long startTime;
+    long elapsedTime; 
+    
     @Override
     public void create () {
         // Misc.
@@ -103,7 +134,7 @@ public class VoxelTest extends ApplicationAdapter {
         // create a voxel terrain
         Cube.texture = new Texture(Gdx.files.internal("tiles.png"));
         Cube.texture.bind(0);
-        voxelWorld = new VoxelWorld(Cube.texture, 20, 4, 20);
+        voxelWorld = new VoxelWorld(Cube.texture, 18, 4, 13);
         SimplexNoise.generateHeightMap(voxelWorld, 0, 64, 10, 0.5f, 0.007f, 0.002f);
 //        PerlinNoiseGenerator.generateVoxels(model, 0, 64, 10);
 //        float camX = model.voxelsX / 2f;
@@ -115,12 +146,39 @@ public class VoxelTest extends ApplicationAdapter {
         player = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
                 , Vector3.Zero, camera.direction);
         playerController = new PlayerController(player, camera, 
-                new Vector3(0, 5*UNITS_PER_METER, -5*UNITS_PER_METER));
+                new Vector3(0, 7*UNITS_PER_METER, -5*UNITS_PER_METER));
         playerController.setVelocity(22*UNITS_PER_METER);
         
         // Set the initial camera position
         camera.position.set(new Vector3().set(player.getPosition())
                 .add(playerController.cameraOffset));
+        
+        //flags
+        GameInfo.flagList = new FlagList(5);
+        GameInfo.flagList.setOccupant(0,"AI");
+        GameInfo.flagList.setOccupant(1,"AI");
+        GameInfo.flagList.setOccupant(2,"Player");
+        GameInfo.flagList.setOccupant(3,"Player");
+        GameInfo.flagList.setOccupant(4,"Player");
+        
+         //setup a minimap camera
+        //miniMapCam = new OrthographicCamera(miniWidth, miniHeight);
+        //miniMapCam.zoom = miniScale;
+        playerMarker = new Texture(Gdx.files.internal("markers/playerdot.png"));
+        heightMap = new Texture(Gdx.files.internal("simplexmap.png"));
+        mapSprite = new Sprite(heightMap);
+        flagMarkerBlue = new Texture(Gdx.files.internal("markers/blue.png"));
+        flagMarkerRed = new Texture(Gdx.files.internal("markers/red.png"));
+        flagMarkerGrey = new Texture(Gdx.files.internal("markers/grey.png"));
+        hudMap = new Texture(Gdx.files.internal("markers/hudMap.png"));
+        hudMapSprite = new Sprite(hudMap);
+        hudScore = new Texture(Gdx.files.internal("markers/hudScore.png"));
+        score = new Score();    
+        
+        //time
+        startTime = System.currentTimeMillis();
+        elapsedTime = 0;      
+        
         
         // Setup all input sources
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
@@ -160,18 +218,43 @@ public class VoxelTest extends ApplicationAdapter {
         }
         modelBatch.flush();
         DefaultShader.defaultCullFace = GL20.GL_BACK;
+        
         // Render all loaded models
-//        for(ConcreteGameObject gameObject : instances) {
-//            if(gameObject.isVisible(camera)) {
-//                modelBatch.render(gameObject);
-//                visibleCount++;
-//            }
-//        }
+        for(ConcreteGameObject gameObject : instances) {
+            if(gameObject.isVisible(camera)) {
+                modelBatch.render(gameObject);
+                GlobalState.visibleCount++;
+            }
+        }
+        
         // Render the player character
         if(player.isVisible(camera)) {
             modelBatch.render(player);
             GlobalState.visibleCount++;
         }
+        
+        // Time
+        elapsedTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
+        score.updateScore(elapsedTime, GameInfo.flagList);
+
+        //flags
+        Flag[] flags = GameInfo.flagList.getList();
+        for(int i = 0; i < flags.length; i++) {
+            ModelInstance temp = flags[i].getFlagBox();
+            ModelInstance colTemp = flags[i].getCaptureBox();
+           if(temp != null) {
+               int[] coor = GameInfo.flagList.getCoordinates(i);
+               temp.transform.setToTranslation(coor[0]*UNITS_PER_METER, 
+                    coor[1]*UNITS_PER_METER, 
+                    coor[2]*UNITS_PER_METER);
+                              colTemp.transform.setToTranslation(coor[0]*UNITS_PER_METER, 
+                    coor[1]*UNITS_PER_METER, 
+                    coor[2]*UNITS_PER_METER);
+               modelBatch.render(temp);
+               modelBatch.render(colTemp);
+           }
+        }
+
         modelBatch.end();
         
         // Render the 2D text
@@ -185,6 +268,37 @@ public class VoxelTest extends ApplicationAdapter {
                 camera.viewportHeight - 55);
         font.draw(spriteBatch, "Velocity (scroll): "+playerController.getVelocity()/UNITS_PER_METER, 10, 
                 camera.viewportHeight - 70);
+        
+        //draw minimap and HUD
+        
+        
+        //spriteBatch.draw(flagMarkerBlue, 0, 0);
+        //spriteBatch.draw(flagMarkerRed, 0, 0);
+        spriteBatch.draw(hudMap, hudMapSprite.getX(), hudMapSprite.getY());
+        spriteBatch.draw(hudScore, camera.viewportWidth/2 -250, camera.viewportHeight - 70);
+        spriteBatch.draw(heightMap, mapSprite.getX(), mapSprite.getY());    
+        
+        font.setColor(0,0,0,1);
+        font.draw(spriteBatch, "" + score.getPS(), camera.viewportWidth/2 - 90, camera.viewportHeight - 20);
+        font.draw(spriteBatch, "" + score.getCS(), camera.viewportWidth/2 + 80, camera.viewportHeight - 20);
+        font.draw(spriteBatch, "" + String.valueOf(elapsedTime), camera.viewportWidth/2 -3, camera.viewportHeight - 20);
+        
+        for (int i = 0; i < 5; i++) {
+            if ((GameInfo.flagList.getOccupant(i)).equals("AI")) {
+                flagTexture = flagMarkerRed;
+            }
+            else if ((GameInfo.flagList.getOccupant(i)).equals("Player")) {
+                flagTexture = flagMarkerBlue;
+            }
+            else if ((GameInfo.flagList.getOccupant(i)).equals("None")) {
+                flagTexture = flagMarkerGrey;
+            }
+        
+            spriteBatch.draw(flagTexture, GameInfo.flagList.getCoordinates(i)[2], GameInfo.flagList.getCoordinates(i)[0]);
+        }
+        
+        spriteBatch.draw(playerMarker, player.getPosition().z/16, player.getPosition().x/16);        
+    
         spriteBatch.end();
     }
 

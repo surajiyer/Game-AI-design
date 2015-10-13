@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.Array;
 import static main.VoxelTest.UNITS_PER_METER;
 import utils.ConcreteGameObject;
 import utils.GameController;
+import utils.GameInfo;
 
 /**
  *
@@ -68,6 +69,26 @@ public class GlobalState {
         gameObject = new ConcreteGameObject(assets.get("flags/flagBlue.g3db", Model.class));
         gameObject.setPosition(tmp.set(6*UNITS_PER_METER, 0, 3*UNITS_PER_METER));
         instances.add(gameObject);
+        
+        //flags
+        Flag[] flags = GameInfo.flagList.getList();
+        for(int i = 0; i < flags.length; i++) {
+            if ((GameInfo.flagList.getOccupant(i)).equals("AI")) {
+                gameObject = new ConcreteGameObject(assets.get("flags/flagRed.g3db", Model.class));
+            }
+            else if ((GameInfo.flagList.getOccupant(i)).equals("Player")) {
+                gameObject = new ConcreteGameObject(assets.get("flags/flagBlue.g3db", Model.class));
+            }
+            else if ((GameInfo.flagList.getOccupant(i)).equals("None")) {
+                gameObject = new ConcreteGameObject(assets.get("flags/flagNone.g3db", Model.class));
+            }
+            int[] coor = GameInfo.flagList.getCoordinates(i);
+            gameObject.setPosition(tmp.set(
+                    coor[0]*UNITS_PER_METER, 
+                    coor[1]*UNITS_PER_METER, 
+                    coor[2]*UNITS_PER_METER));
+            instances.add(gameObject);
+        }
         
         // Done loading assets
         assetLoading = false;
