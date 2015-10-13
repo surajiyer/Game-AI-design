@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package mechanics;
 
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -10,7 +5,7 @@ import utils.Drawables;
 
 /**
  *
- * @author s138699
+ * @author Kevin van Eenige and Daniël van der Laan
  */
 public class Flag {
 

@@ -6,7 +6,7 @@ import mechanics.Score;
 
 /**
  *
- * @author s138699
+ * @author Kevin van Eenige and Daniël van der Laan
  */
 public class GameInfo {
     

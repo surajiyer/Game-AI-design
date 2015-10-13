@@ -2,7 +2,10 @@ package mechanics;
 
 import java.awt.Point;
 
-
+/**
+ *
+ * @author Kevin van Eenige and Daniël van der Laan
+ */
 public class State extends Point
 {
 	

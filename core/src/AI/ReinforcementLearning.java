@@ -6,6 +6,10 @@ import mechanics.FlagList;
 import mechanics.State;
 import utils.GameInfo;
 
+/**
+ *
+ * @author Kevin van Eenige and Daniël van der Laan
+ */
 public class ReinforcementLearning {
 
     //state should inlcude the flaglist and the position of the players.
