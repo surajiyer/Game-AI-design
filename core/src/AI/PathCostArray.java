@@ -8,8 +8,10 @@ import java.util.Arrays;
  * @author Mike de Brouwer
  * Gives the path costs from a flag to every other flag
  * in a float[][] array. [1][2] is the distance from flag 1 to flag 2
+ * it uses this in generateclosestflag to calculate the closest flags. 
  */
 public class PathCostArray {
+    private final float sqrt2 = 1.41421356f; // approximate the square root of 2 so we don't have to calculate it each time while maintianing high accuracy
     Astar astar;
     private final int width;
     private final int height;
@@ -28,8 +30,8 @@ public class PathCostArray {
         this.tileCost = tileCost;
         astar = new Astar(width, height);
     }     
-    public double[][] generatePathCostArray() {
-        final double[][] pathCostArray = new double[nrOfFlags][nrOfFlags];
+    public float[][] generatePathCostArray() {
+        final float[][] pathCostArray = new float[nrOfFlags][nrOfFlags];
         for(int i = 0; i < nrOfFlagCoordinates; i+=2) { 
             for(int j = 0; j < nrOfFlagCoordinates; j+=2) {
                 IntArray path = astar.getPath(flagLocations[i], flagLocations[i + 1], flagLocations[j], flagLocations[j + 1], tileCost);
@@ -39,21 +41,21 @@ public class PathCostArray {
                     int y = path.get(k + 1);
                     int index = x + width * y;
                         if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
-                            pathCost = pathCost + (tileCost[index][0] * 14);
+                            pathCost = pathCost + (tileCost[index][0] * sqrt2);
                         } if(((path.get(k) - path.get(k + 2)) == 0) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
-                            pathCost = pathCost + (tileCost[index][1] * 10);
+                            pathCost = pathCost + (tileCost[index][1]);
                         } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
-                            pathCost = pathCost + (tileCost[index][2] * 14);
+                            pathCost = pathCost + (tileCost[index][2] * sqrt2);
                         } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == 0)) {
-                            pathCost = pathCost + (tileCost[index][3] * 10);
+                            pathCost = pathCost + (tileCost[index][3]);
                         } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
-                            pathCost = pathCost + (tileCost[index][4] * 14);
+                            pathCost = pathCost + (tileCost[index][4] * sqrt2);
                         } if(((path.get(k) - path.get(k + 2)) == 0) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
-                            pathCost = pathCost + (tileCost[index][5] * 10);
+                            pathCost = pathCost + (tileCost[index][5]);
                         } if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
-                            pathCost = pathCost + (tileCost[index][6] * 14);
+                            pathCost = pathCost + (tileCost[index][6] * sqrt2);
                         } if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == 0)) {
-                            pathCost = pathCost + (tileCost[index][7] * 10);
+                            pathCost = pathCost + (tileCost[index][7]);
                         }
                 } 
                 pathCostArray[i / 2][j / 2] = pathCost;
@@ -68,23 +70,23 @@ public class PathCostArray {
         return pathCostArray;
     } 
     public int[] generateClosestFlagArray(int currentFlag) {
-        final double[][] interMediaryArray = new double[nrOfFlags][2];   // Tracks pathcosts and nr of the flag
+        final float[][] interMediaryArray = new float[nrOfFlags][2];   // Tracks pathcosts and nr of the flag
         final int[] closestFlagArray = new int[nrOfFlags - 1];
-        double[][] pathCostArray = generatePathCostArray(); 
+        float[][] pathCostArray = generatePathCostArray(); 
         for (int i = 0; i < nrOfFlags; i++) {
-            interMediaryArray[i][1] = i + 1;
-            interMediaryArray[i][0] = pathCostArray[currentFlag - 1][i];  
+            interMediaryArray[i][1] = i;
+            interMediaryArray[i][0] = pathCostArray[currentFlag][i];  
         }
-        for (final double[] arr : interMediaryArray) {
+        for (final float[] arr : interMediaryArray) {
             System.out.println(Arrays.toString(arr));
         }
-        java.util.Arrays.sort(interMediaryArray, new java.util.Comparator<double[]>() {
+        java.util.Arrays.sort(interMediaryArray, new java.util.Comparator<float[]>() {
             @Override
-            public int compare(double[] a, double[] b) {
-                return Double.compare(a[0], b[0]);
+            public int compare(float[] a, float[] b) {
+                return Float.compare(a[0], b[0]);
             }
         });
-        for (final double[] arr : interMediaryArray) {
+        for (final float[] arr : interMediaryArray) {
             System.out.println(Arrays.toString(arr));
         }
         for (int i = 0; i < nrOfFlags - 1; i++) {

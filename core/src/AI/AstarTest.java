@@ -6,7 +6,6 @@
 package AI;
 
 /**
- * Based on the work of Nathan Sweet at https://gist.github.com/NathanSweet/7587981
  * @author Mike de Brouwer
  * 
  */
@@ -37,7 +36,7 @@ public class AstarTest extends ApplicationAdapter {
         int lastRow = heightField - 1; 
         private final int[] heightMap = new int[widthField * heightField];
         float[][] tileCost = new float[heightField * widthField][nrDirections];
-        double[][] pathCostArray = new double[nrOfFlags][nrOfFlags];
+        float[][] pathCostArray = new float[nrOfFlags][nrOfFlags];
         int[] closestFlagArray = new int[nrOfFlags];
         float pathCost; 
         
@@ -47,16 +46,7 @@ public class AstarTest extends ApplicationAdapter {
             shapes = new ShapeRenderer();
             // randomly generate obstacles              
             map = new boolean[widthField * heightField];
-            /*
-            for(int i = 0; i < widthField; i++) {
-                for(int j = 0; j < heightField; j++) {
-                    if(Math.random() > 0.8) { 
-                        map[i + j * widthField] = true;
-                    }
-                }
-            }*/
-            
-            
+         
               // randomly generate flag coordinates
             Random randomGenerator = new Random();
             for(int i = 0; i < nrOfFlagCoordinates ; i+=2) {
@@ -70,7 +60,7 @@ public class AstarTest extends ApplicationAdapter {
         // generate heightmap
         for(int i = 0; i < widthField; i++) {
             for(int j = 0; j < heightField; j++) {
-                    heightMap[i + j * widthField] = (int)(f[i][j]); 
+                    heightMap[i + j * widthField] = (int)(f[i][j] / 2); 
                     //System.out.println(heightMap[i + j * widthField]);
             }
         }

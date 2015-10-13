@@ -118,10 +118,10 @@ public class TileCostArray {
                             }                     
                         }
                     }
-                    if(heightMap[index] < 50) {
+                    if(heightMap[index] < 20) {
                         tileCost[index][m] = 0.25f; 
                     }
-                    System.out.println(tileCost[index][m]);
+                    //System.out.println(tileCost[index][m]);
                 }
             }
         }

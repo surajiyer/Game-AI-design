@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.IntArray;
  * @author Mike de Brouwer 
  */
    public class Astar {
+        private final float sqrt2 = 1.41421356f; // approximate the square root of 2 so we don't have to calculate it each time while maintianing high accuracy
         private final int width, height;
         private final BinaryHeap<PathNode> open;
         private final PathNode[] nodes;
@@ -72,17 +73,17 @@ import com.badlogic.gdx.utils.IntArray;
                         int y = node.y;
                         int nodeIndex = x + y * width; 
                         if (x < lastColumn) {
-                                addNode(node, x + 1, y, 10 * tileCost[nodeIndex][3]);
-                                if (y < lastRow) addNode(node, x + 1, y + 1, 14 * tileCost[nodeIndex][2]); // Diagonals cost more, roughly equivalent to sqrt(2).
-                                if (y > 0) addNode(node, x + 1, y - 1, 14 * tileCost[nodeIndex][4]);
+                                addNode(node, x + 1, y, tileCost[nodeIndex][3]);
+                                if (y < lastRow) addNode(node, x + 1, y + 1, sqrt2 * tileCost[nodeIndex][2]); // Diagonals cost more, roughly equivalent to sqrt(2).
+                                if (y > 0) addNode(node, x + 1, y - 1, sqrt2 * tileCost[nodeIndex][4]);
                         }
                         if (x > 0) {
-                                addNode(node, x - 1, y, 10 * tileCost[nodeIndex][7]);
-                                if (y < lastRow) addNode(node, x - 1, y + 1, 14 * tileCost[nodeIndex][0]);
-                                if (y > 0) addNode(node, x - 1, y - 1, 14 * tileCost[nodeIndex][6]);
+                                addNode(node, x - 1, y, tileCost[nodeIndex][7]);
+                                if (y < lastRow) addNode(node, x - 1, y + 1, sqrt2 * tileCost[nodeIndex][0]);
+                                if (y > 0) addNode(node, x - 1, y - 1, sqrt2 * tileCost[nodeIndex][6]);
                         }
-                        if (y < lastRow) addNode(node, x, y + 1, 10 * tileCost[nodeIndex][1]);
-                        if (y > 0) addNode(node, x, y - 1, 10 * tileCost[nodeIndex][5]);
+                        if (y < lastRow) addNode(node, x, y + 1, tileCost[nodeIndex][1]);
+                        if (y > 0) addNode(node, x, y - 1, tileCost[nodeIndex][5]);
                         i++;
                 }
                 return path;
@@ -92,7 +93,9 @@ import com.badlogic.gdx.utils.IntArray;
                 if (!isValid(x, y)) return;
 
                 float pathCost = parent.pathCost + cost;
-                float heuristic = (Math.abs(Math.abs(x - targetX) - Math.abs(y - targetY)) * 10) + (Math.min(Math.abs(y-targetY),Math.abs(x - targetX)) * 14);
+                int dx = Math.abs(x - targetX);
+                int dy = Math.abs(y - targetY);
+                float heuristic = Math.abs(dx - dy) + (Math.min(dy,dx) * sqrt2);
                 float score = pathCost + heuristic; 
 
                 int index = y * width + x;
