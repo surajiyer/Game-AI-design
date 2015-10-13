@@ -67,7 +67,7 @@ public class AstarTest extends ApplicationAdapter {
         // generate an array that has all the tilecosts from a position to the 8 tiles next to it. 
         tileCost = TileCostArray.generateTileCostArray(widthField, heightField, heightMap, nrDirections, lastRow, lastColumn);
         // Pathcost from all flags to all flags.
-        pathcostarray = new PathCostArray(widthField, heightField, flagLocations, nrOfFlags, nrOfFlagCoordinates, tileCost);
+        pathcostarray = new PathCostArray(widthField, heightField, flagLocations, nrOfFlags, tileCost);
         pathCostArray = pathcostarray.generatePathCostArray();
         closestFlagArray = pathcostarray.generateClosestFlagArray(1);
         /*

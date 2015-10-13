@@ -17,23 +17,21 @@ public class PathCostArray {
     private final int height;
     private final int[] flagLocations;
     private final int nrOfFlags;
-    private final int nrOfFlagCoordinates;
     private final float[][] tileCost;
     
 
-    public PathCostArray(int width, int height, int[] flagLocations, int nrOfFlags, int nrOfFlagCoordinates, float[][] tileCost) { 
+    public PathCostArray(int width, int height, int[] flagLocations, int nrOfFlags, float[][] tileCost) { 
         this.width = width;
         this.height = height;
         this.flagLocations = flagLocations;
         this.nrOfFlags = nrOfFlags;
-        this.nrOfFlagCoordinates = nrOfFlagCoordinates;
         this.tileCost = tileCost;
         astar = new Astar(width, height);
     }     
     public float[][] generatePathCostArray() {
         final float[][] pathCostArray = new float[nrOfFlags][nrOfFlags];
-        for(int i = 0; i < nrOfFlagCoordinates; i+=2) { 
-            for(int j = 0; j < nrOfFlagCoordinates; j+=2) {
+        for(int i = 0; i < flagLocations.length; i+=2) { 
+            for(int j = 0; j < flagLocations.length; j+=2) {
                 IntArray path = astar.getPath(flagLocations[i], flagLocations[i + 1], flagLocations[j], flagLocations[j + 1], tileCost);
                 float pathCost = 0;
                 for (int k = 0, n = path.size; k < n - 2; k += 2) {
