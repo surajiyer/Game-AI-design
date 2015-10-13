@@ -37,7 +37,7 @@ public class ReinforcementLearning {
         currState = new State(0, 0);
         rand = new Random();
         this.basic = basic;
-        flagList = basic.getFlagList();
+        flagList = GameInfo.flagList;
         policy = new int[5][5];
         qsa = new double[flagList.getList().length][flagList.getList().length][flagList.getList().length];
         initialize();

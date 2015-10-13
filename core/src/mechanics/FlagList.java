@@ -16,13 +16,17 @@ public class FlagList {
 
     private Flag[] flagList;
     Random random = new Random();
+    int[] allCoordinates;
     
     public FlagList(int NROF_FLAGS) {
         flagList = new Flag[NROF_FLAGS];
+        allCoordinates = new int[NROF_FLAGS*2];
         for (int i = 0; i < NROF_FLAGS; i++) {
             int x = random.nextInt((50 - 10) + 1) + 10;
+            allCoordinates[i*2] = x;
             int y = 0;
             int z = random.nextInt((50 - 10) + 1) + 10;
+            allCoordinates[i*2+1] = z;
             Flag flag = new Flag(x, y, z, i, 5);
             flagList[i] = flag;
         }
@@ -32,6 +36,10 @@ public class FlagList {
         return flagList;
     }
 
+    public int[] getAllFlagCoordinates() {
+        return allCoordinates;
+    }
+    
     public void setOccupant(int index, String occupant) {
         flagList[index].setOccupant(occupant);
     }
