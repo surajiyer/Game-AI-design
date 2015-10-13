@@ -20,8 +20,6 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import terrain.HeightMap;
-import terrain.SimplexTerrain;
 import utils.MultipleAnimationsController;
 
 /**
@@ -59,7 +57,6 @@ public class Basic3DTest extends ApplicationAdapter {
     Array<ModelInstance> instances;
     Environment environment;
     InfiniteGrid grid;
-    SimplexTerrain terra;
     
     @Override
     public void create() {
@@ -147,10 +144,6 @@ public class Basic3DTest extends ApplicationAdapter {
         grid = new InfiniteGrid(160, 160, UNITS_PER_METER);
         grid.instance.transform.setToTranslation(camera.position.x, 0, camera.position.z);
         
-        // create a terrain shader program
-        HeightMap hm = new HeightMap(Gdx.files.internal("heightmaps/Heightmap192x192.png"));
-        //terra = new SimplexTerrain(hm, 1f, 100f, Gdx.files.internal("heightmaps/heightmap_lookup.png"));
-        
         // create the surrounding environment
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
@@ -207,7 +200,6 @@ public class Basic3DTest extends ApplicationAdapter {
 //            skySphere.transform.setToTranslation(camera.position);
 //            modelBatch.render(skySphere);
 //        }
-        modelBatch.render(terra);
         modelBatch.render(instances, environment);
         //grid.updatePos(camera); // Move the grid with the camera for an infinte grid
         modelBatch.render(grid.instance);
@@ -218,13 +210,9 @@ public class Basic3DTest extends ApplicationAdapter {
     public void dispose () {
         modelBatch.dispose();
         instances.clear();
-        terra.dispose();
     }
     
     public void checkInput() {
-        if(Gdx.input.isKeyPressed(Input.Keys.NUM_1)) {
-           terra.drawWireFrame = !terra.drawWireFrame;
-        }
         if(Gdx.input.isKeyPressed(Input.Keys.NUM_2)) {
            descendLimit = !descendLimit;
         }
@@ -238,9 +226,6 @@ public class Basic3DTest extends ApplicationAdapter {
                 Gdx.graphics.setDisplayMode(oldWidth, oldHeight, false);
             }
             fullscreen = !fullscreen;
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.NUM_3)) {
-           terra.useShader = !terra.useShader;
         }
     }
     

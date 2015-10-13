@@ -27,8 +27,7 @@ public class GameController extends InputAdapter {
     private final IntIntMap keys = new IntIntMap();
     private final int TOGGLE_WIREFRAME = Keys.NUM_1;
     private final int TOGGLE_DESCEND_LIMIT = Keys.NUM_2;
-    private final int TOGGLE_VOXEL_SHADERS = Keys.NUM_3;
-    private final int TOGGLE_FIRST_PERSON = Keys.NUM_4;
+    private final int TOGGLE_FIRST_PERSON = Keys.NUM_3;
     private final int TOGGLE_FULLSCREEN = Keys.F;
     private final int RELEASE_CURSOR = Keys.ESCAPE;
 
@@ -93,11 +92,6 @@ public class GameController extends InputAdapter {
                 Gdx.graphics.setDisplayMode(oldWidth, oldHeight, false);
             }
             fullScreen = !fullScreen;
-        }
-        
-        // Toggle usage of shaders for the voxel terrain
-        if (keys.containsKey(TOGGLE_VOXEL_SHADERS)) {
-            voxelWorld.useShader = !voxelWorld.useShader;
         }
     }
 }

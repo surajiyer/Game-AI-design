@@ -24,8 +24,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import java.util.concurrent.TimeUnit;
-import terrain.HeightMap;
-import terrain.SimplexTerrain;
 import utils.Drawables;
 import mechanics.Flag;
 import mechanics.FlagList;
@@ -53,7 +51,6 @@ public class Basic3DTest1 extends ApplicationAdapter {
     Array<ModelInstance> instances;
     Environment environment;
     InfiniteGrid grid;
-    SimplexTerrain terra;
     Score score;
     BitmapFont font;
     long startTime;
@@ -104,10 +101,6 @@ public class Basic3DTest1 extends ApplicationAdapter {
         // create a grid
         grid = new InfiniteGrid(160, 160, UNITS_PER_METER);
         grid.instance.transform.setToTranslation(camera.position.x, 0, camera.position.z);
-        
-        // create a terrain shader program
-        HeightMap hm = new HeightMap(Gdx.files.internal("heightmaps/Heightmap192x192.png"));
-        terra = new SimplexTerrain(hm, 1f, 100f, true, Gdx.files.internal("heightmaps/heightmap_lookup.png"));
         
         // create the surrounding environment
         environment = new Environment();
@@ -199,13 +192,9 @@ public class Basic3DTest1 extends ApplicationAdapter {
     public void dispose () {
         modelBatch.dispose();
         instances.clear();
-        terra.dispose();
     }
     
     public void checkInput() {
-        if(Gdx.input.isKeyPressed(Input.Keys.NUM_1)) {
-           terra.drawWireFrame = !terra.drawWireFrame;
-        }
         if(Gdx.input.isKeyPressed(Input.Keys.NUM_2)) {
            descendLimit = !descendLimit;
         }
@@ -219,9 +208,6 @@ public class Basic3DTest1 extends ApplicationAdapter {
                 Gdx.graphics.setDisplayMode(oldWidth, oldHeight, false);
             }
             fullscreen = !fullscreen;
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.NUM_3)) {
-           terra.useShader = !terra.useShader;
         }
     }
     

@@ -20,7 +20,6 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import terrain.SimplexTerrain;
 import utils.MultipleAnimationsController;
 
 /**
@@ -48,7 +47,6 @@ public class Basic3DTest2 extends ApplicationAdapter {
     Array<ModelInstance> instances;
     Environment environment;
     InfiniteGrid grid;
-    SimplexTerrain terra;
     ModelInstance player;
     Vector3 playerDirection = new Vector3();
     Vector3 playerPosition = new Vector3();
@@ -180,9 +178,6 @@ public class Basic3DTest2 extends ApplicationAdapter {
     }
     
     public void checkInput() {
-        if(Gdx.input.isKeyPressed(Input.Keys.NUM_1)) {
-           terra.drawWireFrame = !terra.drawWireFrame;
-        }
         if(Gdx.input.isKeyPressed(Input.Keys.NUM_2)) {
            descendLimit = !descendLimit;
         }
@@ -196,9 +191,6 @@ public class Basic3DTest2 extends ApplicationAdapter {
                 Gdx.graphics.setDisplayMode(oldWidth, oldHeight, false);
             }
             fullscreen = !fullscreen;
-        }
-        if(Gdx.input.isKeyPressed(Input.Keys.NUM_3)) {
-           terra.useShader = !terra.useShader;
         }
     }
     

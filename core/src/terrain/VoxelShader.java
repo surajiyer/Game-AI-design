@@ -64,9 +64,6 @@ public class VoxelShader implements Shader {
     @Override
     public void render(Renderable renderable) {
         shaderProgram.setUniformMatrix(u_worldTrans, renderable.worldTransform);
-        Color c = ((ColorAttribute) renderable.material.get(ColorAttribute.Diffuse)).color;
-        shaderProgram.setAttributef("a_color", c.r, c.g, c.b, c.a);
-        //shaderProgram.setUniformi(u_texture, context.textureBinder.bind((Texture) renderable.userData));
         renderable.mesh.render(shaderProgram,
             renderable.primitiveType,
             renderable.meshPartOffset,

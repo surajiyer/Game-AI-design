@@ -41,9 +41,8 @@ public class MultipleAnimationsController {
         controllerPool.remove(animation);
     }
     
-    public void update(float animsSpeed) {
+    public void update(float deltaTime, float animsSpeed) {
         animationSpeed = animsSpeed;
-        float deltaTime = Gdx.graphics.getDeltaTime();
         for(String animation : controllerPool.keySet()) {
             controllerPool.get(animation).update(animationSpeed*deltaTime);
         }

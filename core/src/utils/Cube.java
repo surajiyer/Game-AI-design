@@ -8,17 +8,21 @@ package utils;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import terrain.Chunk.CubeType;
+import terrain.CubeShader;
 
 
 /**
@@ -26,12 +30,67 @@ import terrain.Chunk.CubeType;
  * @author S.S.Iyer
  */
 public class Cube extends GameObject {
+    
     public static final int NROF_FACES = 6;
     public static final int NROF_VERTICES_PER_FACE = 4;
     public static final int VERTEX_SIZE = 8;
     
+    public enum CubeType {
+        
+        GRASS(new float[]{0, 0f},
+                new float[]{0.125f, 0f},
+                new float[]{0.1875f, 0f},
+                new float[]{0.1875f, 0f},
+                new float[]{0.1875f, 0f},
+                new float[]{0.1875f, 0f}),
+        SAND(new float[]{0.125f, 0.0625f},
+                new float[]{0.125f, 0.0625f},
+                new float[]{0.125f, 0.0625f},
+                new float[]{0.125f, 0.0625f},
+                new float[]{0.125f, 0.0625f},
+                new float[]{0.125f, 0.0625f}),
+        STONE(new float[]{0.3125f, 0.375f},
+                new float[]{0.0625f, 0f},
+                new float[]{0.25f, 0.375f},
+                new float[]{0.25f, 0.375f},
+                new float[]{0.25f, 0.375f},
+                new float[]{0.25f, 0.375f}),
+        SNOW(new float[]{0.125f, 0.25f},
+                new float[]{0.125f, 0f},
+                new float[]{0.25f, 0.25f},
+                new float[]{0.25f, 0.25f},
+                new float[]{0.25f, 0.25f},
+                new float[]{0.25f, 0.25f}),
+        WATER(new float[]{0.8125f, 0.75f},
+                new float[]{0.8125f, 0.75f},
+                new float[]{0.8125f, 0.75f},
+                new float[]{0.8125f, 0.75f},
+                new float[]{0.8125f, 0.75f},
+                new float[]{0.8125f, 0.75f});
+        
+        public static float texSize = 0.0625f;
+        float[] topUV;
+        float[] bottomUV;
+        float[] leftUV;
+        float[] rightUV;
+        float[] frontUV;
+        float[] backUV;
+        
+        private CubeType(float[] topUV, float[] bottomUV, float[] leftUV,
+            float[] rightUV, float[] frontUV, float[] backUV) {
+            this.topUV = topUV;
+            this.bottomUV = bottomUV;
+            this.leftUV = leftUV;
+            this.rightUV = rightUV;
+            this.frontUV = frontUV;
+            this.backUV = backUV;
+        }
+    }
+    
+    public static Texture texture = null;
+    private Shader shader;
     private Mesh mesh;
-    public final CubeType TYPE;
+    public final CubeType cubeType;
     public final Matrix4 worldTrans;
     private boolean isActive;
     
@@ -39,15 +98,19 @@ public class Cube extends GameObject {
         this(type, Vector3.Zero, 1f);
     }
     
+    public Cube(CubeType type, final Vector3 pos) {
+        this(type, pos, 1f);
+    }
+    
     public Cube (final CubeType type, final Vector3 pos, final float scl) {
         mesh = null;
-        TYPE = type;
+        cubeType = type;
         isActive = false;
         worldTrans = new Matrix4();
-        position.set(pos);
-        worldTrans.setTranslation(position);
-        scale = scl;
-        worldTrans.scl(scale);
+        setPosition(pos);
+        setScale(scl);
+        shader = new CubeShader();
+        shader.init();
     }
 
     /** 
@@ -74,14 +137,16 @@ public class Cube extends GameObject {
     public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
         Renderable renderable = pool.obtain();
         renderable.worldTransform.set(worldTrans);
-        renderable.material = new Material(new ColorAttribute(ColorAttribute.Diffuse, 
+        renderable.material = texture == null ? new Material(new ColorAttribute(ColorAttribute.Diffuse, 
                     MathUtils.random(0.5f, 1f),
                     MathUtils.random(0.5f, 1f),
-                    MathUtils.random(0.5f, 1f), 1));
+                    MathUtils.random(0.5f, 1f), 1))
+                : new Material(TextureAttribute.createDiffuse(texture));
         renderable.mesh = isGenerated() ? mesh : generate();
         renderable.meshPartOffset = 0;
         renderable.meshPartSize = mesh.getNumIndices();
         renderable.primitiveType = GL20.GL_TRIANGLES;
+        //renderable.shader = shader;
         renderables.add(renderable);
     }
     
@@ -133,8 +198,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.topUV[0];
+        vertices[vertexOffset++] = cubeType.topUV[1];
 
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 1;
@@ -142,8 +207,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.topUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.topUV[1];
 
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 1;
@@ -151,8 +216,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.topUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.topUV[1]+CubeType.texSize;
 
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
@@ -160,8 +225,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.topUV[0];
+        vertices[vertexOffset++] = cubeType.topUV[1]+CubeType.texSize;
         
         indices[0] = (short)(0);
         indices[1] = (short)(1);
@@ -187,8 +252,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.bottomUV[0];
+        vertices[vertexOffset++] = cubeType.bottomUV[1];
 
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
@@ -196,8 +261,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.bottomUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.bottomUV[1];
 
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
@@ -205,8 +270,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.bottomUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.bottomUV[1]+CubeType.texSize;
 
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
@@ -214,8 +279,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.bottomUV[0];
+        vertices[vertexOffset++] = cubeType.bottomUV[1]+CubeType.texSize;
         
         indices[0] = (short)(0);
         indices[1] = (short)(1);
@@ -241,8 +306,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.leftUV[0];
+        vertices[vertexOffset++] = cubeType.leftUV[1]+CubeType.texSize;
 
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
@@ -250,8 +315,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.leftUV[0];
+        vertices[vertexOffset++] = cubeType.leftUV[1];
 
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
@@ -259,8 +324,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.leftUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.leftUV[1];
 
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
@@ -268,8 +333,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.leftUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.leftUV[1]+CubeType.texSize;
         
         indices[0] = (short)(0);
         indices[1] = (short)(1);
@@ -295,8 +360,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.rightUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.rightUV[1]+CubeType.texSize;
 
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
@@ -304,8 +369,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.rightUV[0];
+        vertices[vertexOffset++] = cubeType.rightUV[1]+CubeType.texSize;
 
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 1;
@@ -313,8 +378,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.rightUV[0];
+        vertices[vertexOffset++] = cubeType.rightUV[1];
 
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 1;
@@ -322,8 +387,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.rightUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.rightUV[1];
         
         indices[0] = (short)(0);
         indices[1] = (short)(1);
@@ -349,8 +414,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.frontUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.frontUV[1]+CubeType.texSize;
 
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
@@ -358,8 +423,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.frontUV[0];
+        vertices[vertexOffset++] = cubeType.frontUV[1]+CubeType.texSize;
 
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 1;
@@ -367,8 +432,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.frontUV[0];
+        vertices[vertexOffset++] = cubeType.frontUV[1];
 
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
@@ -376,8 +441,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.frontUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.frontUV[1];
         
         indices[0] = (short)(0);
         indices[1] = (short)(1);
@@ -403,8 +468,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.backUV[0];
+        vertices[vertexOffset++] = cubeType.backUV[1]+CubeType.texSize;
 
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
@@ -412,8 +477,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
+        vertices[vertexOffset++] = cubeType.backUV[0];
+        vertices[vertexOffset++] = cubeType.backUV[1];
 
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 1;
@@ -421,8 +486,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.backUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.backUV[1];
 
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
@@ -430,8 +495,8 @@ public class Cube extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
+        vertices[vertexOffset++] = cubeType.backUV[0]+CubeType.texSize;
+        vertices[vertexOffset++] = cubeType.backUV[1]+CubeType.texSize;
         
         indices[0] = (short)(0);
         indices[1] = (short)(1);

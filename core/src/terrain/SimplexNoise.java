@@ -226,6 +226,7 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
                 generateOctavedSimplexNoise(voxelWorld.voxelsX, voxelWorld.voxelsZ, 
                         octaves, roughness, terrainScale), 
                 generateRidgedNoise(voxelWorld.voxelsX, voxelWorld.voxelsZ, riverScale));
+        //createImage(heightMap, "simplexmap.png");
         int range = max - min;
         for (int z = 0; z < voxelWorld.voxelsZ; z++) {
             for (int x = 0; x < voxelWorld.voxelsX; x++) {

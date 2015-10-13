@@ -121,12 +121,17 @@ public class PlayerController extends InputAdapter {
     }    
     
     public void update(float deltaTime) {
+        // If any of the following movements, update the animations controller
+        PlayerController: if (keys.containsKey(FORWARD) || keys.containsKey(BACKWARD) 
+                || keys.containsKey(STRAFE_LEFT) || keys.containsKey(STRAFE_RIGHT)) {
+            playerAnimsController.update(deltaTime, 4);
+        }
+        
         // Move forward
         if (keys.containsKey(FORWARD)) {
             tmp.set(player.direction).nor().scl(deltaTime * velocity);
             player.setPosition(player.getPosition().add(tmp));
             camera.position.set(tmp.set(player.getPosition()).add(cameraOffset));
-            playerAnimsController.update(4);
         }
         
         // Move backward
@@ -134,7 +139,6 @@ public class PlayerController extends InputAdapter {
             tmp.set(player.direction).nor().scl(-deltaTime * velocity);
             player.setPosition(player.getPosition().add(tmp));
             camera.position.set(tmp.set(player.getPosition()).add(cameraOffset));
-            playerAnimsController.update(4);
         }
         
         // Strafe left
@@ -147,7 +151,6 @@ public class PlayerController extends InputAdapter {
             player.setPosition(player.getPosition().add(tmp));
             tmp.set(player.getPosition());
             camera.position.set(tmp.add(cameraOffset));
-            playerAnimsController.update(4);
         } else if(strafingLeft) {
             player.rotateBody(-40);
             strafingLeft = false;
@@ -163,7 +166,6 @@ public class PlayerController extends InputAdapter {
             player.setPosition(player.getPosition().add(tmp));
             tmp.set(player.getPosition());
             camera.position.set(tmp.add(cameraOffset));
-            playerAnimsController.update(4);
         } else if(strafingRight) {
             player.rotateBody(40);
             strafingRight = false;

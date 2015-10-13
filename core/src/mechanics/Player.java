@@ -42,7 +42,7 @@ public class Player extends GameObject {
     public final Vector3 up;
     public int flags;
     
-    private Node headNode;
+    private final Node headNode;
     private final Quaternion tmpQuat = new Quaternion();
     
     public Player(Model model, Vector3 pos, Vector3 dir) {
@@ -69,13 +69,14 @@ public class Player extends GameObject {
     
     public void rotate(Vector3 dir, float deltaX, float deltaY) {
         headNode.rotation.mul(tmpQuat.setEulerAngles(0, -deltaY, 0));
+        instance.calculateTransforms();
         instance.transform.rotate(up, deltaX);
         direction.set(dir).nor().scl(1, 0, 1);
     }
     
     public void rotateBody(float deltaX) {
-        headNode.rotation.mul(tmpQuat.setEulerAngles(0, 0, deltaX));
         instance.transform.rotate(up, deltaX);
+        instance.calculateTransforms();
     }
     
     @Override

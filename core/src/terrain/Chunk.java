@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
@@ -19,6 +20,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import utils.Cube;
+import utils.Cube.CubeType;
+import static utils.Cube.texture;
 import utils.GameObject;
 
 /**
@@ -29,21 +32,7 @@ public class Chunk extends GameObject {
     
     public static final int CHUNK_SIZE = 16;
     
-    public enum CubeType {
-        GRASS(0),
-        SAND(1),
-        STONE(2),
-        DIRT(3), 
-        WATER(4);
-        
-        int type;
-        
-        private CubeType(int type) {
-            this.type = type;
-        }
-    }
-    
-    private final Cube[] cubes;
+    //private final Cube[] cubes;
     private Mesh mesh;
     private final Matrix4 worldTrans;
     public boolean isActive;
@@ -53,17 +42,20 @@ public class Chunk extends GameObject {
     }
     
     public Chunk(final Vector3 pos) {
-        cubes = new Cube[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
+        //cubes = new Cube[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
         mesh = null;
         position.set(pos);
         worldTrans = new Matrix4();
         worldTrans.setTranslation(position);
     }
     
+    /** @param height the height of the cube
+     * @return the type of the cube */
     public CubeType getCubeType(int height) {
-        if(height < 20)
+        int random = MathUtils.random(10) - 5;
+        if(height < 20 + random)
             return CubeType.WATER;
-        else if(height < 40)
+        else if(height < 40 + random)
             return CubeType.SAND;
         else
             return CubeType.GRASS;
@@ -77,12 +69,11 @@ public class Chunk extends GameObject {
         for(int Y = 0; Y < CHUNK_SIZE; Y++) {
             for(int Z = 0; Z < CHUNK_SIZE; Z++) {
                 for(int X = 0; X < CHUNK_SIZE; X++) {
-                    cube = new Cube(getCubeType(Y+(int)position.y), new Vector3(X, Y, Z), 1f);
-                    cube.setPosition(tmp.set(X, Y, Z));
+                    cube = new Cube(getCubeType(Y+(int)position.y), tmp.set(X, Y, Z));
                     tmpMesh = cube.generate();
                     tmpMesh.transform(cube.worldTrans);
                     meshBuilder.addMesh(tmpMesh);
-                    cubes[Y*CHUNK_SIZE*CHUNK_SIZE  + Z*CHUNK_SIZE + X] = cube;
+                    //cubes[Y*CHUNK_SIZE*CHUNK_SIZE  + Z*CHUNK_SIZE + X] = cube;
                 }
             }
         }
@@ -95,10 +86,11 @@ public class Chunk extends GameObject {
     public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
         Renderable renderable = pool.obtain();
         renderable.worldTransform.set(worldTrans);
-        renderable.material = new Material(new ColorAttribute(ColorAttribute.Diffuse, 
+        renderable.material = texture == null ? new Material(new ColorAttribute(ColorAttribute.Diffuse, 
                     MathUtils.random(0.5f, 1f),
                     MathUtils.random(0.5f, 1f),
-                    MathUtils.random(0.5f, 1f), 1));
+                    MathUtils.random(0.5f, 1f), 1))
+                : new Material(TextureAttribute.createDiffuse(texture));
         renderable.mesh = isGenerated() ? mesh : generate();
         renderable.meshPartOffset = 0;
         renderable.meshPartSize = mesh.getNumIndices();

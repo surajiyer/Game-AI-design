@@ -127,7 +127,7 @@ public class PerlinNoiseGenerator {
         for (int z = 0; z < voxelWorld.voxelsZ; z++) {
             for (int x = 0; x < voxelWorld.voxelsX; x++) {
                 voxelWorld.setColumn(x, heightMap[idx++], z, (byte)1);
-                // voxelWorld.set(x, heightMap[idx++], z, (byte)1);
+                // model.set(x, heightMap[idx++], z, (byte)1);
             }
         }
     }
