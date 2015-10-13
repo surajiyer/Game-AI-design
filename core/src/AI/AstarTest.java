@@ -18,6 +18,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.utils.IntArray;
 import java.util.Random;
+import mechanics.FlagList;
 import terrain.SimplexNoise;
 
 
@@ -25,20 +26,23 @@ public class AstarTest extends ApplicationAdapter {
 	ShapeRenderer shapes;
 	Astar astar;
         PathCostArray pathcostarray;
+        FlagList flagList;
+        private final float sqrt2 = 1.41421356f; // approximate the square root of 2 so we don't have to calculate it each time while maintianing high accuracy
 	boolean[] map;
         int nrOfFlags = 5;
         int nrOfFlagCoordinates = nrOfFlags * 2;   // amount of x and y coordinates of flags
         int[] flagLocations = new int[nrOfFlagCoordinates]; // place for the x and y coordinates of flags
-        int widthField = 80;
-        int heightField = 60;
+        int widthField = 280;
+        int heightField = 200;
         int nrDirections = 8; 
         int lastColumn = widthField - 1;
         int lastRow = heightField - 1; 
-        private final int[] heightMap = new int[widthField * heightField];
-        float[][] tileCost = new float[heightField * widthField][nrDirections];
+        private final int[][] heightMap = new int[widthField][heightField];
+        float[][][] tileCost = new float[widthField][heightField][nrDirections];
         float[][] pathCostArray = new float[nrOfFlags][nrOfFlags];
         int[] closestFlagArray = new int[nrOfFlags];
         float pathCost; 
+
         
 
         @Override
@@ -46,13 +50,9 @@ public class AstarTest extends ApplicationAdapter {
             shapes = new ShapeRenderer();
             // randomly generate obstacles              
             map = new boolean[widthField * heightField];
-         
-              // randomly generate flag coordinates
-            Random randomGenerator = new Random();
-            for(int i = 0; i < nrOfFlagCoordinates ; i+=2) {
-                flagLocations[i] = randomGenerator.nextInt(widthField);
-                flagLocations[i + 1] = randomGenerator.nextInt(heightField);
-            }
+            // get the fags list
+            flagList = new FlagList(nrOfFlags);
+            flagLocations = flagList.getAllFlagCoordinates();
             
         float[][] t = SimplexNoise.generateOctavedSimplexNoise(widthField, heightField, 6, 0.5f, 0.007f); // SIMPLEX NOISE
         float[][] r = SimplexNoise.generateRidgedNoise(widthField, heightField, 0.002f); // RIDGED NOISE
@@ -60,7 +60,7 @@ public class AstarTest extends ApplicationAdapter {
         // generate heightmap
         for(int i = 0; i < widthField; i++) {
             for(int j = 0; j < heightField; j++) {
-                    heightMap[i + j * widthField] = (int)(f[i][j] / 2); 
+                    heightMap[i][j] = (int)(f[i][j] / 2); 
                     //System.out.println(heightMap[i + j * widthField]);
             }
         }
@@ -68,7 +68,7 @@ public class AstarTest extends ApplicationAdapter {
         tileCost = TileCostArray.generateTileCostArray(widthField, heightField, heightMap, nrDirections, lastRow, lastColumn);
         // Pathcost from all flags to all flags.
         pathcostarray = new PathCostArray(widthField, heightField, flagLocations, nrOfFlags, tileCost);
-        pathCostArray = pathcostarray.generatePathCostArray();
+        //pathCostArray = pathcostarray.generatePathCostArray();
         closestFlagArray = pathcostarray.generateClosestFlagArray(1);
         /*
         for(int m = 0; m < nrOfFlags; m++) {
@@ -110,96 +110,7 @@ public class AstarTest extends ApplicationAdapter {
                     shapes.line(0, y * cellHeight, width, y * cellHeight);
 		shapes.end();
                 // dray obstacles
-                
-		
 		shapes.begin(ShapeType.Filled);
-                
-                
-                // draw the heightmap
-                
-                shapes.setColor(Color.WHITE);
-		for (int x = 0; x < mapWidth; x++) {
-                    for (int y = 0; y < mapHeight; y++) {
-                        int index = x + mapWidth * y;
-                        if (heightMap[index] == 0)  {
-                            shapes.setColor(Color.WHITE);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 1)  {
-                            shapes.setColor(Color.GOLDENROD);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 2)  {
-                            shapes.setColor(Color.PINK);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 3)  {
-                            shapes.setColor(Color.BLUE);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 4)  {
-                            shapes.setColor(Color.YELLOW);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 5)  {
-                            shapes.setColor(Color.PINK);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 6)  {
-                            shapes.setColor(Color.GRAY);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 7)  {
-                            shapes.setColor(Color.GREEN);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 8)  {
-                            shapes.setColor(Color.BROWN);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 9)  {
-                            shapes.setColor(Color.MAGENTA);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 10)  {
-                            shapes.setColor(Color.ORANGE);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 11)  {
-                            shapes.setColor(Color.MAROON);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 12)  {
-                            shapes.setColor(Color.PURPLE);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 13)  {
-                            shapes.setColor(Color.GOLD);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 14)  {
-                            shapes.setColor(Color.SKY);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 15)  {
-                            shapes.setColor(Color.SALMON);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 16)  {
-                            shapes.setColor(Color.TEAL);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 17)  {
-                            shapes.setColor(Color.VIOLET);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        if (heightMap[index] == 18)  {
-                            shapes.setColor(Color.GOLDENROD);
-                            shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);   
-                        }
-                        
-                    }
-                }
                 /*
                 shapes.setColor(Color.BLACK);
 		for (int x = 0; x < mapWidth; x++) {
@@ -223,7 +134,6 @@ public class AstarTest extends ApplicationAdapter {
                     }
                 }*/
                 //draw mouse pointer 
-                
 		int startX = Gdx.input.getX() / cellWidth;
 		int startY = (height - Gdx.input.getY()) / cellHeight;
 		shapes.setColor(Color.GREEN);
@@ -245,11 +155,8 @@ public class AstarTest extends ApplicationAdapter {
                 // print all the pathcosts from you to the flags
                 for(int i = 0; i < nrOfFlagCoordinates; i+=2) { 
                     getPathCost(startX, startY, flagLocations[i], flagLocations[i + 1]);
-                } 
-              
-		shapes.end();
-                
-                
+                }              
+		shapes.end();               
             }      
              
              public void createFlag(int x, int y, int cellWidth, int cellHeight) {
@@ -265,8 +172,7 @@ public class AstarTest extends ApplicationAdapter {
                     int y = path.get(i + 1);
                     shapes.circle(x * cellWidth + cellWidth / 2, y * cellHeight + cellHeight / 2, cellWidth / 3, 30);
                 }
-            } 
-            
+            }             
             // give the path cost of the path between 2 points
             public void getPathCost(int startX, int startY, int targetX, int targetY) {
                 IntArray path = astar.getPath(startX, startY, targetX, targetY, tileCost);
@@ -276,21 +182,21 @@ public class AstarTest extends ApplicationAdapter {
                     int y = path.get(i + 1);
                     int index = x + widthField * y;
                     if(((path.get(i) - path.get(i + 2)) == -1) && ((path.get(i + 1) - path.get(i + 3)) == 1)) {
-                        pathCost = pathCost + (tileCost[index][0] * 14);
+                        pathCost = pathCost + (tileCost[x][y][0] * sqrt2);
                     } if(((path.get(i) - path.get(i + 2)) == 0) && ((path.get(i + 1) - path.get(i + 3)) == 1)) {
-                        pathCost = pathCost + (tileCost[index][1] * 10);
+                        pathCost = pathCost + (tileCost[x][y][1] * 10);
                     } if(((path.get(i) - path.get(i + 2)) == 1) && ((path.get(i + 1) - path.get(i + 3)) == 1)) {
-                        pathCost = pathCost + (tileCost[index][2] * 14);
+                        pathCost = pathCost + (tileCost[x][y][2] * sqrt2);
                     } if(((path.get(i) - path.get(i + 2)) == 1) && ((path.get(i + 1) - path.get(i + 3)) == 0)) {
-                        pathCost = pathCost + (tileCost[index][3] * 10);
+                        pathCost = pathCost + (tileCost[x][y][3] * 10);
                     } if(((path.get(i) - path.get(i + 2)) == 1) && ((path.get(i + 1) - path.get(i + 3)) == -1)) {
-                        pathCost = pathCost + (tileCost[index][4] * 14);
+                        pathCost = pathCost + (tileCost[x][y][4] * sqrt2);
                     } if(((path.get(i) - path.get(i + 2)) == 0) && ((path.get(i + 1) - path.get(i + 3)) == -1)) {
-                        pathCost = pathCost + (tileCost[index][5] * 10);
+                        pathCost = pathCost + (tileCost[x][y][5] * 10);
                     } if(((path.get(i) - path.get(i + 2)) == -1) && ((path.get(i + 1) - path.get(i + 3)) == -1)) {
-                        pathCost = pathCost + (tileCost[index][6] * 14);
+                        pathCost = pathCost + (tileCost[x][y][6] * sqrt2);
                     } if(((path.get(i) - path.get(i + 2)) == -1) && ((path.get(i + 1) - path.get(i + 3)) == 0)) {
-                        pathCost = pathCost + (tileCost[index][7] * 10);
+                        pathCost = pathCost + (tileCost[x][y][7] * 10);
                     }
                     
                 }

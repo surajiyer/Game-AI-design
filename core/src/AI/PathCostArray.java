@@ -17,10 +17,10 @@ public class PathCostArray {
     private final int height;
     private final int[] flagLocations;
     private final int nrOfFlags;
-    private final float[][] tileCost;
+    private final float[][][] tileCost;
     
 
-    public PathCostArray(int width, int height, int[] flagLocations, int nrOfFlags, float[][] tileCost) { 
+    public PathCostArray(int width, int height, int[] flagLocations, int nrOfFlags, float[][][] tileCost) { 
         this.width = width;
         this.height = height;
         this.flagLocations = flagLocations;
@@ -37,23 +37,22 @@ public class PathCostArray {
                 for (int k = 0, n = path.size; k < n - 2; k += 2) {
                     int x = path.get(k);
                     int y = path.get(k + 1);
-                    int index = x + width * y;
                         if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
-                            pathCost = pathCost + (tileCost[index][0] * sqrt2);
+                            pathCost = pathCost + (tileCost[x][y][0] * sqrt2);
                         } if(((path.get(k) - path.get(k + 2)) == 0) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
-                            pathCost = pathCost + (tileCost[index][1]);
+                            pathCost = pathCost + (tileCost[x][y][1]);
                         } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
-                            pathCost = pathCost + (tileCost[index][2] * sqrt2);
+                            pathCost = pathCost + (tileCost[x][y][2] * sqrt2);
                         } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == 0)) {
-                            pathCost = pathCost + (tileCost[index][3]);
+                            pathCost = pathCost + (tileCost[x][y][3]);
                         } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
-                            pathCost = pathCost + (tileCost[index][4] * sqrt2);
+                            pathCost = pathCost + (tileCost[x][y][4] * sqrt2);
                         } if(((path.get(k) - path.get(k + 2)) == 0) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
-                            pathCost = pathCost + (tileCost[index][5]);
+                            pathCost = pathCost + (tileCost[x][y][5]);
                         } if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
-                            pathCost = pathCost + (tileCost[index][6] * sqrt2);
+                            pathCost = pathCost + (tileCost[x][y][6] * sqrt2);
                         } if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == 0)) {
-                            pathCost = pathCost + (tileCost[index][7]);
+                            pathCost = pathCost + (tileCost[x][y][7]);
                         }
                 } 
                 pathCostArray[i / 2][j / 2] = pathCost;
