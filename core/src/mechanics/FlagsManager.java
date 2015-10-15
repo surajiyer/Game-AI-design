@@ -59,7 +59,7 @@ public class FlagsManager {
         }
     }
 
-    public Array<Flag> getList() {
+    public Array<Flag> getFlagsList() {
         return flagList;
     }
 

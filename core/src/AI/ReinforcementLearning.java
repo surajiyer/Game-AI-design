@@ -1,10 +1,16 @@
 package AI;
 
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.IntArray;
 import java.util.Random;
 import main.Basic3DTest1;
+import mechanics.AIController;
+import mechanics.Flag;
+import mechanics.Flag.Occupant;
 import mechanics.FlagsManager;
 import mechanics.State;
 import utils.GameInfo;
+import static utils.GameInfo.AI;
 
 /**
  *
@@ -18,17 +24,24 @@ public class ReinforcementLearning {
     public static double LearningRate = 2;
     public static double Epsilon = 3;
     public static double DecayingLR = 4;
-    private final double maxLearningRate = 0.7;
-    private double pjog, epsilon;
+    private double maxLearningRate = 0.7, pjog, epsilon;
     private final int pathCost = 1;
-    private final int[][] policy;
-    private final double[][][] qsa;
+    private int[][] policy;
+    private double[][][] qsa;
     State start, currState;
     Random rand;
+
+    AIController aiController;
 
     public boolean isBestAct = true;
     public boolean receivedPenalty = false;
     private int numEpisodes;
+
+    int currAction;
+    State nextState;
+    int scoreDiffPrev;
+    double currStateQ;
+    double transitionCost;
 
     double learningRate;
 
@@ -36,18 +49,29 @@ public class ReinforcementLearning {
     boolean isOptValCalc;
     double PRECISION = 0.01;
     FlagsManager flagList;
-    float[][][] tileCost = new float[GameInfo.widthField][GameInfo.widthField][8];
+    float[][][] tileCost = new float[GameInfo.widthField][GameInfo.heightField][8];
     PathCostArray pathcostarray;
-    int[] closestFlagArray = new int[GameInfo.flagsManager.getList().size*2];
-    
-    public ReinforcementLearning(Basic3DTest1 basic) {
-        start = new State(0, 0);
-        currState = new State(0, 0);
+    int[] closestFlagArray = new int[GameInfo.flagsManager.getFlagsList().size];
+    Astar astar;
+
+    public ReinforcementLearning() {
+        tileCost = TileCostArray.generateTileCostArray(
+                GameInfo.widthField, GameInfo.heightField, 
+                GameInfo.intHeightMap, 8, 
+                GameInfo.widthField - 1, 
+                GameInfo.heightField - 1);
+        pathcostarray = new PathCostArray(GameInfo.widthField, 
+                GameInfo.heightField, 
+                GameInfo.getFlagManager().getFlagPositions(), 
+                GameInfo.flagsManager.getFlagsList().size, tileCost);
+        closestFlagArray = pathcostarray.generateClosestFlagArrayAtLocation(pathCost, pathCost);
+        start = new State(closestFlagArray[0], 0);
+        currState = new State(closestFlagArray[0], 0);
         rand = new Random();
-        this.basic = basic;
         flagList = GameInfo.flagsManager;
         policy = new int[5][5];
-        qsa = new double[flagList.getList().size*2][flagList.getList().size*2][flagList.getList().size*2];
+        qsa = new double[flagList.getFlagsList().size][flagList.getFlagsList().size][flagList.getFlagsList().size];
+        astar = new Astar(GameInfo.widthField, GameInfo.heightField);
         initialize();
     }
 
@@ -71,11 +95,7 @@ public class ReinforcementLearning {
         }
     }
 
-    public boolean step() {
-        double transitionCost;
-        int currAction;
-        State nextState;
-
+    public IntArray step() {
 //        if (reachedGoal(currState)) {
 //            currState.copy(start);
 //            numEpisodes++;
@@ -89,42 +109,41 @@ public class ReinforcementLearning {
 //            }
 //            return true;
 //        }
-        //tileCost = TileCostArray.generateTileCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.heightMap, 8, GameInfo.widthField-1, GameInfo.heightField-1);
         // Pathcost from all flags to all flags.
-        pathcostarray = new PathCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.getFlagList().getFlagPositions(), GameInfo.flagsManager.getList().size*2, tileCost);
-        //pathCostArray = pathcostarray.generatePathCostArray();
-        closestFlagArray = pathcostarray.generateClosestFlagArray(1);
         //Select action using epsilon greedy exploration policy
         currAction = chooseAction(currState, rand.nextDouble());
-        double currStateQ = qsa[currState.x][currState.y][currAction];
-        int scoreDiffPrev = GameInfo.score.getCS() - GameInfo.score.getPS();
-        
+        currStateQ = qsa[currState.x][currState.y][currAction];
+        scoreDiffPrev = GameInfo.score.getCS() - GameInfo.score.getPS();
+
+        Vector3 tmp = new Vector3(GameInfo.getFlagManager()
+                .getFlagsList()
+                .get(currAction)
+                .getPosition());
+        IntArray path = astar.getPath((int) GameInfo.AI.getPosition().x, 
+                (int) GameInfo.AI.getPosition().z, (int) tmp.x, (int) tmp.z, tileCost);
+        System.out.println("path found");
+        return path;
+    }
+
+    public boolean evaluate() {
         //currAction = flag die je wilt capturen
         //wachten totdat ai op de flag staat
-        
-//        while(!waitForCapture(currAction)) {
-//            
-//            
-//        }
-        
+
         //observeer je de nieuwe state
-        
         //Perform choosen action based on pjog (noise of environment)
-        
         nextState = new State(currAction, GameInfo.getLatestPlayerCapture());
         int scoreDiffNext = GameInfo.score.getCS() - GameInfo.score.getPS();
         //Utility.show(" next st="+nextState.x+","+nextState.y);
 
         //If not a valid transition stay in same state and add penalty;
         transitionCost = pathCost;
-
         double nextStateQmin = getMinQsa(nextState);
 
         //System.out.println("qsa before=="+qsa[currState.x][currState.y][0]+","+qsa[currState.x][currState.y][1]+","+qsa[currState.x][currState.y][2]+","+qsa[currState.x][currState.y][3]);
-        
         //DETERMINE THE VALUE OF THE ACTION
-        currStateQ = currStateQ * (1 - learningRate) + (learningRate * (scoreDiffNext - scoreDiffPrev));
-        
+        currStateQ = currStateQ * (1 - learningRate) + (learningRate
+                * (scoreDiffNext - scoreDiffPrev));
+
         qsa[currState.x][currState.y][currAction] = currStateQ;
 		//System.out.println("qsa after =="+qsa[currState.x][currState.y][0]+","+qsa[currState.x][currState.y][1]+","+qsa[currState.x][currState.y][2]+","+qsa[currState.x][currState.y][3]);			
 
@@ -133,11 +152,10 @@ public class ReinforcementLearning {
         //System.out.println("policy= "+policy[currState.x][currState.y]);
         currState.copy(nextState);
 
-        return false;
+        return true;
     }
 
     private int chooseAction(State currState, double randNum) {
-
         int bestAction = getBestAction(qsa[currState.x][currState.y]);
         double d = epsilon / 5;
         int choosenAction = bestAction;
@@ -159,10 +177,11 @@ public class ReinforcementLearning {
     }
 
     private int getBestAction(double[] actions) {
-        double min = actions[0];
+        closestFlagArray = pathcostarray.generateClosestFlagArray(0);
         int bestAction = 0;
-        for (int i = 1; i < actions.length; i++) {
-            if (min > actions[i]) {
+        double min = actions[0];
+        for (int i = 0; i < actions.length; i++) {
+            if (min > actions[i] && !GameInfo.flagsManager.getOccupant(i).equals(Occupant.AI)) {
                 min = actions[i];
                 bestAction = i;
             }
@@ -181,11 +200,11 @@ public class ReinforcementLearning {
         }
         return min;
     }
-    
+
     public boolean waitForCapture(int flag) {
         return true;
     }
-    
+
     public double[][][] getQSA() {
         return qsa;
     }

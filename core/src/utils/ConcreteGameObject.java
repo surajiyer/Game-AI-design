@@ -22,13 +22,13 @@ public class ConcreteGameObject extends GameObject {
     
     public ConcreteGameObject(Model model) {
         instance = new ModelInstance(model);
-        this.calculateDimensions();
+        this.calculateBounds();
     }
     
     @Override
-    protected void calculateDimensions() {
+    protected void calculateBounds() {
         instance.calculateBoundingBox(bounds);
-        super.calculateDimensions();
+        super.calculateBounds();
     }
     
     @Override

@@ -74,7 +74,7 @@ public class GlobalState {
         Flag.noneFlag = new ModelInstance(assetsManager.get("flags/flagNone.g3db", Model.class));
         
         // Load all the flags
-        Array<Flag> flags = GameInfo.flagsManager.getList();
+        Array<Flag> flags = GameInfo.flagsManager.getFlagsList();
         for(int i = 0; i < flags.size; i++) {
             Vector3 pos = GameInfo.flagsManager.getFlagPosition(i);
             gameObject.setPosition(tmp.set(pos).scl(UNITS_PER_METER));

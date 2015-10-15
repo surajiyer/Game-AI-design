@@ -154,7 +154,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
             modelBatch.render(bobberBox);
         }
         
-//        Array<Flag> flags = flagList.getList();
+//        Array<Flag> flags = flagList.getFlagsList();
 //        for(int i = 0; i < flags.size; i++) {
 //            ModelInstance temp = flags[i].getFlagBox();
 //            ModelInstance colTemp = flags[i].getCaptureBox();
@@ -215,7 +215,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
     
     void assetLoading() {
 //        ModelInstance instance;
-//        Flag[] flags = flagList.getList();
+//        Flag[] flags = flagList.getFlagsList();
 //        for(int i = 0; i < flags.length; i++) {
 //            instance = new ModelInstance(assets.get("flags/flagNone.g3db", Model.class));
 //            int[] coor = flagList.getFlagPosition(i);

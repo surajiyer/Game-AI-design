@@ -120,7 +120,6 @@ public class TileCostArray {
                     if(heightMap[x][y] < 20) {
                         tileCost[x][y][m] = 0.25f; 
                     }
-                    //System.out.println(tileCost[x][y][m]);
                 }
             }
         }

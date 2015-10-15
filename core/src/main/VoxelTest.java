@@ -36,12 +36,12 @@ import utils.EnvironmentCubeMap;
 import utils.GameController;
 import mechanics.Player;
 import mechanics.PlayerController;
-import mechanics.Flag;
 import mechanics.FlagsManager;
 import mechanics.Score;
 import java.util.concurrent.TimeUnit;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import mechanics.Flag.Occupant;
+import static mechanics.Flag.Occupant.AI;
 import utils.GameInfo;
 
 
@@ -144,6 +144,8 @@ public class VoxelTest extends ApplicationAdapter {
         // Load the player player
         player = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
                 , Vector3.Zero, camera.direction);
+        GameInfo.AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/RedWalk.g3dj"))
+                , Vector3.Zero, camera.direction);
         playerController = new PlayerController(player, camera, 
                 new Vector3(0, 7*UNITS_PER_METER, -5*UNITS_PER_METER));
         playerController.setVelocity(22*UNITS_PER_METER);
@@ -154,11 +156,11 @@ public class VoxelTest extends ApplicationAdapter {
         
         // Flags
         GameInfo.flagsManager = new FlagsManager(5);
-        GameInfo.flagsManager.setOccupant(0,"AI");
-        GameInfo.flagsManager.setOccupant(1,"AI");
-        GameInfo.flagsManager.setOccupant(2,"Player");
-        GameInfo.flagsManager.setOccupant(3,"Player");
-        GameInfo.flagsManager.setOccupant(4,"Player");
+        GameInfo.flagsManager.setOccupant(0,Occupant.AI);
+        GameInfo.flagsManager.setOccupant(1,Occupant.AI);
+        GameInfo.flagsManager.setOccupant(2,Occupant.PLAYER);
+        GameInfo.flagsManager.setOccupant(3,Occupant.PLAYER);
+        GameInfo.flagsManager.setOccupant(4,Occupant.PLAYER);
         
         // Setup a minimap camera
         //miniMapCam = new OrthographicCamera(miniWidth, miniHeight);
@@ -177,7 +179,6 @@ public class VoxelTest extends ApplicationAdapter {
         //time
         startTime = System.currentTimeMillis();
         elapsedTime = 0;      
-        
         
         // Setup all input sources
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
@@ -236,24 +237,6 @@ public class VoxelTest extends ApplicationAdapter {
         // Time
         elapsedTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
         score.updateScore(elapsedTime, GameInfo.flagsManager);
-
-        //flags
-        Flag[] flags = GameInfo.flagsManager.getList();
-        for(int i = 0; i < flags.length; i++) {
-            ModelInstance temp = flags[i].getFlagBox();
-            ModelInstance colTemp = flags[i].getCaptureBox();
-           if(temp != null) {
-               int[] coor = GameInfo.flagsManager.getFlagPosition(i);
-               temp.transform.setToTranslation(coor[0]*UNITS_PER_METER, 
-                    coor[1]*UNITS_PER_METER, 
-                    coor[2]*UNITS_PER_METER);
-                              colTemp.transform.setToTranslation(coor[0]*UNITS_PER_METER, 
-                    coor[1]*UNITS_PER_METER, 
-                    coor[2]*UNITS_PER_METER);
-               modelBatch.render(temp);
-               modelBatch.render(colTemp);
-           }
-        }
 
         modelBatch.end();
         

@@ -49,7 +49,7 @@ public class Score {
     
     public void updateScore(long elapsedTime, FlagsManager flagList) { 
         if(elapsedTime%scoreTime == 0 && toScore && elapsedTime != 0) {
-            for(int i = 0; i < flagList.getList().size; i++) {
+            for(int i = 0; i < flagList.getFlagsList().size; i++) {
                 if(flagList.getOccupant(i) == Flag.Occupant.PLAYER) {
                     addPS(flagList.getFlagWeight(i));
                 }else if(flagList.getOccupant(i) == Flag.Occupant.AI){
