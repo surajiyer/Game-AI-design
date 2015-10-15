@@ -69,7 +69,14 @@ public class AstarTest extends ApplicationAdapter {
         // Pathcost from all flags to all flags.
         pathcostarray = new PathCostArray(widthField, heightField, flagLocations, nrOfFlags, tileCost);
         //pathCostArray = pathcostarray.generatePathCostArray();
+        /*
+        closestFlagArray = pathcostarray.generateClosestFlagArray(0);
         closestFlagArray = pathcostarray.generateClosestFlagArray(1);
+        closestFlagArray = pathcostarray.generateClosestFlagArray(2);
+        closestFlagArray = pathcostarray.generateClosestFlagArray(3);
+        closestFlagArray = pathcostarray.generateClosestFlagArray(4);
+        */
+        closestFlagArray = pathcostarray.generateClosestFlagArrayAtLocation(0,0);
         /*
         for(int m = 0; m < nrOfFlags; m++) {
                 for(int k = 0; k < nrOfFlags; k++){

@@ -1,6 +1,7 @@
 package mechanics;
 
 import java.util.Random;
+import utils.GameInfo;
 
 /**
  *
@@ -17,42 +18,42 @@ public class FlagList {
         allCoordinates = new int[NROF_FLAGS * 2];
         for (int i = 0; i < NROF_FLAGS; i++) {
             if (i == 0) {
-                int x = random.nextInt((93 - 10) + 1) + 10;
+                int x = random.nextInt((GameInfo.widthField/3 - 20) + 1) + 20;
                 allCoordinates[i * 2] = x;
                 int y = 0;
-                int z = random.nextInt((100 - 10) + 1) + 10;
+                int z = random.nextInt((GameInfo.heightField/2 - 20) + 1) + 20;
                 allCoordinates[i * 2 + 1] = z;
                 Flag flag = new Flag(x, y, z, i, 5);
                 flagList[i] = flag;
             } else if (i == 1) {
-                int x = random.nextInt((93 - 10) + 1) + 10;
+                int x = random.nextInt((GameInfo.widthField/3 - 20) + 1) + 20;
                 allCoordinates[i * 2] = x;
                 int y = 0;
-                int z = random.nextInt((190 - 100) + 1) + 100;
+                int z = random.nextInt((GameInfo.heightField-20 - GameInfo.heightField/2) + 1) + GameInfo.heightField/2;
                 allCoordinates[i * 2 + 1] = z;
                 Flag flag = new Flag(x, y, z, i, 5);
                 flagList[i] = flag;
             } else if (i == 2) {
-                int x = random.nextInt((186 - 93) + 1) + 93;
+                int x = random.nextInt((GameInfo.widthField/3*2 - GameInfo.widthField/3) + 1) + GameInfo.widthField/3;
                 allCoordinates[i * 2] = x;
                 int y = 0;
-                int z = random.nextInt((150 - 50) + 1) + 50;
+                int z = random.nextInt((GameInfo.heightField/4*3 - GameInfo.heightField/4) + 1) + GameInfo.heightField/4;
                 allCoordinates[i * 2 + 1] = z;
                 Flag flag = new Flag(x, y, z, i, 5);
                 flagList[i] = flag;
             } else if (i == 3) {
-                int x = random.nextInt((270 - 186) + 1) + 186;
+                int x = random.nextInt((GameInfo.widthField-20 - GameInfo.widthField/3*2) + 1) + GameInfo.widthField/3*2;
                 allCoordinates[i * 2] = x;
                 int y = 0;
-                int z = random.nextInt((100 - 10) + 1) + 10;
+                int z = random.nextInt((GameInfo.heightField/2 - 20) + 1) + 20;
                 allCoordinates[i * 2 + 1] = z;
                 Flag flag = new Flag(x, y, z, i, 5);
                 flagList[i] = flag;
             } else if(i==4) {
-                int x = random.nextInt((270 - 186) + 1) + 186;
+                int x = random.nextInt((GameInfo.widthField-20 - GameInfo.widthField/3*2) + 1) + GameInfo.widthField/3*2;
                 allCoordinates[i * 2] = x;
                 int y = 0;
-                int z = random.nextInt((190 - 100) + 1) + 100;
+                int z = random.nextInt((GameInfo.heightField-20 - GameInfo.heightField/2) + 1) + GameInfo.heightField/2;
                 allCoordinates[i * 2 + 1] = z;
                 Flag flag = new Flag(x, y, z, i, 5);
                 flagList[i] = flag;

@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Array;
 import static main.VoxelTest.UNITS_PER_METER;
 import utils.ConcreteGameObject;
 import utils.GameController;
+import utils.GameInfo;
 
 /**
  *
@@ -77,7 +78,32 @@ public class GlobalState {
         gameObject.setPosition(tmp.set(6*UNITS_PER_METER, 0, 3*UNITS_PER_METER));
         instances.add(gameObject);
         
-        // Done loading assetsManager
+        //flags
+        Flag[] flags = GameInfo.flagList.getList();
+        for(int i = 0; i < flags.length; i++) {
+            switch (GameInfo.flagList.getOccupant(i)) {
+                case "AI":
+                    gameObject = new ConcreteGameObject(
+                            assetsManager.get("flags/flagRed.g3db", Model.class));
+                    break;
+                case "Player":
+                    gameObject = new ConcreteGameObject(
+                            assetsManager.get("flags/flagBlue.g3db", Model.class));
+                    break;
+                case "None":
+                    gameObject = new ConcreteGameObject(
+                            assetsManager.get("flags/flagNone.g3db", Model.class));
+                    break;
+            }
+            int[] coor = GameInfo.flagList.getCoordinates(i);
+            gameObject.setPosition(tmp.set(
+                    coor[0]*UNITS_PER_METER, 
+                    coor[1]*UNITS_PER_METER, 
+                    coor[2]*UNITS_PER_METER));
+            instances.add(gameObject);
+        }
+        
+        // Done loading assets
         assetLoading = false;
     }
 }
