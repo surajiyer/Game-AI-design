@@ -14,7 +14,7 @@ public class GameInfo {
     public static Score score;
     
     public static float[][] heightMap;
-    
+    public static int[][] intHeightMap;
     public static int widthField = 320;
     public static int heightField = 320;
     

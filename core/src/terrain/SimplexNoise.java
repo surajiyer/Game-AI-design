@@ -232,11 +232,13 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
                         octaves, roughness, terrainScale),
                 generateRidgedNoise(voxelWorld.voxelsX, voxelWorld.voxelsZ, riverScale));
         createImage(GameInfo.heightMap, "simplexmap.png");
+        GameInfo.intHeightMap = new int[voxelWorld.voxelsX][voxelWorld.voxelsZ];
         int range = max - min;
         for (int z = 0; z < voxelWorld.voxelsZ; z++) {
             for (int x = 0; x < voxelWorld.voxelsX; x++) {
                 GameInfo.heightMap[x][z] = (GameInfo.heightMap[x][z] / 255f * range) + min;
                 voxelWorld.setColumn(x, (int) Math.floor(GameInfo.heightMap[x][z]), z, (byte) 1);
+                GameInfo.intHeightMap[x][z] = (int) Math.floor(GameInfo.heightMap[x][z]);
             }
         }
     }
