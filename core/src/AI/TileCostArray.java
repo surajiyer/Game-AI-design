@@ -19,10 +19,10 @@ public class TileCostArray {
                                 if((heightMap[x][y] - heightMap[x - 1][y + 1]) == 0) {
                                     tileCost[x][y][m] = 1f;
                                 }
-                                if((heightMap[x][y] - heightMap[x - 1][y + 1]) == 1) {
+                                if((heightMap[x][y] - heightMap[x - 1][y + 1]) == -1) {
                                     tileCost[x][y][m] = 1.5f;
                                 }
-                                if((heightMap[x][y] - heightMap[x - 1][y + 1]) == -1) {
+                                if((heightMap[x][y] - heightMap[x - 1][y + 1]) == 1) {
                                     tileCost[x][y][m] = 0.5f;
                                 } 
                             }
@@ -31,10 +31,10 @@ public class TileCostArray {
                             if((heightMap[x][y] - heightMap[x][y + 1]) == 0) {
                                 tileCost[x][y][m] = 1f;
                             }
-                            if((heightMap[x][y] - heightMap[x][y + 1]) == 1) {
+                            if((heightMap[x][y] - heightMap[x][y + 1]) == -1) {
                                 tileCost[x][y][m] = 1.5f;
                             }
-                            if((heightMap[x][y] - heightMap[x][y + 1]) == -1) {
+                            if((heightMap[x][y] - heightMap[x][y + 1]) == 1) {
                                 tileCost[x][y][m] = 0.5f;
                             } 
                         }
@@ -43,10 +43,10 @@ public class TileCostArray {
                                 if((heightMap[x][y] - heightMap[x + 1][y + 1]) == 0) {
                                     tileCost[x][y][m] = 1f;
                                 }
-                                if((heightMap[x][y] - heightMap[x + 1][y + 1]) == 1) {
+                                if((heightMap[x][y] - heightMap[x + 1][y + 1]) == -1) {
                                     tileCost[x][y][m] = 1.5f;
                                 }
-                                if((heightMap[x][y] - heightMap[x + 1][y + 1]) == -1) {
+                                if((heightMap[x][y] - heightMap[x + 1][y + 1]) == 1) {
                                     tileCost[x][y][m] = 0.5f;
                                 }
                             }
@@ -57,10 +57,10 @@ public class TileCostArray {
                             if((heightMap[x][y] - heightMap[x + 1][y]) == 0) {
                                 tileCost[x][y][m] = 1f;
                             }
-                            if((heightMap[x][y] - heightMap[x + 1][y]) == 1) {
+                            if((heightMap[x][y] - heightMap[x + 1][y]) == -1) {
                                 tileCost[x][y][m] = 1.5f;
                             }
-                            if((heightMap[x][y] - heightMap[x + 1][y]) == -1) {
+                            if((heightMap[x][y] - heightMap[x + 1][y]) == 1) {
                                 tileCost[x][y][m] = 0.5f;
                             }   
                         }
@@ -69,10 +69,10 @@ public class TileCostArray {
                                 if((heightMap[x][y] - heightMap[x + 1][y - 1]) == 0) {
                                     tileCost[x][y][m] = 1f;
                                 }
-                                if((heightMap[x][y] - heightMap[x + 1][y - 1]) == 1) {
+                                if((heightMap[x][y] - heightMap[x + 1][y - 1]) == -1) {
                                     tileCost[x][y][m] = 1.5f;
                                 }
-                                if((heightMap[x][y] - heightMap[x + 1][y - 1]) == -1) {
+                                if((heightMap[x][y] - heightMap[x + 1][y - 1]) == 1) {
                                     tileCost[x][y][m] = 0.5f;
                                 }                       
                             }
@@ -83,10 +83,10 @@ public class TileCostArray {
                             if((heightMap[x][y] - heightMap[x][y - 1]) == 0) {
                                 tileCost[x][y][m] = 1f;
                             }
-                            if((heightMap[x][y] - heightMap[x][y - 1]) == 1) {
+                            if((heightMap[x][y] - heightMap[x][y - 1]) == -1) {
                                 tileCost[x][y][m] = 1.5f;
                             }
-                            if((heightMap[x][y] - heightMap[x][y - 1]) == -1) {
+                            if((heightMap[x][y] - heightMap[x][y - 1]) == 1) {
                                 tileCost[x][y][m] = 0.5f;
                             }                          
                         }
@@ -95,10 +95,10 @@ public class TileCostArray {
                                 if((heightMap[x][y] - heightMap[x - 1][y - 1]) == 0) {
                                     tileCost[x][y][m] = 1f;
                                 }
-                                if((heightMap[x][y] - heightMap[x - 1][y - 1]) == 1) {
+                                if((heightMap[x][y] - heightMap[x - 1][y - 1]) == -1) {
                                     tileCost[x][y][m] = 1.5f;
                                 }
-                                if((heightMap[x][y] - heightMap[x - 1][y - 1]) == -1) {
+                                if((heightMap[x][y] - heightMap[x - 1][y - 1]) == 1) {
                                     tileCost[x][y][m] = 0.5f;
                                 }                       
                             }
@@ -109,16 +109,16 @@ public class TileCostArray {
                             if((heightMap[x][y] - heightMap[x - 1][y]) == 0) {
                                 tileCost[x][y][m] = 1f;
                             }
-                            if((heightMap[x][y] - heightMap[x - 1][y]) == 1) {
+                            if((heightMap[x][y] - heightMap[x - 1][y]) == -1) {
                                 tileCost[x][y][m] = 1.5f;
                             }
-                            if((heightMap[x][y] - heightMap[x - 1][y]) == -1) {
+                            if((heightMap[x][y] - heightMap[x - 1][y]) == 1) {
                                 tileCost[x][y][m] = 0.5f;
                             }                     
                         }
                     }
                     if(heightMap[x][y] < 20) {
-                        tileCost[x][y][m] = 0.25f; 
+                        tileCost[x][y][m] = 4f; 
                     }
                 }
             }

@@ -86,7 +86,7 @@ public class PathCostArray {
             interMediaryArray[i][1] = i;
             interMediaryArray[i][0] = pathCostArray[currentFlag][i];  
         }
-        System.out.println("currentFlag " + currentFlag);
+        //System.out.println("currentFlag " + currentFlag);
         for (final float[] arr : interMediaryArray) {
             //System.out.println(Arrays.toString(arr));
         }
@@ -101,7 +101,7 @@ public class PathCostArray {
         }
         for (int i = 0; i < nrOfFlags - 1; i++) {
             closestFlagArray[i] = (int)interMediaryArray[i + 1][1]; 
-            System.out.println(closestFlagArray[i]);
+            //System.out.println(closestFlagArray[i]);
         }
         
     return closestFlagArray; 

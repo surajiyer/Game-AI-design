@@ -70,7 +70,9 @@ public class ReinforcementLearning {
         rand = new Random();
         flagList = GameInfo.flagsManager;
         policy = new int[5][5];
-        qsa = new double[flagList.getFlagsList().size][flagList.getFlagsList().size][flagList.getFlagsList().size];
+        qsa = new double[flagList.getFlagsList().size]
+                [flagList.getFlagsList().size]
+                [flagList.getFlagsList().size];
         astar = new Astar(GameInfo.widthField, GameInfo.heightField);
         initialize();
     }
@@ -114,7 +116,6 @@ public class ReinforcementLearning {
         currAction = chooseAction(currState, rand.nextDouble());
         currStateQ = qsa[currState.x][currState.y][currAction];
         scoreDiffPrev = GameInfo.score.getCS() - GameInfo.score.getPS();
-
         Vector3 tmp = new Vector3(GameInfo.getFlagManager()
                 .getFlagsList()
                 .get(currAction)

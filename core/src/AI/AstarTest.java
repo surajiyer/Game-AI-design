@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import mechanics.FlagsManager;
 import terrain.SimplexNoise;
+import utils.GameInfo;
 
 
 public class AstarTest extends ApplicationAdapter {
@@ -50,6 +51,8 @@ public class AstarTest extends ApplicationAdapter {
             map = new boolean[widthField * heightField];
             // get the fags list
             flagList = new FlagsManager(nrOfFlags);
+            flagLocations = flagList.getFlagPositions();
+            flagList = GameInfo.flagsManager;//new FlagList(nrOfFlags);
             flagLocations = flagList.getFlagPositions();
             
         float[][] t = SimplexNoise.generateOctavedSimplexNoise(widthField, heightField, 6, 0.5f, 0.007f); // SIMPLEX NOISE
