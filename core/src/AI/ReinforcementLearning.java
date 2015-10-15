@@ -1,9 +1,12 @@
 package AI;
 
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.IntArray;
 import java.util.Random;
 import main.Basic3DTest1;
+import mechanics.AIController;
 import mechanics.FlagList;
+import mechanics.Player;
 import mechanics.State;
 import utils.GameInfo;
 
@@ -26,6 +29,9 @@ public class ReinforcementLearning {
     State start, currState;
     Random rand;
 
+    Player AI;
+    AIController aiController;
+
     public boolean isBestAct = true;
     public boolean receivedPenalty = false;
     private int numEpisodes;
@@ -36,12 +42,13 @@ public class ReinforcementLearning {
     boolean isOptValCalc;
     double PRECISION = 0.01;
     FlagList flagList;
-    float[][][] tileCost = new float[GameInfo.widthField][GameInfo.widthField][8];
+    float[][][] tileCost = new float[GameInfo.widthField][GameInfo.heightField][8];
     PathCostArray pathcostarray;
     int[] closestFlagArray = new int[GameInfo.flagList.getList().length];
-    
+    Astar astar;
+
     public ReinforcementLearning() {
-        tileCost = TileCostArray.generateTileCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.intHeightMap, 8, GameInfo.widthField-1, GameInfo.heightField-1);
+        tileCost = TileCostArray.generateTileCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.intHeightMap, 8, GameInfo.widthField - 1, GameInfo.heightField - 1);
         pathcostarray = new PathCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.getFlagList().getAllFlagCoordinates(), GameInfo.flagList.getList().length, tileCost);
         closestFlagArray = pathcostarray.generateClosestFlagArrayAtLocation(pathCost, pathCost);
         start = new State(closestFlagArray[0], -1);
@@ -50,6 +57,9 @@ public class ReinforcementLearning {
         flagList = GameInfo.flagList;
         policy = new int[5][5];
         qsa = new double[flagList.getList().length][flagList.getList().length][flagList.getList().length];
+        AI = GameInfo.AI;
+        aiController = new AIController(AI);
+        astar = new Astar(GameInfo.widthField, GameInfo.heightField);
         initialize();
     }
 
@@ -96,32 +106,32 @@ public class ReinforcementLearning {
         currAction = chooseAction(currState, rand.nextDouble());
         double currStateQ = qsa[currState.x][currState.y][currAction];
         int scoreDiffPrev = GameInfo.score.getCS() - GameInfo.score.getPS();
-        
+
+        IntArray path = astar.getPath((int) AI.center.x, (int) AI.center.z, 
+                GameInfo.getFlagList().getList()[currAction].getCoordinates()[0], 
+                GameInfo.getFlagList().getList()[currAction].getCoordinates()[2], tileCost);
+        boolean evaluate = false;
+        while(!evaluate) {
+            evaluate = aiController.move(path);
+        }
         //currAction = flag die je wilt capturen
         //wachten totdat ai op de flag staat
-        
-//        while(!waitForCapture(currAction)) {
-//            
-//            
-//        }
-        
+
         //observeer je de nieuwe state
-        
         //Perform choosen action based on pjog (noise of environment)
-        
         nextState = new State(currAction, GameInfo.getLatestPlayerCapture());
         int scoreDiffNext = GameInfo.score.getCS() - GameInfo.score.getPS();
         //Utility.show(" next st="+nextState.x+","+nextState.y);
-        
+
         //If not a valid transition stay in same state and add penalty;
         transitionCost = pathCost;
         double nextStateQmin = getMinQsa(nextState);
 
         //System.out.println("qsa before=="+qsa[currState.x][currState.y][0]+","+qsa[currState.x][currState.y][1]+","+qsa[currState.x][currState.y][2]+","+qsa[currState.x][currState.y][3]);
-        
         //DETERMINE THE VALUE OF THE ACTION
-        currStateQ = currStateQ * (1 - learningRate) + (learningRate * (scoreDiffNext - scoreDiffPrev));
-        
+        currStateQ = currStateQ * (1 - learningRate) + (learningRate * 
+                (scoreDiffNext - scoreDiffPrev));
+
         qsa[currState.x][currState.y][currAction] = currStateQ;
 		//System.out.println("qsa after =="+qsa[currState.x][currState.y][0]+","+qsa[currState.x][currState.y][1]+","+qsa[currState.x][currState.y][2]+","+qsa[currState.x][currState.y][3]);			
 
@@ -178,11 +188,11 @@ public class ReinforcementLearning {
         }
         return min;
     }
-    
+
     public boolean waitForCapture(int flag) {
         return true;
     }
-    
+
     public double[][][] getQSA() {
         return qsa;
     }

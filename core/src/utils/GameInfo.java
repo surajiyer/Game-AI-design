@@ -2,7 +2,9 @@ package utils;
 
 import mechanics.Flag;
 import mechanics.FlagList;
+import mechanics.Player;
 import mechanics.Score;
+import terrain.VoxelWorld;
 
 /**
  *
@@ -12,11 +14,12 @@ public class GameInfo {
     
     public static FlagList flagList;
     public static Score score;
-    
+    public static VoxelWorld world;
     public static float[][] heightMap;
     public static int[][] intHeightMap;
     public static int widthField = 320;
     public static int heightField = 320;
+    public static Player AI;
     
     static int latestPlayerCapture;
     static int latestAiCapture;

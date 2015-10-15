@@ -144,6 +144,8 @@ public class VoxelTest extends ApplicationAdapter {
         // Load the player player
         player = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
                 , Vector3.Zero, camera.direction);
+        GameInfo.AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/RedWalk.g3dj"))
+                , Vector3.Zero, camera.direction);
         playerController = new PlayerController(player, camera, 
                 new Vector3(0, 7*UNITS_PER_METER, -5*UNITS_PER_METER));
         playerController.setVelocity(22*UNITS_PER_METER);
