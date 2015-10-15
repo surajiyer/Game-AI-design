@@ -13,6 +13,11 @@ public class GameInfo {
     public static FlagList flagList;
     public static Score score;
     
+    public static float[][] heightMap;
+    
+    public static int widthField = 320;
+    public static int heightField = 320;
+    
     static int latestPlayerCapture;
     static int latestAiCapture;
     

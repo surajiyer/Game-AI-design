@@ -35,7 +35,10 @@ public class ReinforcementLearning {
     boolean isOptValCalc;
     double PRECISION = 0.01;
     FlagList flagList;
-
+    float[][][] tileCost = new float[GameInfo.widthField][GameInfo.widthField][8];
+    PathCostArray pathcostarray;
+    int[] closestFlagArray = new int[GameInfo.flagList.getList().length];
+    
     public ReinforcementLearning(Basic3DTest1 basic) {
         start = new State(0, 0);
         currState = new State(0, 0);
@@ -85,7 +88,11 @@ public class ReinforcementLearning {
 //            }
 //            return true;
 //        }
-        
+        tileCost = TileCostArray.generateTileCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.heightMap, 8, GameInfo.widthField-1, GameInfo.heightField-1);
+        // Pathcost from all flags to all flags.
+        pathcostarray = new PathCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.getFlagList().getAllFlagCoordinates(), GameInfo.flagList.getList().length, tileCost);
+        //pathCostArray = pathcostarray.generatePathCostArray();
+        closestFlagArray = pathcostarray.generateClosestFlagArray(1);
         //Select action using epsilon greedy exploration policy
         currAction = chooseAction(currState, rand.nextDouble());
         double currStateQ = qsa[currState.x][currState.y][currAction];

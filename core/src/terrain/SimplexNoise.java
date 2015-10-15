@@ -9,6 +9,7 @@ import java.io.IOException;
 import static java.lang.Math.abs;
 import javax.imageio.ImageIO;
 import java.util.*;
+import utils.GameInfo;
 
 public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
 
@@ -226,16 +227,16 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
 
     public static void generateHeightMap(VoxelWorld voxelWorld, int min, int max, int octaves,
             float roughness, float terrainScale, float riverScale) {
-        float[][] heightMap = combineNoise(
+        GameInfo.heightMap = combineNoise(
                 generateOctavedSimplexNoise(voxelWorld.voxelsX, voxelWorld.voxelsZ,
                         octaves, roughness, terrainScale),
                 generateRidgedNoise(voxelWorld.voxelsX, voxelWorld.voxelsZ, riverScale));
-        createImage(heightMap, "simplexmap.png");
+        createImage(GameInfo.heightMap, "simplexmap.png");
         int range = max - min;
         for (int z = 0; z < voxelWorld.voxelsZ; z++) {
             for (int x = 0; x < voxelWorld.voxelsX; x++) {
-                heightMap[x][z] = (heightMap[x][z] / 255f * range) + min;
-                voxelWorld.setColumn(x, (int) Math.floor(heightMap[x][z]), z, (byte) 1);
+                GameInfo.heightMap[x][z] = (GameInfo.heightMap[x][z] / 255f * range) + min;
+                voxelWorld.setColumn(x, (int) Math.floor(GameInfo.heightMap[x][z]), z, (byte) 1);
             }
         }
     }
