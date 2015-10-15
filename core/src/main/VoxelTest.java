@@ -270,7 +270,7 @@ public class VoxelTest extends ApplicationAdapter {
                 camera.viewportHeight - 70);
         
         //draw minimap and HUD
-        spriteBatch.draw(hudMap, hudMapSprite.getX(), hudMapSprite.getY());
+        spriteBatch.draw(hudMap, hudMapSprite.getX()-6, hudMapSprite.getY()-6);
         spriteBatch.draw(hudScore, camera.viewportWidth/2 -250, camera.viewportHeight - 70);
         spriteBatch.draw(heightMap, mapSprite.getX(), mapSprite.getY());    
         
