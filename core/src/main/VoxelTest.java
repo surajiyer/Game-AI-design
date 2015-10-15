@@ -134,7 +134,7 @@ public class VoxelTest extends ApplicationAdapter {
         // create a voxel terrain
         Cube.texture = new Texture(Gdx.files.internal("tiles.png"));
         Cube.texture.bind(0);
-        voxelWorld = new VoxelWorld(Cube.texture, 18, 4, 13);
+        voxelWorld = new VoxelWorld(Cube.texture, 20, 4, 20);
         SimplexNoise.generateHeightMap(voxelWorld, 0, 64, 10, 0.5f, 0.007f, 0.002f);
 //        PerlinNoiseGenerator.generateVoxels(model, 0, 64, 10);
 //        float camX = model.voxelsX / 2f;
@@ -270,10 +270,6 @@ public class VoxelTest extends ApplicationAdapter {
                 camera.viewportHeight - 70);
         
         //draw minimap and HUD
-        
-        
-        //spriteBatch.draw(flagMarkerBlue, 0, 0);
-        //spriteBatch.draw(flagMarkerRed, 0, 0);
         spriteBatch.draw(hudMap, hudMapSprite.getX(), hudMapSprite.getY());
         spriteBatch.draw(hudScore, camera.viewportWidth/2 -250, camera.viewportHeight - 70);
         spriteBatch.draw(heightMap, mapSprite.getX(), mapSprite.getY());    
