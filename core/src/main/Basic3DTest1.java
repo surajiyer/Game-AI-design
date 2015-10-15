@@ -29,6 +29,7 @@ import utils.Drawables;
 import mechanics.Flag;
 import mechanics.FlagList;
 import mechanics.Score;
+import utils.GameInfo;
 
 /**
  *
@@ -80,7 +81,8 @@ public class Basic3DTest1 extends ApplicationAdapter {
         camera.far = 60f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
-        flagList = new FlagList(5);
+        GameInfo.InitializeGameInfo();
+        flagList = GameInfo.flagList;
         flagList.setOccupant(0,"AI");
         flagList.setOccupant(1,"AI");
         flagList.setOccupant(2,"Player");

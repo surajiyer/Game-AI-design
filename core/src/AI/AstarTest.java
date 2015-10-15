@@ -20,6 +20,7 @@ import com.badlogic.gdx.utils.IntArray;
 import java.util.Random;
 import mechanics.FlagList;
 import terrain.SimplexNoise;
+import utils.GameInfo;
 
 
 public class AstarTest extends ApplicationAdapter {
@@ -51,7 +52,7 @@ public class AstarTest extends ApplicationAdapter {
             // randomly generate obstacles              
             map = new boolean[widthField * heightField];
             // get the fags list
-            flagList = new FlagList(nrOfFlags);
+            flagList = GameInfo.flagList;//new FlagList(nrOfFlags);
             flagLocations = flagList.getAllFlagCoordinates();
             
         float[][] t = SimplexNoise.generateOctavedSimplexNoise(widthField, heightField, 6, 0.5f, 0.007f); // SIMPLEX NOISE

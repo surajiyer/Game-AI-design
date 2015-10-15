@@ -5,6 +5,7 @@
  */
 package main;
 
+import AI.ReinforcementLearning;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -42,6 +43,8 @@ import mechanics.Score;
 import java.util.concurrent.TimeUnit;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.utils.IntArray;
+import mechanics.AIController;
 import utils.GameInfo;
 
 
@@ -88,6 +91,13 @@ public class VoxelTest extends ApplicationAdapter {
     Score score;
     long startTime;
     long elapsedTime; 
+    
+    ReinforcementLearning RL;
+    Boolean step = true;
+    Boolean evaluate = false;
+    Boolean moveAI = false;
+    IntArray path;
+    AIController aiController;
     
     @Override
     public void create () {
@@ -141,21 +151,28 @@ public class VoxelTest extends ApplicationAdapter {
 //        float camY = model.getHeight(camX, camZ) + 1.5f;
 //        camera.position.set(camX, camY, camZ);
         voxelWorld.setScale(UNITS_PER_METER);
+        GameInfo.world = voxelWorld;
+        GameInfo.InitializeGameInfo();
+        RL = new ReinforcementLearning();
         // Load the player player
         player = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
                 , Vector3.Zero, camera.direction);
-        GameInfo.AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/RedWalk.g3dj"))
+        GameInfo.AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
                 , Vector3.Zero, camera.direction);
+        
         playerController = new PlayerController(player, camera, 
                 new Vector3(0, 7*UNITS_PER_METER, -5*UNITS_PER_METER));
         playerController.setVelocity(22*UNITS_PER_METER);
+        
+        aiController = new AIController(GameInfo.AI);
+        aiController.setVelocity(22*UNITS_PER_METER);
         
         // Set the initial camera position
         camera.position.set(new Vector3().set(player.getPosition())
                 .add(playerController.cameraOffset));
         
         //flags
-        GameInfo.flagList = new FlagList(5);
+        //GameInfo.InitializeGameInfo();
         GameInfo.flagList.setOccupant(0,"AI");
         GameInfo.flagList.setOccupant(1,"AI");
         GameInfo.flagList.setOccupant(2,"Player");
@@ -228,10 +245,31 @@ public class VoxelTest extends ApplicationAdapter {
                 GlobalState.visibleCount++;
             }
         }
-        
+        if(step) {
+            System.out.println("HI");
+            path = RL.step();
+            step = false;
+            moveAI = true;
+        }
+        if(moveAI) {
+            if(!aiController.update(path)) {
+                evaluate = true;
+                moveAI = false;
+            }
+        }
+        if(evaluate) {
+            System.out.println("evaluate");
+            RL.evaluate();
+            //step = true;
+            evaluate = false;
+        }
         // Render the player character
         if(player.isVisible(camera) && !GlobalState.isFirstPerson) {
             modelBatch.render(player);
+            GlobalState.visibleCount++;
+        }
+        if(GameInfo.AI.isVisible(camera)) {
+            modelBatch.render(GameInfo.AI);
             GlobalState.visibleCount++;
         }
         
@@ -300,6 +338,7 @@ public class VoxelTest extends ApplicationAdapter {
             spriteBatch.draw(flagTexture, GameInfo.flagList.getCoordinates(i)[2], GameInfo.flagList.getCoordinates(i)[0]);
         }
         spriteBatch.draw(playerMarker, player.getPosition().z/16, player.getPosition().x/16);
+        spriteBatch.draw(playerMarker, GameInfo.AI.getPosition().z/16, GameInfo.AI.getPosition().x/16);
         spriteBatch.end();
     }
 

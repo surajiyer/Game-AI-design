@@ -25,7 +25,7 @@ public class GameInfo {
     static int latestAiCapture;
     
     public static void InitializeGameInfo() {
-        flagList = new FlagList(5);
+        flagList = new FlagList(5, world);
         score = new Score();
     }
     
