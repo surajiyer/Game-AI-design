@@ -179,21 +179,14 @@ public class VoxelWorld extends GameObject {
     @Override
     public void getRenderables (Array<Renderable> renderables, Pool<Renderable> pool) {
         renderedChunks = 0;
-//        for (VoxelChunk chunk : chunks) {
-//            if(!chunk.isGenerated()) {
-//                chunk.generate();
-//            }
-//            if(chunk.numVerts != 0) {
-//                chunk.getRenderables(renderables, pool);
-//                renderedChunks++;
-//            }
-//        }
-        if(!chunks[0].isGenerated()) {
-            chunks[0].generate();
-        }
-        if(chunks[0].numVerts != 0) {
-            chunks[0].getRenderables(renderables, pool);
-            renderedChunks++;
+        for (VoxelChunk chunk : chunks) {
+            if(!chunk.isGenerated()) {
+                chunk.generate();
+            }
+            if(chunk.numVerts != 0) {
+                chunk.getRenderables(renderables, pool);
+                renderedChunks++;
+            }
         }
     }
 }
