@@ -88,7 +88,7 @@ public class ReinforcementLearning {
 //            }
 //            return true;
 //        }
-        tileCost = TileCostArray.generateTileCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.heightMap, 8, GameInfo.widthField-1, GameInfo.heightField-1);
+        //tileCost = TileCostArray.generateTileCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.heightMap, 8, GameInfo.widthField-1, GameInfo.heightField-1);
         // Pathcost from all flags to all flags.
         pathcostarray = new PathCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.getFlagList().getAllFlagCoordinates(), GameInfo.flagList.getList().length, tileCost);
         //pathCostArray = pathcostarray.generatePathCostArray();
