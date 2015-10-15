@@ -40,7 +40,6 @@ public class PathCostArray {
     
     public float[][] generatePathCostArray() {
         final float[][] pathCostArray = new float[nrOfFlags][nrOfFlags];
-        
         for(int i = 0; i < flagLocations.length; i+=2) { 
             for(int j = 0; j < flagLocations.length; j+=2) {
                 IntArray path = astar.getPath(flagLocations[i], flagLocations[i + 1], flagLocations[j], flagLocations[j + 1], tileCost);
@@ -69,12 +68,6 @@ public class PathCostArray {
                 pathCostArray[i / 2][j / 2] = pathCost;
             }
         }  
-        /*
-        for(int m = 0; m < nrOfFlags; m++) {
-            for(int k = 0; k < nrOfFlags; k++){
-                System.out.println("Pathcost of " + m + " to " + k + " is: " + pathCostArray[m][k]);     
-            }
-        }*/
         return pathCostArray;
     } 
     
@@ -86,22 +79,14 @@ public class PathCostArray {
             interMediaryArray[i][1] = i;
             interMediaryArray[i][0] = pathCostArray[currentFlag][i];  
         }
-        //System.out.println("currentFlag " + currentFlag);
-        for (final float[] arr : interMediaryArray) {
-            //System.out.println(Arrays.toString(arr));
-        }
         java.util.Arrays.sort(interMediaryArray, new java.util.Comparator<float[]>() {
             @Override
             public int compare(float[] a, float[] b) {
                 return Float.compare(a[0], b[0]);
             }
         });
-        for (final float[] arr : interMediaryArray) {
-            //System.out.println(Arrays.toString(arr));
-        }
         for (int i = 0; i < nrOfFlags - 1; i++) {
             closestFlagArray[i] = (int)interMediaryArray[i + 1][1]; 
-            //System.out.println(closestFlagArray[i]);
         }
         
     return closestFlagArray; 
@@ -109,30 +94,30 @@ public class PathCostArray {
     public float[] getPathCost(int startX, int startY) {
         final float[] getPathCost = new float[nrOfFlags];
         for(int i = 0; i < flagLocations.length; i+=2) { 
-                IntArray path = astar.getPath(startX, startY, flagLocations[i], flagLocations[i + 1], tileCost);
-                pathCost = 0;
-                for (int k = 0, n = path.size; k < n - 2; k += 2) {
-                    int x = path.get(k);
-                    int y = path.get(k + 1);
-                        if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
-                            pathCost = pathCost + (tileCost[x][y][0] * sqrt2);
-                        } if(((path.get(k) - path.get(k + 2)) == 0) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
-                            pathCost = pathCost + (tileCost[x][y][1]);
-                        } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
-                            pathCost = pathCost + (tileCost[x][y][2] * sqrt2);
-                        } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == 0)) {
-                            pathCost = pathCost + (tileCost[x][y][3]);
-                        } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
-                            pathCost = pathCost + (tileCost[x][y][4] * sqrt2);
-                        } if(((path.get(k) - path.get(k + 2)) == 0) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
-                            pathCost = pathCost + (tileCost[x][y][5]);
-                        } if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
-                            pathCost = pathCost + (tileCost[x][y][6] * sqrt2);
-                        } if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == 0)) {
-                            pathCost = pathCost + (tileCost[x][y][7]);
-                        }
-                } 
-                getPathCost[i / 2] = pathCost;
+            IntArray path = astar.getPath(startX, startY, flagLocations[i], flagLocations[i + 1], tileCost);
+            pathCost = 0;
+            for (int k = 0, n = path.size; k < n - 2; k += 2) {
+                int x = path.get(k);
+                int y = path.get(k + 1);
+                    if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
+                        pathCost = pathCost + (tileCost[x][y][0] * sqrt2);
+                    } if(((path.get(k) - path.get(k + 2)) == 0) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
+                        pathCost = pathCost + (tileCost[x][y][1]);
+                    } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == 1)) {
+                        pathCost = pathCost + (tileCost[x][y][2] * sqrt2);
+                    } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == 0)) {
+                        pathCost = pathCost + (tileCost[x][y][3]);
+                    } if(((path.get(k) - path.get(k + 2)) == 1) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
+                        pathCost = pathCost + (tileCost[x][y][4] * sqrt2);
+                    } if(((path.get(k) - path.get(k + 2)) == 0) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
+                        pathCost = pathCost + (tileCost[x][y][5]);
+                    } if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == -1)) {
+                        pathCost = pathCost + (tileCost[x][y][6] * sqrt2);
+                    } if(((path.get(k) - path.get(k + 2)) == -1) && ((path.get(k + 1) - path.get(k + 3)) == 0)) {
+                        pathCost = pathCost + (tileCost[x][y][7]);
+                    }
+            } 
+            getPathCost[i / 2] = pathCost;
         }  
         return getPathCost;
     }
@@ -145,21 +130,14 @@ public class PathCostArray {
             interMediaryArray[i][1] = i;
             interMediaryArray[i][0] = pathCostArray[i];  
         }
-        for (final float[] arr : interMediaryArray) {
-            System.out.println(Arrays.toString(arr));
-        }
         java.util.Arrays.sort(interMediaryArray, new java.util.Comparator<float[]>() {
             @Override
             public int compare(float[] a, float[] b) {
                 return Float.compare(a[0], b[0]);
             }
         });
-        for (final float[] arr : interMediaryArray) {
-            System.out.println(Arrays.toString(arr));
-        }
         for (int i = 0; i < nrOfFlags; i++) {
             closestFlagArray[i] = (int)interMediaryArray[i][1]; 
-            System.out.println(closestFlagArray[i]);
         }
         return closestFlagArray; 
     }
