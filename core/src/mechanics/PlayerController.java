@@ -11,7 +11,6 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
-import utils.GameController;
 import utils.MultipleAnimationsController;
 import static main.VoxelTest.UNITS_PER_METER;
 
@@ -21,7 +20,7 @@ import static main.VoxelTest.UNITS_PER_METER;
  */
 public class PlayerController extends InputAdapter {
     
-    private final Player player;
+    public final Player player;
     MultipleAnimationsController playerAnimsController;
     private final Camera camera;
     public final Vector3 cameraOffset;
@@ -75,10 +74,10 @@ public class PlayerController extends InputAdapter {
     
     @Override
     public boolean mouseMoved (int screenX, int screenY) {
-        if(GameController.cursorCaught) {
+        if(GlobalState.cursorCaught) {
             float deltaX = -Gdx.input.getDeltaX() * degreesPerPixel;
             float deltaY = -Gdx.input.getDeltaY() * degreesPerPixel;
-            if(GameController.isFirstPerson) {
+            if(GlobalState.isFirstPerson) {
                 camera.direction.rotate(camera.up, deltaX);
                 tmp.set(camera.direction).crs(camera.up).nor();
                 camera.direction.rotate(tmp, deltaY);
@@ -121,6 +120,68 @@ public class PlayerController extends InputAdapter {
     }    
     
     public void update(float deltaTime) {
+        if(GlobalState.cursorCaught) {
+            if(GlobalState.isFirstPerson) {
+                updateFirstPerson(deltaTime);
+            } else {
+                updateThirdPerson(deltaTime);
+            }
+        }
+    }
+    
+    public void updateFirstPerson(float deltaTime) {
+        
+        // Move forward
+        if (keys.containsKey(FORWARD)) {
+            tmp.set(camera.direction).nor().scl(deltaTime * velocity);
+            camera.position.add(tmp);
+        }
+        
+        // Move backward
+        if (keys.containsKey(BACKWARD)) {
+            tmp.set(camera.direction).nor().scl(-deltaTime * velocity);
+            camera.position.add(tmp);
+        }
+        
+        // Strafe left
+        if (keys.containsKey(STRAFE_LEFT)) {
+            tmp.set(camera.direction).crs(camera.up).nor().scl(-deltaTime * velocity);
+            camera.position.add(tmp);
+        }
+        
+        // Strafe right
+        if (keys.containsKey(STRAFE_RIGHT)) {
+            tmp.set(camera.direction).crs(camera.up).nor().scl(deltaTime * velocity);
+            camera.position.add(tmp);
+        }
+        
+        // Turn left
+        if (keys.containsKey(TURN_LEFT)) {
+            camera.direction.rotate(camera.up, deltaTime * turnSpeed);
+        }
+        
+        // Turn right
+        if (keys.containsKey(TURN_RIGHT)) {
+            camera.direction.rotate(camera.up, -deltaTime * turnSpeed);
+        }
+        
+        // Look up
+        if (keys.containsKey(LOOK_UP)) {
+            camera.direction.rotate(tmp.set(camera.direction).crs(camera.up).nor(), 
+                    deltaTime * turnSpeed);
+        }
+        
+        // Look down
+        if (keys.containsKey(LOOK_DOWN)) {
+            camera.direction.rotate(tmp.set(camera.direction).crs(camera.up).nor(), 
+                    -deltaTime * turnSpeed);
+        }
+        
+        // Update the camera
+        camera.update(true);
+    }
+    
+    public void updateThirdPerson(float deltaTime) {
         // If any of the following movements, update the animations controller
         PlayerController: if (keys.containsKey(FORWARD) || keys.containsKey(BACKWARD) 
                 || keys.containsKey(STRAFE_LEFT) || keys.containsKey(STRAFE_RIGHT)) {
@@ -173,44 +234,29 @@ public class PlayerController extends InputAdapter {
         
         // Turn left
         if (keys.containsKey(TURN_LEFT)) {
-            if(GameController.isFirstPerson)
-                camera.direction.rotate(camera.up, deltaTime * turnSpeed);
-            else
-                camera.rotateAround(player.getPosition(), player.up, -deltaTime * turnSpeed);
+            camera.rotateAround(player.getPosition(), player.up, -deltaTime * turnSpeed);
         }
         
         // Turn right
         if (keys.containsKey(TURN_RIGHT)) {
-            if(GameController.isFirstPerson)
-                camera.direction.rotate(camera.up, -deltaTime * turnSpeed);
-            else
-                camera.rotateAround(player.getPosition(), player.up, deltaTime * turnSpeed);
+            camera.rotateAround(player.getPosition(), player.up, deltaTime * turnSpeed);
         }
         
         // Look up
         if (keys.containsKey(LOOK_UP)) {
-            if(GameController.isFirstPerson)
-                camera.direction.rotate(tmp.set(camera.direction).crs(camera.up).nor(), 
-                    deltaTime * turnSpeed);
-            else
-                camera.rotateAround(player.getPosition(), 
-                        tmp.set(camera.direction).crs(player.up).nor(), deltaTime * turnSpeed);
+            camera.rotateAround(player.getPosition(), 
+                    tmp.set(camera.direction).crs(player.up).nor(), deltaTime * turnSpeed);
         }
         
         // Look down
         if (keys.containsKey(LOOK_DOWN)) {
-            if(GameController.isFirstPerson)
-                camera.direction.rotate(tmp.set(camera.direction).crs(camera.up).nor(), 
-                        -deltaTime * turnSpeed);
-            else
-                camera.rotateAround(player.getPosition(), 
-                        tmp.set(camera.direction).crs(player.up).nor(), -deltaTime * turnSpeed);
+            camera.rotateAround(player.getPosition(), 
+                    tmp.set(camera.direction).crs(player.up).nor(), -deltaTime * turnSpeed);
         }
         
-        if(!GameController.isFirstPerson) {
-            camera.lookAt(player.getPosition());
-            camera.up.set(Vector3.Y);
-        }
+        // Update the camera
+        camera.lookAt(player.getPosition());
+        camera.up.set(Vector3.Y);
         camera.update(true);
     }
 }

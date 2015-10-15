@@ -6,10 +6,8 @@
 package terrain;
 
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
@@ -25,7 +23,7 @@ import utils.GameObject;
  */
 public class VoxelWorld extends GameObject {
     public final VoxelChunk[] chunks;
-    public static Material textureMaterial;
+    public Matrix4 worldTrans;
     public final int chunksX;
     public final int chunksY;
     public final int chunksZ;
@@ -35,8 +33,7 @@ public class VoxelWorld extends GameObject {
     public int renderedChunks;
     public int numChunks;
 
-    public VoxelWorld (Texture textures, int chunksX, int chunksY, int chunksZ) {
-        textureMaterial = new Material(TextureAttribute.createDiffuse(textures));
+    public VoxelWorld (int chunksX, int chunksY, int chunksZ) {
         this.chunksX = chunksX;
         this.chunksY = chunksY;
         this.chunksZ = chunksZ;
@@ -45,21 +42,23 @@ public class VoxelWorld extends GameObject {
         this.voxelsX = chunksX * CHUNK_SIZE_X;
         this.voxelsY = chunksY * CHUNK_SIZE_Y;
         this.voxelsZ = chunksZ * CHUNK_SIZE_Z;
+        this.worldTrans = new Matrix4();
         
         // Create the chunk objects (does not actually generate them yet)
+        int i = 0;
         for (int y = 0; y < chunksY; y++) {
             for (int z = 0; z < chunksZ; z++) {
                 for (int x = 0; x < chunksX; x++) {
-                    VoxelChunk chunk = new VoxelChunk(CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z);
+                    VoxelChunk chunk = new VoxelChunk(this, CHUNK_SIZE_X, CHUNK_SIZE_Y, CHUNK_SIZE_Z);
                     chunk.setPosition(tmp.set(x, y, z));
-                    chunks[y*chunksZ*chunksX + z*chunksX + x] = chunk;
+                    chunks[i++] = chunk;
                 }
             }
         }
         
         // Load the indices of the voxel chunks
         short j=0;
-        for (int i = 0; i < indices.length; i += 6, j += 4) {
+        for (i = 0; i < indices.length; i += 6, j += 4) {
             indices[i + 0] = (short)(j + 0);
             indices[i + 1] = (short)(j + 1);
             indices[i + 2] = (short)(j + 2);
@@ -148,20 +147,14 @@ public class VoxelWorld extends GameObject {
     @Override
     public void setScale(float scl) {
         scale = scl / scale;
-        for (VoxelChunk chunk : chunks) {
-            chunk.setScale(scl);
-            chunk.setPosition(tmp.set(scl, 0, scl));
-        }
+        worldTrans.scl(scale);
         scale = scl;
     }
     
     @Override
     public void setPosition(Vector3 pos) {
         position.set(pos);
-        //FIXME
-        for (VoxelChunk chunk : chunks) {
-            chunk.setPosition(position);
-        }
+        worldTrans.setTranslation(position);
     }
 
     @Override
@@ -186,13 +179,21 @@ public class VoxelWorld extends GameObject {
     @Override
     public void getRenderables (Array<Renderable> renderables, Pool<Renderable> pool) {
         renderedChunks = 0;
-        for (VoxelChunk chunk : chunks) {
-            if(!chunk.isGenerated())
-                chunk.generate();
-            if(chunk.numVerts != 0) {
-                chunk.getRenderables(renderables, pool);
-                renderedChunks++;
-            }
+//        for (VoxelChunk chunk : chunks) {
+//            if(!chunk.isGenerated()) {
+//                chunk.generate();
+//            }
+//            if(chunk.numVerts != 0) {
+//                chunk.getRenderables(renderables, pool);
+//                renderedChunks++;
+//            }
+//        }
+        if(!chunks[0].isGenerated()) {
+            chunks[0].generate();
+        }
+        if(chunks[0].numVerts != 0) {
+            chunks[0].getRenderables(renderables, pool);
+            renderedChunks++;
         }
     }
 }

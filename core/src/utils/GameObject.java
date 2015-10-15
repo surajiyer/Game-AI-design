@@ -35,11 +35,9 @@ public abstract class GameObject implements RenderableProvider {
     protected Vector3 tmp = new Vector3();
     
     protected void calculateDimensions() {
-        if(bounds != null) {
-            bounds.getCenter(center);
-            bounds.getDimensions(dimensions);
-            radius = dimensions.len() / 2f;
-        }
+        bounds.getCenter(center);
+        bounds.getDimensions(dimensions);
+        radius = dimensions.len() / 2f;
     }
     
     public abstract void setScale(float scl);

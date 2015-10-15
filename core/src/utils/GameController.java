@@ -8,8 +8,11 @@ package utils;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
-import terrain.VoxelWorld;
+import mechanics.GlobalState;
+import mechanics.PlayerController;
 
 /**
  * Used to control the camera.
@@ -17,23 +20,16 @@ import terrain.VoxelWorld;
  */
 public class GameController extends InputAdapter {
     
-    VoxelWorld voxelWorld;
-    public static boolean fullScreen = false;
-    public static boolean descendLimit = true;
-    public static boolean enableWireframe = false;
-    public static boolean cursorCaught = true;
-    public static boolean isFirstPerson = false;
-    int oldWidth, oldHeight;
     private final IntIntMap keys = new IntIntMap();
     private final int TOGGLE_WIREFRAME = Keys.NUM_1;
     private final int TOGGLE_DESCEND_LIMIT = Keys.NUM_2;
     private final int TOGGLE_FIRST_PERSON = Keys.NUM_3;
     private final int TOGGLE_FULLSCREEN = Keys.F;
     private final int RELEASE_CURSOR = Keys.ESCAPE;
+    private final Vector3 tmp = new Vector3();
 
-    public GameController(VoxelWorld voxelWorld) {
-        this.voxelWorld = voxelWorld;
-        Gdx.input.setCursorCatched(cursorCaught);
+    public GameController() {
+        Gdx.input.setCursorCatched(GlobalState.cursorCaught);
     }
 
     @Override
@@ -51,47 +47,51 @@ public class GameController extends InputAdapter {
     
     @Override
     public boolean touchDown (int screenX, int screenY, int pointer, int button) {
-        if(!cursorCaught && !fullScreen) {
-            cursorCaught = true;
-            Gdx.input.setCursorCatched(cursorCaught);
+        if(!GlobalState.cursorCaught && !GlobalState.fullScreen) {
+            GlobalState.cursorCaught = true;
+            Gdx.input.setCursorCatched(GlobalState.cursorCaught);
         }
         return false;
     }
     
-    public void update() {
+    public void update(PlayerController playerController, Camera camera) {
         // Toggle catching the cursor
-        if(keys.containsKey(RELEASE_CURSOR) && !fullScreen) {
-            cursorCaught = false;
-            Gdx.input.setCursorCatched(cursorCaught);
+        if(keys.containsKey(RELEASE_CURSOR) && !GlobalState.fullScreen) {
+            GlobalState.cursorCaught = false;
+            Gdx.input.setCursorCatched(GlobalState.cursorCaught);
         }
         
         // Toggle catching the cursor
-        if(keys.containsKey(TOGGLE_FIRST_PERSON)) {
-            isFirstPerson = !isFirstPerson;
+        if(Gdx.input.isKeyPressed(TOGGLE_FIRST_PERSON)) {
+            GlobalState.isFirstPerson = !GlobalState.isFirstPerson;
+            if(!GlobalState.isFirstPerson) {
+                playerController.player.setPosition(tmp.set(camera.position)
+                        .sub(playerController.cameraOffset));
+            }
         }
         
         // Toggle wireframe output for VoxelWorld
         if (keys.containsKey(TOGGLE_WIREFRAME)) {
-            enableWireframe = !enableWireframe;
+            GlobalState.enableWireframe = !GlobalState.enableWireframe;
         }
         
         // Toggle the depth limit for the camera
         if (keys.containsKey(TOGGLE_DESCEND_LIMIT)) {
-            descendLimit = !descendLimit;
+            GlobalState.descendLimit = !GlobalState.descendLimit;
         }
         
         // Toggle full screen
         //if (keys.containsKey(TOGGLE_FULLSCREEN)) {
         if(Gdx.input.isKeyPressed(TOGGLE_FULLSCREEN)) {
-            if(!fullScreen) { // set resolution to default and set fullScreen to true
-                oldWidth = Gdx.graphics.getWidth();
-                oldHeight = Gdx.graphics.getHeight();
+            if(!GlobalState.fullScreen) { // set resolution to default and set fullScreen to true
+                GlobalState.oldWidth = Gdx.graphics.getWidth();
+                GlobalState.oldHeight = Gdx.graphics.getHeight();
                 Gdx.graphics.setDisplayMode(Gdx.graphics.getDesktopDisplayMode().width, 
                         Gdx.graphics.getDesktopDisplayMode().height, true);
             } else {
-                Gdx.graphics.setDisplayMode(oldWidth, oldHeight, false);
+                Gdx.graphics.setDisplayMode(GlobalState.oldWidth, GlobalState.oldHeight, false);
             }
-            fullScreen = !fullScreen;
+            GlobalState.fullScreen = !GlobalState.fullScreen;
         }
     }
 }
