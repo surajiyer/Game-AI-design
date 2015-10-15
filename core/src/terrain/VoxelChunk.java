@@ -12,15 +12,14 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import static main.VoxelTest.UNITS_PER_METER;
-import static terrain.VoxelWorld.textureMaterial;
-import static utils.Cube.texture;
-import utils.GameController;
+import mechanics.GlobalState;
 import utils.GameObject;
 
 
@@ -29,16 +28,14 @@ import utils.GameObject;
  * @author S.S.Iyer
  */
 public class VoxelChunk extends GameObject {
-    public static final int VERTEX_SIZE = 8;
-    public static final int CHUNK_SIZE_X = UNITS_PER_METER;
-    public static final int CHUNK_SIZE_Y = UNITS_PER_METER;
-    public static final int CHUNK_SIZE_Z = UNITS_PER_METER;
-    public static float[] vertices = new float[VoxelChunk.VERTEX_SIZE * 6 * CHUNK_SIZE_X * 
-                CHUNK_SIZE_Y * CHUNK_SIZE_Z];
-    public static short[] indices = new short[CHUNK_SIZE_X * CHUNK_SIZE_Y * 
-            CHUNK_SIZE_Z * 6 * 6 / 3];
-    
-    public enum CubeType {
+    public enum VoxelType {
+        /**
+         * Direction of UV coordinates. 0 <= U, V, <= 1
+         * |--->-- U
+         * | ...
+         * V ...
+         * |
+         */
         GRASS(new float[]{0, 0f},
                 new float[]{0.125f, 0f},
                 new float[]{0.1875f, 0f},
@@ -78,7 +75,7 @@ public class VoxelChunk extends GameObject {
         float[] frontUV;
         float[] backUV;
         
-        private CubeType(float[] topUV, float[] bottomUV, float[] leftUV,
+        private VoxelType(float[] topUV, float[] bottomUV, float[] leftUV,
             float[] rightUV, float[] frontUV, float[] backUV) {
             this.topUV = topUV;
             this.bottomUV = bottomUV;
@@ -89,11 +86,23 @@ public class VoxelChunk extends GameObject {
         }
     }
     
+    public static final int VERTEX_SIZE = 8;
+    public static final int NROF_FACES = 6;
+    public static final int NROF_VERTICES_PER_FACE = 4;
+    public static final int CHUNK_SIZE_X = UNITS_PER_METER;
+    public static final int CHUNK_SIZE_Y = UNITS_PER_METER;
+    public static final int CHUNK_SIZE_Z = UNITS_PER_METER;
+    private static final float[] vertices = new float[CHUNK_SIZE_X * 
+                CHUNK_SIZE_Y * CHUNK_SIZE_Z * NROF_FACES * VoxelChunk.VERTEX_SIZE];
+    public static final short[] indices = new short[CHUNK_SIZE_X * CHUNK_SIZE_Y * 
+            CHUNK_SIZE_Z * NROF_FACES * 2];
+    private final VoxelWorld parent;
     public Mesh mesh;
-    private final Matrix4 worldTrans;
+    private final Matrix4 worldTrans, localTrans;
     public int numVerts;
+    private boolean regenerate;
     public Material material;
-    public CubeType cubeType;
+    public VoxelType voxelType;
     public final byte[] voxels;
     public final int width;
     public final int height;
@@ -106,8 +115,8 @@ public class VoxelChunk extends GameObject {
     private final int frontOffset;
     private final int backOffset;
     
-    public VoxelChunk (int width, int height, int depth) {
-        this.mesh = null;
+    public VoxelChunk (VoxelWorld parent, int width, int height, int depth) {
+        this.parent = parent;
         this.voxels = new byte[width * height * depth];
         this.width = width;
         this.height = height;
@@ -125,29 +134,33 @@ public class VoxelChunk extends GameObject {
                 MathUtils.random(0.5f, 1f),
                 MathUtils.random(0.5f, 1f), 1));
         this.worldTrans = new Matrix4();
+        this.localTrans = new Matrix4();
+        this.mesh = new Mesh(true, CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z * NROF_FACES 
+                * NROF_VERTICES_PER_FACE, indices.length, VertexAttribute.Position(), 
+                VertexAttribute.Normal(), VertexAttribute.TexCoords(0));
+        this.mesh.setIndices(indices);
+        this.regenerate = true;
     }
     
     public Mesh generate() {
-        mesh = new Mesh(true, CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z * 6 * 4, 
-                indices.length, VertexAttribute.Position(), VertexAttribute.Normal(), 
-                VertexAttribute.TexCoords(0));
         mesh.setIndices(indices);
         mesh.setVertices(calculateVertices(vertices), 0, numVerts * VERTEX_SIZE);
+        regenerate = false;
         return mesh;
     }
     
     /** @param height the height of the cube
      * @return the type of the cube */
-    public CubeType getCubeType(float height) {
-        int random = MathUtils.random(10) - 5;
+    public VoxelType getCubeType(float height) {
+        int random = MathUtils.random(8) - 4;
         if(height < 10 + random)
-            return CubeType.WATER;
+            return VoxelType.WATER;
         else if(height < 13 + random)
-            return CubeType.SAND;
+            return VoxelType.SAND;
         else if(height < 35 + random)
-            return CubeType.GRASS;
+            return VoxelType.GRASS;
         else
-            return CubeType.SNOW;
+            return VoxelType.SNOW;
     }
 
     public byte get (int x, int y, int z) {
@@ -175,14 +188,19 @@ public class VoxelChunk extends GameObject {
     @Override
     public void setScale(float scl) {
         scale = scl / scale;
-        worldTrans.scl(scale);
+        localTrans.scl(scale);
         scale = scl;
     }
     
     @Override
     public void setPosition(Vector3 pos) {
         position.set(pos.scl(width, height, depth));
-        worldTrans.setTranslation(position);
+        localTrans.setTranslation(position);
+    }
+    
+    public Matrix4 updateWorldTranform() {
+        worldTrans.set(parent.worldTrans).mul(localTrans);
+        return worldTrans;
     }
     
     @Override
@@ -194,22 +212,23 @@ public class VoxelChunk extends GameObject {
     
      /** @return if the cube is generated or not. */
     public boolean isGenerated() {
-        return mesh != null;
+        return !regenerate;
     }
     
     public void regenerate() {
-        mesh = null;
+        regenerate = true;
     }
 
     @Override
     public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
         Renderable renderable = pool.obtain();
-        renderable.worldTransform.set(worldTrans);
-        renderable.material = texture == null ? material : textureMaterial;
+        renderable.worldTransform.set(updateWorldTranform());
+        renderable.material = GlobalState.voxelTextures == null ? material : 
+                new Material(TextureAttribute.createDiffuse(GlobalState.voxelTextures));
         renderable.mesh = mesh;
         renderable.meshPartOffset = 0;
-        renderable.meshPartSize = numVerts;
-        if(GameController.enableWireframe) {
+        renderable.meshPartSize = numVerts * (6 / NROF_VERTICES_PER_FACE);
+        if(GlobalState.enableWireframe) {
             renderable.primitiveType = GL20.GL_LINE_STRIP;
         } else {
             renderable.primitiveType = GL20.GL_TRIANGLES;
@@ -230,7 +249,7 @@ public class VoxelChunk extends GameObject {
                 for (int x = 0; x < width; x++, i++) {
                     
                     if (voxels[i] == 0) continue;
-                    cubeType = getCubeType(position.y+y);
+                    voxelType = getCubeType(position.y+y);
                     
                     if(y == height - 1 || voxels[i + topOffset] == 0) 
                         vertexOffset = createTop(x, y, z, vertices, vertexOffset);
@@ -253,7 +272,7 @@ public class VoxelChunk extends GameObject {
             }
         }
         
-        numVerts = (vertexOffset / VERTEX_SIZE)*(6 / 4);
+        numVerts = (vertexOffset / VERTEX_SIZE);
         return vertices;
     }
 
@@ -264,8 +283,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.topUV[0];
-        vertices[vertexOffset++] = cubeType.topUV[1];
+        vertices[vertexOffset++] = voxelType.topUV[0];
+        vertices[vertexOffset++] = voxelType.topUV[1];
 
         vertices[vertexOffset++] = x + 1;
         vertices[vertexOffset++] = y + 1;
@@ -273,8 +292,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.topUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.topUV[1];
+        vertices[vertexOffset++] = voxelType.topUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.topUV[1];
 
         vertices[vertexOffset++] = x + 1;
         vertices[vertexOffset++] = y + 1;
@@ -282,8 +301,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.topUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.topUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.topUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.topUV[1]+VoxelType.texSize;
 
         vertices[vertexOffset++] = x;
         vertices[vertexOffset++] = y + 1;
@@ -291,8 +310,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.topUV[0];
-        vertices[vertexOffset++] = cubeType.topUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.topUV[0];
+        vertices[vertexOffset++] = voxelType.topUV[1]+VoxelType.texSize;
         return vertexOffset;
     }
 
@@ -303,8 +322,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.bottomUV[0];
-        vertices[vertexOffset++] = cubeType.bottomUV[1];
+        vertices[vertexOffset++] = voxelType.bottomUV[0];
+        vertices[vertexOffset++] = voxelType.bottomUV[1];
 
         vertices[vertexOffset++] = x;
         vertices[vertexOffset++] = y;
@@ -312,8 +331,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.bottomUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.bottomUV[1];
+        vertices[vertexOffset++] = voxelType.bottomUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.bottomUV[1];
 
         vertices[vertexOffset++] = x + 1;
         vertices[vertexOffset++] = y;
@@ -321,8 +340,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.bottomUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.bottomUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.bottomUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.bottomUV[1]+VoxelType.texSize;
 
         vertices[vertexOffset++] = x + 1;
         vertices[vertexOffset++] = y;
@@ -330,8 +349,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.bottomUV[0];
-        vertices[vertexOffset++] = cubeType.bottomUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.bottomUV[0];
+        vertices[vertexOffset++] = voxelType.bottomUV[1]+VoxelType.texSize;
         return vertexOffset;
     }
 
@@ -342,8 +361,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.leftUV[0];
-        vertices[vertexOffset++] = cubeType.leftUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.leftUV[0];
+        vertices[vertexOffset++] = voxelType.leftUV[1]+VoxelType.texSize;
 
         vertices[vertexOffset++] = x;
         vertices[vertexOffset++] = y + 1;
@@ -351,8 +370,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.leftUV[0];
-        vertices[vertexOffset++] = cubeType.leftUV[1];
+        vertices[vertexOffset++] = voxelType.leftUV[0];
+        vertices[vertexOffset++] = voxelType.leftUV[1];
 
         vertices[vertexOffset++] = x;
         vertices[vertexOffset++] = y + 1;
@@ -360,8 +379,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.leftUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.leftUV[1];
+        vertices[vertexOffset++] = voxelType.leftUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.leftUV[1];
 
         vertices[vertexOffset++] = x;
         vertices[vertexOffset++] = y;
@@ -369,8 +388,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = -1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.leftUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.leftUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.leftUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.leftUV[1]+VoxelType.texSize;
         return vertexOffset;
     }
 
@@ -381,8 +400,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.rightUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.rightUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.rightUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.rightUV[1]+VoxelType.texSize;
 
         vertices[vertexOffset++] = x + 1;
         vertices[vertexOffset++] = y;
@@ -390,8 +409,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.rightUV[0];
-        vertices[vertexOffset++] = cubeType.rightUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.rightUV[0];
+        vertices[vertexOffset++] = voxelType.rightUV[1]+VoxelType.texSize;
 
         vertices[vertexOffset++] = x + 1;
         vertices[vertexOffset++] = y + 1;
@@ -399,8 +418,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.rightUV[0];
-        vertices[vertexOffset++] = cubeType.rightUV[1];
+        vertices[vertexOffset++] = voxelType.rightUV[0];
+        vertices[vertexOffset++] = voxelType.rightUV[1];
 
         vertices[vertexOffset++] = x + 1;
         vertices[vertexOffset++] = y + 1;
@@ -408,8 +427,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 1;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = cubeType.rightUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.rightUV[1];
+        vertices[vertexOffset++] = voxelType.rightUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.rightUV[1];
         return vertexOffset;
     }
 
@@ -420,8 +439,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = cubeType.frontUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.frontUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.frontUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.frontUV[1]+VoxelType.texSize;
 
         vertices[vertexOffset++] = x + 1;
         vertices[vertexOffset++] = y;
@@ -429,8 +448,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = cubeType.frontUV[0];
-        vertices[vertexOffset++] = cubeType.frontUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.frontUV[0];
+        vertices[vertexOffset++] = voxelType.frontUV[1]+VoxelType.texSize;
 
         vertices[vertexOffset++] = x + 1;
         vertices[vertexOffset++] = y + 1;
@@ -438,8 +457,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = cubeType.frontUV[0];
-        vertices[vertexOffset++] = cubeType.frontUV[1];
+        vertices[vertexOffset++] = voxelType.frontUV[0];
+        vertices[vertexOffset++] = voxelType.frontUV[1];
 
         vertices[vertexOffset++] = x;
         vertices[vertexOffset++] = y + 1;
@@ -447,8 +466,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = cubeType.frontUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.frontUV[1];
+        vertices[vertexOffset++] = voxelType.frontUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.frontUV[1];
         return vertexOffset;
     }
 
@@ -459,8 +478,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = cubeType.backUV[0];
-        vertices[vertexOffset++] = cubeType.backUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.backUV[0];
+        vertices[vertexOffset++] = voxelType.backUV[1]+VoxelType.texSize;
 
         vertices[vertexOffset++] = x;
         vertices[vertexOffset++] = y + 1;
@@ -468,8 +487,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = cubeType.backUV[0];
-        vertices[vertexOffset++] = cubeType.backUV[1];
+        vertices[vertexOffset++] = voxelType.backUV[0];
+        vertices[vertexOffset++] = voxelType.backUV[1];
 
         vertices[vertexOffset++] = x + 1;
         vertices[vertexOffset++] = y + 1;
@@ -477,8 +496,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = cubeType.backUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.backUV[1];
+        vertices[vertexOffset++] = voxelType.backUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.backUV[1];
 
         vertices[vertexOffset++] = x + 1;
         vertices[vertexOffset++] = y;
@@ -486,8 +505,8 @@ public class VoxelChunk extends GameObject {
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = 0;
         vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = cubeType.backUV[0]+CubeType.texSize;
-        vertices[vertexOffset++] = cubeType.backUV[1]+CubeType.texSize;
+        vertices[vertexOffset++] = voxelType.backUV[0]+VoxelType.texSize;
+        vertices[vertexOffset++] = voxelType.backUV[1]+VoxelType.texSize;
         return vertexOffset;
     }
 }

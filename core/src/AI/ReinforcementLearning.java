@@ -91,7 +91,6 @@ public class ReinforcementLearning {
 //            }
 //            return true;
 //        }
-        
         // Pathcost from all flags to all flags.
         //Select action using epsilon greedy exploration policy
         currAction = chooseAction(currState, rand.nextDouble());

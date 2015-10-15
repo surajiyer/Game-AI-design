@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.model.Node;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -70,7 +71,7 @@ public class Player extends GameObject {
     public void rotate(Vector3 dir, float deltaX, float deltaY) {
         headNode.rotation.mul(tmpQuat.setEulerAngles(0, -deltaY, 0));
         instance.calculateTransforms();
-        instance.transform.rotate(up, deltaX);
+        instance.transform.mul(new Matrix4().setToRotation(up, deltaX));
         direction.set(dir).nor().scl(1, 0, 1);
     }
     

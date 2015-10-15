@@ -1,6 +1,8 @@
 package terrain;
 
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
@@ -248,18 +250,49 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
         int height = simplexNoise[0].length;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Color blue = new Color(0, 0, 255);
-
+        Color sand = new Color(255, 228, 122);
+        Color grass = new Color(85, 145, 39);
+        
+        BufferedImage sup = null;
+        
+        try {
+            Image temp = ImageIO.read(new File("1d.png"));
+            sup = toBufferedImage(temp);
+            System.out.println("1d created");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        
+        
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                if (simplexNoise[x][y] < 50) {
-                    image.setRGB(x, y, blue.getRGB());
+//                if (simplexNoise[x][y] < 50) {
+//                    image.setRGB(x, y, blue.getRGB());
+//                } else if(simplexNoise[x][y] >= 51 && simplexNoise[x][y] < 65) {
+//                    
+//                    //int grayscale = (int) (simplexNoise[x][y]);
+//                    //int rgb = 65536 * grayscale + 256 * grayscale + grayscale;
+//                    image.setRGB(x, y, sand.getRGB());
+//                } else if(simplexNoise[x][y] >= 65 && simplexNoise[x][y] < 130) {
+//                    
+//                    //int grayscale = (int) (simplexNoise[x][y]);
+//                    //int rgb = 65536 * grayscale + 256 * grayscale + grayscale;
+//                    image.setRGB(x, y, grass.getRGB());
+//                } else {
+//                    
+//                    int grayscale = (int) (simplexNoise[x][y]);
+//                    int rgb = 65536 * grayscale + 256 * grayscale + grayscale;
+//                    image.setRGB(x, y, rgb);
+//                }
+                if (sup != null) {
+                    image.setRGB(x, y, sup.getRGB((int) Math.floor(simplexNoise[x][y]), 0));
                 } else {
-                    int grayscale = (int) (simplexNoise[x][y]);
-                    int rgb = 65536 * grayscale + 256 * grayscale + grayscale;
-                    image.setRGB(x, y, rgb);
+                    break;
                 }
             }
         }
+        
         AffineTransform tx = new AffineTransform();
         tx.rotate(-Math.PI / 2, image.getWidth() / 2, image.getHeight() / 2);
         AffineTransformOp op = new AffineTransformOp(tx,
@@ -273,4 +306,22 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
             e.printStackTrace();
         }
     }
+    
+    public static BufferedImage toBufferedImage(Image img) {
+        if (img instanceof BufferedImage) {
+            return (BufferedImage) img;
+        }
+
+        // Create a buffered image with transparency
+        BufferedImage bimage = new BufferedImage(img.getWidth(null), img.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+
+        // Draw the image on to the buffered image
+        Graphics2D bGr = bimage.createGraphics();
+        bGr.drawImage(img, 0, 0, null);
+        bGr.dispose();
+
+        // Return the buffered image
+        return bimage;
+}
+    
 }
