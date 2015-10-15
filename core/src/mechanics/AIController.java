@@ -94,37 +94,35 @@ public class AIController extends InputAdapter {
     public float getVelocity() {
         return velocity;
     }
+    public boolean init = true;
+    int index = 0;
 
     public boolean update(IntArray path) {
+        if (init) {
+            index = path.size - 1;
+            init = false;
+        }
         this.path = path;
         return update(Gdx.graphics.getDeltaTime());
 
     }
-    int index = 0;
+    
     int times = 0;
+
     public boolean update(float deltaTime) {
-        Vector3 movement = new Vector3(path.get(index),
-                GameInfo.world.getHeight(path.get(index), path.get(index + 1)), path.get(index + 1));
+        Vector3 movement = new Vector3(path.get(index-1),
+                GameInfo.world.getHeight(path.get(index-1), path.get(index)), path.get(index));
         tmp.set(movement).nor().scl(Gdx.graphics.getDeltaTime() * velocity);
-        player.setPosition(tmp1.set(player.getPosition()).scl(1,0,1).add(tmp));
+        //player.setPosition(tmp1.set(player.getPosition()).scl(1, 0, 1).add(tmp));
+        player.setPosition(movement.scl(16f));
         times += 1;
-        if(times == 16) {
-            index +=2;
+        if(times == 2) {
+            index -=2;
             times = 0;
         }
-        if (index >= path.size) {
+        if (index <= 0) {
+            init = true;
             return false;
-        }
-        return true;
-    }
-
-    public boolean move(IntArray path) {
-        for (int i = 0; i < path.size; i += 2) {
-            Vector3 movement = new Vector3(path.get(i), GameInfo.world.getHeight(path.get(i), path.get(i + 1)), path.get(i + 1));
-            while (!player.getPosition().equals(movement)) {
-                tmp.set(movement).nor().scl(Gdx.graphics.getDeltaTime() * velocity);
-                player.setPosition(player.getPosition().add(tmp));
-            }
         }
         return true;
     }

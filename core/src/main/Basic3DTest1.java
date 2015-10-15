@@ -81,22 +81,13 @@ public class Basic3DTest1 extends ApplicationAdapter {
         camera.far = 60f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
-<<<<<<< HEAD
         flagList = new FlagsManager(5);
         flagList.setOccupant(0, Occupant.AI);
         flagList.setOccupant(1,Occupant.AI);
         flagList.setOccupant(2,Occupant.PLAYER);
         flagList.setOccupant(3,Occupant.PLAYER);
         flagList.setOccupant(4,Occupant.PLAYER);
-=======
-        GameInfo.InitializeGameInfo();
-        flagList = GameInfo.flagList;
-        flagList.setOccupant(0,"AI");
-        flagList.setOccupant(1,"AI");
-        flagList.setOccupant(2,"Player");
-        flagList.setOccupant(3,"Player");
-        flagList.setOccupant(4,"Player");
->>>>>>> origin/master
+
         
         // Setup a camera controller to control the camera movements
         camController = new BobController(camera);
