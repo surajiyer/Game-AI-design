@@ -246,18 +246,32 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
         int height = simplexNoise[0].length;
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Color blue = new Color(0, 0, 255);
+        Color sand = new Color(255, 228, 122);
+        Color grass = new Color(85, 145, 39);
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 if (simplexNoise[x][y] < 50) {
                     image.setRGB(x, y, blue.getRGB());
+                } else if(simplexNoise[x][y] >= 51 && simplexNoise[x][y] < 65) {
+                    
+                    //int grayscale = (int) (simplexNoise[x][y]);
+                    //int rgb = 65536 * grayscale + 256 * grayscale + grayscale;
+                    image.setRGB(x, y, sand.getRGB());
+                } else if(simplexNoise[x][y] >= 65 && simplexNoise[x][y] < 130) {
+                    
+                    //int grayscale = (int) (simplexNoise[x][y]);
+                    //int rgb = 65536 * grayscale + 256 * grayscale + grayscale;
+                    image.setRGB(x, y, grass.getRGB());
                 } else {
+                    
                     int grayscale = (int) (simplexNoise[x][y]);
                     int rgb = 65536 * grayscale + 256 * grayscale + grayscale;
                     image.setRGB(x, y, rgb);
                 }
             }
         }
+        
         AffineTransform tx = new AffineTransform();
         tx.rotate(-Math.PI / 2, image.getWidth() / 2, image.getHeight() / 2);
         AffineTransformOp op = new AffineTransformOp(tx,
