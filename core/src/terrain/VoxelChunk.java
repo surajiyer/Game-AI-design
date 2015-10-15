@@ -98,7 +98,7 @@ public class VoxelChunk extends GameObject {
             CHUNK_SIZE_Z * NROF_FACES * 2];
     private final VoxelWorld parent;
     public Mesh mesh;
-    private final Matrix4 worldTrans, localTrans;
+    private final Matrix4 localTrans;
     public int numVerts;
     private boolean regenerate;
     public Material material;

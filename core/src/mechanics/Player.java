@@ -52,7 +52,7 @@ public class Player extends GameObject {
         setPosition(pos);
         direction = new Vector3(dir).nor().scl(1, 0, 1);
         up = new Vector3(Vector3.Y);
-        calculateDimensions();
+        calculateBounds();
     }
     
     @Override
@@ -81,9 +81,9 @@ public class Player extends GameObject {
     }
     
     @Override
-    protected void calculateDimensions() {
+    protected void calculateBounds() {
         instance.calculateBoundingBox(bounds);
-        super.calculateDimensions();
+        super.calculateBounds();
     }
 
     @Override

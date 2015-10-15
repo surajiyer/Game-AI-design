@@ -16,9 +16,10 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
-import java.util.Random;
-import mechanics.FlagList;
+import mechanics.FlagsManager;
 import terrain.SimplexNoise;
 
 
@@ -26,12 +27,11 @@ public class AstarTest extends ApplicationAdapter {
 	ShapeRenderer shapes;
 	Astar astar;
         PathCostArray pathcostarray;
-        FlagList flagList;
+        FlagsManager flagList;
         private final float sqrt2 = 1.41421356f; // approximate the square root of 2 so we don't have to calculate it each time while maintianing high accuracy
 	boolean[] map;
         int nrOfFlags = 5;
-        int nrOfFlagCoordinates = nrOfFlags * 2;   // amount of x and y coordinates of flags
-        int[] flagLocations = new int[nrOfFlagCoordinates]; // place for the x and y coordinates of flags
+        Array<Vector3> flagLocations; // place for the x and y coordinates of flags
         int widthField = 280;
         int heightField = 200;
         int nrDirections = 8; 
@@ -43,16 +43,14 @@ public class AstarTest extends ApplicationAdapter {
         int[] closestFlagArray = new int[nrOfFlags];
         float pathCost; 
 
-        
-
         @Override
 	public void create () {
             shapes = new ShapeRenderer();
             // randomly generate obstacles              
             map = new boolean[widthField * heightField];
             // get the fags list
-            flagList = new FlagList(nrOfFlags);
-            flagLocations = flagList.getAllFlagCoordinates();
+            flagList = new FlagsManager(nrOfFlags);
+            flagLocations = flagList.getFlagPositions();
             
         float[][] t = SimplexNoise.generateOctavedSimplexNoise(widthField, heightField, 6, 0.5f, 0.007f); // SIMPLEX NOISE
         float[][] r = SimplexNoise.generateRidgedNoise(widthField, heightField, 0.002f); // RIDGED NOISE
@@ -145,44 +143,54 @@ public class AstarTest extends ApplicationAdapter {
 		int startY = (height - Gdx.input.getY()) / cellHeight;
 		shapes.setColor(Color.GREEN);
 		shapes.rect(startX * cellWidth, startY * cellHeight, cellWidth, cellHeight);
+                Vector3 tmp = new Vector3();
+                Vector3 tmp1 = new Vector3();
                 // draw the flags
-                for(int i = 0; i < nrOfFlagCoordinates; i+=2) {
-                    createFlag(flagLocations[i], flagLocations[i + 1], cellWidth, cellHeight);
+                for(int i = 0; i < flagLocations.size; i++) {
+                    tmp.set(flagLocations.get(i));
+                    createFlag(tmp.x, tmp.z, cellWidth, cellHeight);
                 }
                 // draw the paths from you to the flags
-                for(int i = 0; i < nrOfFlagCoordinates; i+=2) { 
-                    drawPath(startX, startY, flagLocations[i], flagLocations[i + 1], cellWidth, cellHeight);
+                for(int i = 0; i < flagLocations.size; i++) {
+                    tmp.set(flagLocations.get(i));
+                    drawPath(startX, startY, (int)tmp.x, (int)tmp.z, cellWidth, cellHeight);
                 }
                  // draw the path from all the flags to each others
-                for(int i = 0; i < nrOfFlagCoordinates; i+=2){
-                    for(int j = 0; j < nrOfFlagCoordinates; j+=2){
-                       drawPath(flagLocations[i], flagLocations[i + 1], flagLocations[j], flagLocations[j + 1], cellWidth, cellHeight);                                   
+                for(int i = 0; i < flagLocations.size; i++) {
+                    tmp.set(flagLocations.get(i));
+                    for(int j = 0; j < flagLocations.size; j++) {
+                        tmp1.set(flagLocations.get(j));
+                        drawPath((int)tmp.x, (int)tmp.z, (int)tmp1.x, (int)tmp1.z, cellWidth, cellHeight);                                   
                     }
                 }
                 // print all the pathcosts from you to the flags
-                for(int i = 0; i < nrOfFlagCoordinates; i+=2) { 
-                    getPathCost(startX, startY, flagLocations[i], flagLocations[i + 1]);
+                for(int i = 0; i < flagLocations.size; i++) {
+                    tmp.set(flagLocations.get(i));
+                    getPathCost(startX, startY, (int)tmp.x, (int)tmp.z);
                 }              
 		shapes.end();               
             }      
              
-             public void createFlag(int x, int y, int cellWidth, int cellHeight) {
+             public void createFlag(float x, float z, int cellWidth, int cellDepth) {
                 shapes.setColor(Color.BLUE);
-                shapes.rect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
+                shapes.rect(x * cellWidth, z * cellDepth, cellWidth, cellDepth);
              }
              
-             public void drawPath(int startX, int startY, int targetX, int targetY, int cellWidth, int cellHeight) {
+             public void drawPath(int startX, int startZ, int targetX, int targetZ, 
+                     int cellWidth, int cellDepth) {
                  shapes.setColor(Color.RED);
-                 IntArray path = astar.getPath(startX, startY, targetX, targetY, tileCost);
+                 IntArray path = astar.getPath((int)startX, (int)startZ, (int)targetX, 
+                         (int)targetZ, tileCost);
                  for (int i = 0, n = path.size; i < n; i += 2) {
                     int x = path.get(i);
                     int y = path.get(i + 1);
-                    shapes.circle(x * cellWidth + cellWidth / 2, y * cellHeight + cellHeight / 2, cellWidth / 3, 30);
+                    shapes.circle(x * cellWidth + cellWidth / 2, y * cellDepth + cellDepth / 2, 
+                            cellWidth / 3, 30);
                 }
             }             
             // give the path cost of the path between 2 points
-            public void getPathCost(int startX, int startY, int targetX, int targetY) {
-                IntArray path = astar.getPath(startX, startY, targetX, targetY, tileCost);
+            public void getPathCost(int startX, int startZ, int targetX, int targetZ) {
+                IntArray path = astar.getPath(startX, startZ, targetX, targetZ, tileCost);
                 pathCost = 0;
                 for (int i = 0, n = path.size; i < n - 2; i += 2) {
                     int x = path.get(i);

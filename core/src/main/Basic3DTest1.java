@@ -27,7 +27,8 @@ import com.badlogic.gdx.utils.Array;
 import java.util.concurrent.TimeUnit;
 import utils.Drawables;
 import mechanics.Flag;
-import mechanics.FlagList;
+import mechanics.Flag.Occupant;
+import mechanics.FlagsManager;
 import mechanics.Score;
 
 /**
@@ -56,7 +57,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
     BitmapFont font;
     long startTime;
     long elapsedTime;
-    FlagList flagList;
+    FlagsManager flagList;
     ModelInstance bobber, bobberBox;
     ShapeRenderer shapeRenderer;
     
@@ -80,12 +81,12 @@ public class Basic3DTest1 extends ApplicationAdapter {
         camera.far = 60f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
-        flagList = new FlagList(5);
-        flagList.setOccupant(0,"AI");
-        flagList.setOccupant(1,"AI");
-        flagList.setOccupant(2,"Player");
-        flagList.setOccupant(3,"Player");
-        flagList.setOccupant(4,"Player");
+        flagList = new FlagsManager(5);
+        flagList.setOccupant(0, Occupant.AI);
+        flagList.setOccupant(1,Occupant.AI);
+        flagList.setOccupant(2,Occupant.PLAYER);
+        flagList.setOccupant(3,Occupant.PLAYER);
+        flagList.setOccupant(4,Occupant.PLAYER);
         
         // Setup a camera controller to control the camera movements
         camController = new BobController(camera);
@@ -153,22 +154,22 @@ public class Basic3DTest1 extends ApplicationAdapter {
             modelBatch.render(bobberBox);
         }
         
-        Flag[] flags = flagList.getList();
-        for(int i = 0; i < flags.length; i++) {
-            ModelInstance temp = flags[i].getFlagBox();
-            ModelInstance colTemp = flags[i].getCaptureBox();
-           if(temp != null) {
-               int[] coor = flagList.getCoordinates(i);
-               temp.transform.setToTranslation(coor[0]*UNITS_PER_METER, 
-                    coor[1]*UNITS_PER_METER, 
-                    coor[2]*UNITS_PER_METER);
-                              colTemp.transform.setToTranslation(coor[0]*UNITS_PER_METER, 
-                    coor[1]*UNITS_PER_METER, 
-                    coor[2]*UNITS_PER_METER);
-               modelBatch.render(temp);
-               modelBatch.render(colTemp);
-           }
-        }
+//        Array<Flag> flags = flagList.getList();
+//        for(int i = 0; i < flags.size; i++) {
+//            ModelInstance temp = flags[i].getFlagBox();
+//            ModelInstance colTemp = flags[i].getCaptureBox();
+//           if(temp != null) {
+//               int[] coor = flagList.getFlagPosition(i);
+//               temp.transform.setToTranslation(coor[0]*UNITS_PER_METER, 
+//                    coor[1]*UNITS_PER_METER, 
+//                    coor[2]*UNITS_PER_METER);
+//                              colTemp.transform.setToTranslation(coor[0]*UNITS_PER_METER, 
+//                    coor[1]*UNITS_PER_METER, 
+//                    coor[2]*UNITS_PER_METER);
+//               modelBatch.render(temp);
+//               modelBatch.render(colTemp);
+//           }
+//        }
         //grid.updatePos(camera); // Move the grid with the camera for an infinte grid
         modelBatch.render(grid.instance);
         modelBatch.end();
@@ -213,19 +214,19 @@ public class Basic3DTest1 extends ApplicationAdapter {
     }
     
     void assetLoading() {
-        ModelInstance instance;
-        Flag[] flags = flagList.getList();
-        for(int i = 0; i < flags.length; i++) {
-            instance = new ModelInstance(assets.get("flags/flagNone.g3db", Model.class));
-            int[] coor = flagList.getCoordinates(i);
-            flags[i].setFlagBox(instance);
-            flags[i].setCaptureBox(instance);
-            instance.transform.setToTranslation(
-                    coor[0]*UNITS_PER_METER, 
-                    coor[1]*UNITS_PER_METER, 
-                    coor[2]*UNITS_PER_METER);
-            instances.add(instance);
-        }
+//        ModelInstance instance;
+//        Flag[] flags = flagList.getList();
+//        for(int i = 0; i < flags.length; i++) {
+//            instance = new ModelInstance(assets.get("flags/flagNone.g3db", Model.class));
+//            int[] coor = flagList.getFlagPosition(i);
+//            flags[i].setFlagBox(instance);
+//            flags[i].setCaptureBox(instance);
+//            instance.transform.setToTranslation(
+//                    coor[0]*UNITS_PER_METER, 
+//                    coor[1]*UNITS_PER_METER, 
+//                    coor[2]*UNITS_PER_METER);
+//            instances.add(instance);
+//        }
         
         bobber = new ModelInstance(assets.get("trees/tree1.g3db", Model.class));
         bobber.transform.setToTranslation(camera.position.x, 0, camera.position.z);

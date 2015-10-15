@@ -1,7 +1,6 @@
 package utils;
 
-import mechanics.Flag;
-import mechanics.FlagList;
+import mechanics.FlagsManager;
 import mechanics.Score;
 
 /**
@@ -10,7 +9,7 @@ import mechanics.Score;
  */
 public class GameInfo {
     
-    public static FlagList flagList;
+    public static FlagsManager flagsManager;
     public static Score score;
     
     public static float[][] heightMap;
@@ -22,7 +21,7 @@ public class GameInfo {
     static int latestAiCapture;
     
     public static void InitializeGameInfo() {
-        flagList = new FlagList(5);
+        flagsManager = new FlagsManager(5);
         score = new Score();
     }
     
@@ -34,8 +33,8 @@ public class GameInfo {
         latestPlayerCapture = capture;
     }
     
-    public static FlagList getFlagList() {
-        return flagList;
+    public static FlagsManager getFlagList() {
+        return flagsManager;
     }
     
     public static Score getScore() {

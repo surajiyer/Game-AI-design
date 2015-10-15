@@ -2,7 +2,7 @@ package AI;
 
 import java.util.Random;
 import main.Basic3DTest1;
-import mechanics.FlagList;
+import mechanics.FlagsManager;
 import mechanics.State;
 import utils.GameInfo;
 
@@ -18,10 +18,11 @@ public class ReinforcementLearning {
     public static double LearningRate = 2;
     public static double Epsilon = 3;
     public static double DecayingLR = 4;
-    private double maxLearningRate = 0.7, pjog, epsilon;
+    private final double maxLearningRate = 0.7;
+    private double pjog, epsilon;
     private final int pathCost = 1;
-    private int[][] policy;
-    private double[][][] qsa;
+    private final int[][] policy;
+    private final double[][][] qsa;
     State start, currState;
     Random rand;
 
@@ -34,19 +35,19 @@ public class ReinforcementLearning {
     int[][] optPolicy;
     boolean isOptValCalc;
     double PRECISION = 0.01;
-    FlagList flagList;
+    FlagsManager flagList;
     float[][][] tileCost = new float[GameInfo.widthField][GameInfo.widthField][8];
     PathCostArray pathcostarray;
-    int[] closestFlagArray = new int[GameInfo.flagList.getList().length];
+    int[] closestFlagArray = new int[GameInfo.flagsManager.getList().size*2];
     
     public ReinforcementLearning(Basic3DTest1 basic) {
         start = new State(0, 0);
         currState = new State(0, 0);
         rand = new Random();
         this.basic = basic;
-        flagList = GameInfo.flagList;
+        flagList = GameInfo.flagsManager;
         policy = new int[5][5];
-        qsa = new double[flagList.getList().length][flagList.getList().length][flagList.getList().length];
+        qsa = new double[flagList.getList().size*2][flagList.getList().size*2][flagList.getList().size*2];
         initialize();
     }
 
@@ -90,7 +91,7 @@ public class ReinforcementLearning {
 //        }
         //tileCost = TileCostArray.generateTileCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.heightMap, 8, GameInfo.widthField-1, GameInfo.heightField-1);
         // Pathcost from all flags to all flags.
-        pathcostarray = new PathCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.getFlagList().getAllFlagCoordinates(), GameInfo.flagList.getList().length, tileCost);
+        pathcostarray = new PathCostArray(GameInfo.widthField, GameInfo.heightField, GameInfo.getFlagList().getFlagPositions(), GameInfo.flagsManager.getList().size*2, tileCost);
         //pathCostArray = pathcostarray.generatePathCostArray();
         closestFlagArray = pathcostarray.generateClosestFlagArray(1);
         //Select action using epsilon greedy exploration policy

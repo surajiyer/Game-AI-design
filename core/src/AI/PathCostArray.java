@@ -1,6 +1,8 @@
 
 package AI;
 
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import java.util.Arrays;
 /**
@@ -21,16 +23,24 @@ public class PathCostArray {
     float pathCost;
     
 
-    public PathCostArray(int width, int height, int[] flagLocations, int nrOfFlags, float[][][] tileCost) { 
+    public PathCostArray(int width, int height, Array<Vector3> flagLocations, int nrOfFlags, float[][][] tileCost) { 
         this.width = width;
         this.height = height;
-        this.flagLocations = flagLocations;
+        this.flagLocations = new int[flagLocations.size*2];
+        Vector3 tmp = new Vector3();
+        for(int i=0; i < this.flagLocations.length; i+=2) {
+            tmp.set(flagLocations.get(i/2));
+            this.flagLocations[i] = (int) tmp.x;
+            this.flagLocations[i+1] = (int) tmp.z;
+        }
         this.nrOfFlags = nrOfFlags;
         this.tileCost = tileCost;
         astar = new Astar(width, height);
-    }     
+    }
+    
     public float[][] generatePathCostArray() {
         final float[][] pathCostArray = new float[nrOfFlags][nrOfFlags];
+        
         for(int i = 0; i < flagLocations.length; i+=2) { 
             for(int j = 0; j < flagLocations.length; j+=2) {
                 IntArray path = astar.getPath(flagLocations[i], flagLocations[i + 1], flagLocations[j], flagLocations[j + 1], tileCost);
@@ -67,6 +77,7 @@ public class PathCostArray {
         }*/
         return pathCostArray;
     } 
+    
     public int[] generateClosestFlagArray(int currentFlag) {
         final float[][] interMediaryArray = new float[nrOfFlags][2];   // Tracks pathcosts and nr of the flag
         final int[] closestFlagArray = new int[nrOfFlags - 1];
@@ -124,7 +135,8 @@ public class PathCostArray {
                 getPathCost[i / 2] = pathCost;
         }  
         return getPathCost;
-    } 
+    }
+    
     public int[] generateClosestFlagArrayAtLocation(int x, int y) {
         final float[][] interMediaryArray = new float[nrOfFlags][2];   // Tracks pathcosts and nr of the flag
         final int[] closestFlagArray = new int[nrOfFlags];
@@ -149,7 +161,6 @@ public class PathCostArray {
             closestFlagArray[i] = (int)interMediaryArray[i][1]; 
             System.out.println(closestFlagArray[i]);
         }
-        
-    return closestFlagArray; 
+        return closestFlagArray; 
     }
 }

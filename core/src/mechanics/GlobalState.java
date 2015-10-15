@@ -8,6 +8,7 @@ package mechanics;
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import static main.VoxelTest.UNITS_PER_METER;
@@ -64,42 +65,19 @@ public class GlobalState {
         instances.add(gameObject);
         
         // Load the red flag
-        gameObject = new ConcreteGameObject(assetsManager.get("flags/flagRed.g3db", Model.class));
-        gameObject.setPosition(tmp.set(6*UNITS_PER_METER, 0, -3*UNITS_PER_METER));
-        instances.add(gameObject);
+        Flag.redFlag = new ModelInstance(assetsManager.get("flags/flagRed.g3db", Model.class));
+        
+        // Load the blue flag
+        Flag.blueFlag = new ModelInstance(assetsManager.get("flags/flagBlue.g3db", Model.class));
         
         // Load the uncaptured flag
-        gameObject = new ConcreteGameObject(assetsManager.get("flags/flagNone.g3db", Model.class));
-        gameObject.setPosition(tmp.set(6*UNITS_PER_METER, 0, 0));
-        instances.add(gameObject);
+        Flag.noneFlag = new ModelInstance(assetsManager.get("flags/flagNone.g3db", Model.class));
         
-        // Load the blur flag
-        gameObject = new ConcreteGameObject(assetsManager.get("flags/flagBlue.g3db", Model.class));
-        gameObject.setPosition(tmp.set(6*UNITS_PER_METER, 0, 3*UNITS_PER_METER));
-        instances.add(gameObject);
-        
-        //flags
-        Flag[] flags = GameInfo.flagList.getList();
-        for(int i = 0; i < flags.length; i++) {
-            switch (GameInfo.flagList.getOccupant(i)) {
-                case "AI":
-                    gameObject = new ConcreteGameObject(
-                            assetsManager.get("flags/flagRed.g3db", Model.class));
-                    break;
-                case "Player":
-                    gameObject = new ConcreteGameObject(
-                            assetsManager.get("flags/flagBlue.g3db", Model.class));
-                    break;
-                case "None":
-                    gameObject = new ConcreteGameObject(
-                            assetsManager.get("flags/flagNone.g3db", Model.class));
-                    break;
-            }
-            int[] coor = GameInfo.flagList.getCoordinates(i);
-            gameObject.setPosition(tmp.set(
-                    coor[0]*UNITS_PER_METER, 
-                    coor[1]*UNITS_PER_METER, 
-                    coor[2]*UNITS_PER_METER));
+        // Load all the flags
+        Array<Flag> flags = GameInfo.flagsManager.getList();
+        for(int i = 0; i < flags.size; i++) {
+            Vector3 pos = GameInfo.flagsManager.getFlagPosition(i);
+            gameObject.setPosition(tmp.set(pos).scl(UNITS_PER_METER));
             instances.add(gameObject);
         }
         

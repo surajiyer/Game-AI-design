@@ -34,7 +34,6 @@ public class Chunk extends GameObject {
     
     //private final Cube[] cubes;
     private Mesh mesh;
-    private final Matrix4 worldTrans;
     public boolean isActive;
     
     public Chunk() {
@@ -78,7 +77,7 @@ public class Chunk extends GameObject {
             }
         }
         mesh = meshBuilder.end();
-        calculateDimensions();
+        calculateBounds();
         return mesh;
     }
     
@@ -121,9 +120,9 @@ public class Chunk extends GameObject {
     }
     
     @Override
-    protected void calculateDimensions() {
+    protected void calculateBounds() {
         mesh.calculateBoundingBox(bounds);
-        super.calculateDimensions();
+        super.calculateBounds();
     }
 
     @Override

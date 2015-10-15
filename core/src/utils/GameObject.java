@@ -18,6 +18,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.utils.Pool;
 
 /**
@@ -25,6 +26,7 @@ import com.badlogic.gdx.utils.Pool;
  * @author S.S.Iyer
  */
 public abstract class GameObject implements RenderableProvider {
+    public Matrix4 worldTrans = new Matrix4();
     protected final Vector3 position = new Vector3();
     protected float scale = 1f;
     protected final BoundingBox bounds = new BoundingBox();
@@ -34,7 +36,8 @@ public abstract class GameObject implements RenderableProvider {
     public float radius;
     protected Vector3 tmp = new Vector3();
     
-    protected void calculateDimensions() {
+    protected void calculateBounds() {
+        bounds.set(new BoundingBox().mul(worldTrans));
         bounds.getCenter(center);
         bounds.getDimensions(dimensions);
         radius = dimensions.len() / 2f;
@@ -55,9 +58,10 @@ public abstract class GameObject implements RenderableProvider {
     }
     
     public ModelInstance boundingBoxModel() {
+        calculateBounds();
+            
         if(boundsModel != null) {
-            boundsModel.transform.setToScaling(scale, scale, scale);
-            boundsModel.transform.setTranslation(position);
+            boundsModel.transform.set(worldTrans);
             return boundsModel;
         }
         
@@ -74,8 +78,7 @@ public abstract class GameObject implements RenderableProvider {
         boundsModel = new ModelInstance(mb.createBox(width, height, depth, GL20.GL_LINES, 
                 new Material(new ColorAttribute(ColorAttribute.Diffuse, Color.RED)), 
                 Usage.Position | Usage.Normal));
-        boundsModel.transform.setToScaling(scale, scale, scale);
-        boundsModel.transform.setTranslation(position);
+        boundsModel.transform.set(worldTrans);
         return boundsModel;
     }
     

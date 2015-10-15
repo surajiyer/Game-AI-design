@@ -37,7 +37,7 @@ import utils.GameController;
 import mechanics.Player;
 import mechanics.PlayerController;
 import mechanics.Flag;
-import mechanics.FlagList;
+import mechanics.FlagsManager;
 import mechanics.Score;
 import java.util.concurrent.TimeUnit;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
@@ -152,15 +152,15 @@ public class VoxelTest extends ApplicationAdapter {
         camera.position.set(new Vector3().set(player.getPosition())
                 .add(playerController.cameraOffset));
         
-        //flags
-        GameInfo.flagList = new FlagList(5);
-        GameInfo.flagList.setOccupant(0,"AI");
-        GameInfo.flagList.setOccupant(1,"AI");
-        GameInfo.flagList.setOccupant(2,"Player");
-        GameInfo.flagList.setOccupant(3,"Player");
-        GameInfo.flagList.setOccupant(4,"Player");
+        // Flags
+        GameInfo.flagsManager = new FlagsManager(5);
+        GameInfo.flagsManager.setOccupant(0,"AI");
+        GameInfo.flagsManager.setOccupant(1,"AI");
+        GameInfo.flagsManager.setOccupant(2,"Player");
+        GameInfo.flagsManager.setOccupant(3,"Player");
+        GameInfo.flagsManager.setOccupant(4,"Player");
         
-         //setup a minimap camera
+        // Setup a minimap camera
         //miniMapCam = new OrthographicCamera(miniWidth, miniHeight);
         //miniMapCam.zoom = miniScale;
         playerMarker = new Texture(Gdx.files.internal("markers/playerdot.png"));
@@ -235,15 +235,15 @@ public class VoxelTest extends ApplicationAdapter {
         
         // Time
         elapsedTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
-        score.updateScore(elapsedTime, GameInfo.flagList);
+        score.updateScore(elapsedTime, GameInfo.flagsManager);
 
         //flags
-        Flag[] flags = GameInfo.flagList.getList();
+        Flag[] flags = GameInfo.flagsManager.getList();
         for(int i = 0; i < flags.length; i++) {
             ModelInstance temp = flags[i].getFlagBox();
             ModelInstance colTemp = flags[i].getCaptureBox();
            if(temp != null) {
-               int[] coor = GameInfo.flagList.getCoordinates(i);
+               int[] coor = GameInfo.flagsManager.getFlagPosition(i);
                temp.transform.setToTranslation(coor[0]*UNITS_PER_METER, 
                     coor[1]*UNITS_PER_METER, 
                     coor[2]*UNITS_PER_METER);
@@ -283,21 +283,24 @@ public class VoxelTest extends ApplicationAdapter {
         font.draw(spriteBatch, "" + score.getCS(), camera.viewportWidth/2 + 80, camera.viewportHeight - 20);
         font.draw(spriteBatch, "" + String.valueOf(elapsedTime), camera.viewportWidth/2 -3, camera.viewportHeight - 20);
         
+        Vector3 tmp = new Vector3();
         for (int i = 0; i < 5; i++) {
-            switch (GameInfo.flagList.getOccupant(i)) {
-                case "AI":
+            switch (GameInfo.flagsManager.getOccupant(i)) {
+                case AI:
                     flagTexture = flagMarkerRed;
                     break;
-                case "Player":
+                case PLAYER:
                     flagTexture = flagMarkerBlue;
                     break;
-                case "None":
+                case NONE:
                     flagTexture = flagMarkerGrey;
                     break;
             }
-            spriteBatch.draw(flagTexture, GameInfo.flagList.getCoordinates(i)[2], GameInfo.flagList.getCoordinates(i)[0]);
+            tmp.set(GameInfo.flagsManager.getFlagPosition(i));
+            spriteBatch.draw(flagTexture, tmp.z, tmp.x);
         }
-        spriteBatch.draw(playerMarker, player.getPosition().z/16, player.getPosition().x/16);
+        spriteBatch.draw(playerMarker, player.getPosition().z/UNITS_PER_METER, 
+                player.getPosition().x/UNITS_PER_METER);
         spriteBatch.end();
     }
 

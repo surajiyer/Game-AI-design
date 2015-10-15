@@ -23,7 +23,6 @@ import utils.GameObject;
  */
 public class VoxelWorld extends GameObject {
     public final VoxelChunk[] chunks;
-    public Matrix4 worldTrans;
     public final int chunksX;
     public final int chunksY;
     public final int chunksZ;
@@ -168,11 +167,11 @@ public class VoxelWorld extends GameObject {
     }
     
     @Override
-    protected void calculateDimensions() {
+    protected void calculateBounds() {
         // FIXME
 //        if(isGenerated()) {
 //            model.calculateBoundingBox(bounds);
-//            super.calculateDimensions();
+//            super.calculateBounds();
 //        }
     }
     

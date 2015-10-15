@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.Shader;
@@ -91,7 +90,6 @@ public class Cube extends GameObject {
     private Shader shader;
     private Mesh mesh;
     public final CubeType cubeType;
-    public final Matrix4 worldTrans;
     private boolean isActive;
     
     public Cube(CubeType type) {
@@ -129,7 +127,7 @@ public class Cube extends GameObject {
         createFront(meshBuilder, vertices, indices);
         createBack(meshBuilder, vertices, indices);
         mesh = meshBuilder.end();
-        calculateDimensions();
+        calculateBounds();
         return mesh;
     }
     
@@ -173,10 +171,10 @@ public class Cube extends GameObject {
     }
     
     @Override
-    protected void calculateDimensions() {
+    protected void calculateBounds() {
         if(isGenerated()) {
             mesh.calculateBoundingBox(bounds);
-            super.calculateDimensions();
+            super.calculateBounds();
         }
     }
 

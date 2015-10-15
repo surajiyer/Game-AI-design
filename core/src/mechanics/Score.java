@@ -1,7 +1,5 @@
 package mechanics;
 
-import java.util.List;
-
 /**
  *
  * @author Kevin van Eenige and Daniël van der Laan
@@ -49,17 +47,17 @@ public class Score {
         cString = "AI Score: " + computerScore;
     }    
     
-    public void updateScore(long elapsedTime, FlagList flagList) { 
+    public void updateScore(long elapsedTime, FlagsManager flagList) { 
         if(elapsedTime%scoreTime == 0 && toScore && elapsedTime != 0) {
-            for(int i = 0; i < flagList.getList().length; i++) {
-                if(flagList.getOccupant(i).equals("Player")) {
+            for(int i = 0; i < flagList.getList().size; i++) {
+                if(flagList.getOccupant(i) == Flag.Occupant.PLAYER) {
                     addPS(flagList.getFlagWeight(i));
-                }else if(flagList.getOccupant(i).equals("AI")){
+                }else if(flagList.getOccupant(i) == Flag.Occupant.AI){
                     addCS(flagList.getFlagWeight(i));
                 }
             }
             toScore = false;
-        } else if (elapsedTime%scoreTime != 0) {
+        } else if (elapsedTime % scoreTime != 0) {
             toScore = true;
         }
     }
