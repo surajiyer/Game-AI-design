@@ -5,13 +5,10 @@
  */
 package mechanics;
 
+import AI.ReinforcementLearning;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
-import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntArray;
-import com.badlogic.gdx.utils.IntIntMap;
-import static mechanics.GlobalState.UNITS_PER_METER;
 import terrain.VoxelWorld;
 import utils.MultipleAnimationsController;
 
@@ -21,14 +18,24 @@ import utils.MultipleAnimationsController;
  * @author S.S.Iyer
  */
 public class AIController {
+    
+    private enum AIState {
+        STEP, MOVE, EVAL;
+    }
 
     public final VoxelWorld playerWorld;
     public final Player player;
     MultipleAnimationsController playerAnimsController;
+    ReinforcementLearning RL;
     private float velocity = 5;
     private final Vector3 tmp = new Vector3();
-    IntArray path;
-
+    private AIState state;
+    
+    private IntArray path;
+    private int index = 0;
+    private final Vector3 movement = new Vector3();
+    boolean pointReached = false;
+    
     public AIController(Player player, VoxelWorld world) {
         this.player = player;
 
@@ -42,6 +49,11 @@ public class AIController {
             "Right Leg|Right LegAction",
             "Left Leg|Left LegAction"}, player.instance);
         this.playerWorld = world;
+        
+        // Setup the brain of the AI
+        this.RL = new ReinforcementLearning(player);
+        
+        this.state = AIState.STEP;
     }
 
     /**
@@ -60,47 +72,43 @@ public class AIController {
     public float getVelocity() {
         return velocity;
     }
-    public boolean init = true;
-    int index = 0;
-
-    public boolean update(IntArray path) {
-        if (init) {
-            index = path.size - 1;
-            init = false;
-        }
-        this.path = path;
-        return update(Gdx.graphics.getDeltaTime());
-
-    }
     
-    int times = 0;
-
-    public boolean update(float deltaTime) {
-        Vector3 movement = new Vector3(path.get(index),
-                playerWorld.getHeight(path.get(index), path.get(index + 1)), path.get(index + 1));
-        tmp.set(movement).nor().scl(Gdx.graphics.getDeltaTime() * velocity);
-        //player.setPosition(tmp1.set(player.getPosition()).scl(1, 0, 1).add(tmp));
-        player.setPosition(movement.scl(16f));
-        times += 1;
-        if(times == 2) {
-            index -=2;
-            times = 0;
+    public void update() {
+        switch(state) {
+            case STEP:
+                System.out.println("Acquiring next step");
+                path = RL.step();
+                state = AIState.MOVE;
+                index = path.size;
+                break;
+            case MOVE:
+                update(Gdx.graphics.getDeltaTime());
+                state = index <= 0 ? AIState.EVAL : AIState.MOVE;
+                break;
+            case EVAL:
+                System.out.println("Evaluating");
+                RL.evaluate();
+                state = AIState.STEP;
+                break;
         }
-        if (index <= 0) {
-            init = true;
-            return false;
-        }
-        return true;
     }
 
-    public boolean move(IntArray path) {
-        for (int i = 0; i < path.size; i += 2) {
-            Vector3 movement = new Vector3(path.get(i), playerWorld.getHeight(path.get(i), path.get(i + 1)), path.get(i + 1));
-            while (!player.getPosition().equals(movement)) {
-                tmp.set(movement).nor().scl(Gdx.graphics.getDeltaTime() * velocity);
-                player.setPosition(player.getPosition().add(tmp));
+    public void update(float deltaTime) {
+        if(pointReached) {
+            movement.set(path.get(index),
+                    playerWorld.getHeight(path.get(index), path.get(index + 1)), 
+                    path.get(index + 1));
+            movement.scl(16f);
+            player.direction.set(tmp.set(movement).sub(player.getPosition()));
+            index -= 2;
+            if(index <= 0) {
+                state = AIState.EVAL;
+                return;
             }
         }
-        return true;
+        
+        tmp.set(player.direction).nor().scl(deltaTime * velocity);
+        player.setPosition(player.getPosition().add(tmp));
+        pointReached = player.getPosition().equals(movement);
     }
 }

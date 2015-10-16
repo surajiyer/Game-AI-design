@@ -3,11 +3,7 @@ package AI;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntArray;
-import java.util.Random;
-import main.Basic3DTest1;
-import mechanics.AIController;
 import mechanics.Flag.Occupant;
-import mechanics.FlagsManager;
 import mechanics.GlobalState;
 import mechanics.Player;
 import mechanics.State;
@@ -17,9 +13,7 @@ import mechanics.State;
  * @author Kevin van Eenige and Daniël van der Laan
  */
 public class ReinforcementLearning {
-
-    //state should inlcude the flaglist and the position of the players.
-    Basic3DTest1 basic;
+    
     public static double PJOG = 1;
     public static double LearningRate = 2;
     public static double Epsilon = 3;
@@ -29,8 +23,8 @@ public class ReinforcementLearning {
     private final int pathCost = 1;
     private final int[][] policy;
     private final double[][][] qsa;
-    private State start, currState;
-    private Player AIPlayer;
+    private final State start, currState;
+    private final Player AIPlayer;
 
     public boolean isBestAct = true;
     public boolean receivedPenalty = false;
@@ -47,7 +41,6 @@ public class ReinforcementLearning {
     int[][] optPolicy;
     boolean isOptValCalc;
     double PRECISION = 0.01;
-    FlagsManager flagsManager;
     float[][][] tileCost;
     PathCostArray pathcostarray;
     int[] closestFlagArray;
@@ -68,11 +61,10 @@ public class ReinforcementLearning {
         closestFlagArray = pathcostarray.generateClosestFlagArrayAtLocation(pathCost, pathCost);
         start = new State(closestFlagArray[0], 0);
         currState = new State(closestFlagArray[0], 0);
-        flagsManager = GlobalState.flagsManager;
         policy = new int[5][5];
-        qsa = new double[flagsManager.getFlagsList().size]
-                [flagsManager.getFlagsList().size]
-                [flagsManager.getFlagsList().size];
+        qsa = new double[GlobalState.flagsManager.getFlagsList().size]
+                [GlobalState.flagsManager.getFlagsList().size]
+                [GlobalState.flagsManager.getFlagsList().size];
         astar = new Astar(GlobalState.widthField, GlobalState.heightField);
         init();
     }
@@ -112,7 +104,7 @@ public class ReinforcementLearning {
 //            return true;
 //        }
         // Pathcost from all flags to all flags.
-        //Select action using epsilon greedy exploration policy
+        // Select action using epsilon greedy exploration policy
         currAction = chooseAction(currState, MathUtils.random());
         currStateQ = qsa[currState.x][currState.y][currAction];
         scoreDiffPrev = GlobalState.scoreBoard.getCS() - GlobalState.scoreBoard.getPS();

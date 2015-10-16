@@ -5,7 +5,6 @@
  */
 package main;
 
-import AI.ReinforcementLearning;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
@@ -34,7 +33,6 @@ import utils.ConcreteGameObject;
 import utils.EnvironmentCubeMap;
 import mechanics.Player;
 import mechanics.PlayerController;
-import com.badlogic.gdx.utils.IntArray;
 import mechanics.AIController;
 import mechanics.Flag;
 import static mechanics.GlobalState.UNITS_PER_METER;
@@ -63,11 +61,6 @@ public class VoxelTest extends ApplicationAdapter {
     Player player;
     PlayerController playerController;
     Player AI;
-    ReinforcementLearning RL;
-    Boolean step = true;
-    Boolean evaluate = false;
-    Boolean moveAI = false;
-    IntArray path;
     AIController aiController;
     
     @Override
@@ -107,6 +100,7 @@ public class VoxelTest extends ApplicationAdapter {
         GlobalState.assetsManager.load("trees/tree4.g3db", Model.class);
         GlobalState.assetsManager.load("characters/BlueWalk.g3db", Model.class);
         assetLoading = true;
+        assetsManager.finishLoading();
         
         // Create a voxel terrain
         voxelWorld = new VoxelWorld(new Texture(Gdx.files.internal("tiles.png")), 
@@ -131,7 +125,6 @@ public class VoxelTest extends ApplicationAdapter {
         // Load the AI
         AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
                 , Vector3.Zero, camera.direction);
-        RL = new ReinforcementLearning(AI);
         aiController = new AIController(AI, voxelWorld);
         aiController.setVelocity(22*UNITS_PER_METER);
         players.add(AI);
@@ -162,17 +155,19 @@ public class VoxelTest extends ApplicationAdapter {
             assetLoading = false;
         }
         
-        // Update the camera, the player and the player's animation
+        // Update the camera, the player and the AI
         GlobalState.gameController.update(playerController, camera);
         playerController.update();
+        aiController.update();
         
         // Render all 3D stuff      
         GlobalState.visibleCount = 0;
+        
         // Render the skybox
         skyBox.render(camera);
+        
         modelBatch.begin(camera);
-        //DefaultShader.defaultCullFace = GL20.GL_FRONT;
-        DefaultShader.defaultCullFace = GL20.GL_NONE;
+        DefaultShader.defaultCullFace = GL20.GL_FRONT;
         // Render the voxel terrain
         if(voxelWorld.isVisible(camera)) {
             modelBatch.render(voxelWorld, environment);
@@ -187,24 +182,6 @@ public class VoxelTest extends ApplicationAdapter {
 //                GlobalState.visibleCount++;
 //            }
 //        }
-        if(step) {
-            System.out.println("HI");
-            path = RL.step();
-            step = false;
-            moveAI = true;
-        }
-        if(moveAI) {
-            if(!aiController.update(path)) {
-                evaluate = true;
-                moveAI = false;
-            }
-        }
-        if(evaluate) {
-            System.out.println("evaluate");
-            RL.evaluate();
-            //step = true;
-            evaluate = false;
-        }
         
         // Render the player character
         if(player.isVisible(camera) && !GlobalState.isFirstPerson) {

@@ -163,17 +163,19 @@ public class VoxelWorld extends GameObject {
     
     public void loadTrees() {
         int x, y, z, type;
+        ConcreteGameObject tmpObject;
         for (int i = 0; i < NROF_TREES; i++) {
             x = MathUtils.random(GlobalState.widthField);
             z = MathUtils.random(GlobalState.heightField);
             y = (int) getHeight(x, z);
             type = MathUtils.random(1, NROF_TREES_TYPES);
             if (y < 18) continue;
-            trees.add(new ConcreteGameObject(
-                    assetsManager.get("trees/tree"+type+".g3db", Model.class)));
-            trees.get(i).setPosition(tmp.set(x * UNITS_PER_METER,
+            tmpObject = new ConcreteGameObject(
+                    assetsManager.get("trees/tree"+type+".g3db", Model.class));
+            tmpObject.setPosition(tmp.set(x * UNITS_PER_METER,
                     y * UNITS_PER_METER, 
                     z * UNITS_PER_METER));
+            trees.add(tmpObject);
         }
     }
     
