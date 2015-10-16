@@ -34,7 +34,7 @@ public class AIController {
     private IntArray path;
     private int index = 0;
     private final Vector3 movement = new Vector3();
-    boolean pointReached = false;
+    boolean pointReached = true;
     
     public AIController(Player player, VoxelWorld world) {
         this.player = player;
@@ -83,7 +83,6 @@ public class AIController {
                 break;
             case MOVE:
                 update(Gdx.graphics.getDeltaTime());
-                state = index <= 0 ? AIState.EVAL : AIState.MOVE;
                 break;
             case EVAL:
                 System.out.println("Evaluating");
@@ -94,6 +93,7 @@ public class AIController {
     }
 
     public void update(float deltaTime) {
+        // If the next point is reached, set direction to next point.
         if(pointReached) {
             movement.set(path.get(index),
                     playerWorld.getHeight(path.get(index), path.get(index + 1)), 
@@ -107,6 +107,7 @@ public class AIController {
             }
         }
         
+        // Move the AI to the next point
         tmp.set(player.direction).nor().scl(deltaTime * velocity);
         player.setPosition(player.getPosition().add(tmp));
         pointReached = player.getPosition().equals(movement);
