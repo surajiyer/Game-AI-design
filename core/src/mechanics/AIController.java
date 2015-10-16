@@ -95,16 +95,16 @@ public class AIController {
     public void update(float deltaTime) {
         // If the next point is reached, set direction to next point.
         if(pointReached) {
-            movement.set(path.get(index),
-                    playerWorld.getHeight(path.get(index), path.get(index + 1)), 
-                    path.get(index + 1));
-            movement.scl(16f);
-            player.direction.set(tmp.set(movement).sub(player.getPosition()));
             index -= 2;
             if(index <= 0) {
                 state = AIState.EVAL;
                 return;
             }
+            movement.set(path.get(index),
+                    playerWorld.getHeight(path.get(index), path.get(index + 1)), 
+                    path.get(index + 1));
+            movement.scl(16f);
+            player.direction.set(tmp.set(movement).sub(player.getPosition()));
         }
         
         // Move the AI to the next point

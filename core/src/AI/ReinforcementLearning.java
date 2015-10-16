@@ -62,9 +62,9 @@ public class ReinforcementLearning {
         start = new State(closestFlagArray[0], 0);
         currState = new State(closestFlagArray[0], 0);
         policy = new int[5][5];
-        qsa = new double[GlobalState.flagsManager.getFlagsList().size]
-                [GlobalState.flagsManager.getFlagsList().size]
-                [GlobalState.flagsManager.getFlagsList().size];
+        qsa = new double[GlobalState.flagsManager.getNumberOfFlags()]
+                [GlobalState.flagsManager.getNumberOfFlags()]
+                [GlobalState.flagsManager.getNumberOfFlags()];
         astar = new Astar(GlobalState.widthField, GlobalState.heightField);
         init();
     }
