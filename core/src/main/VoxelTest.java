@@ -9,7 +9,6 @@ import AI.ReinforcementLearning;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
-import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.assets.loaders.ModelLoader;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
@@ -20,6 +19,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g3d.Environment;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
+import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
@@ -28,21 +28,21 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
 import mechanics.GlobalState;
-import terrain.Chunk;
-import utils.Cube;
 import terrain.SimplexNoise;
 import terrain.VoxelWorld;
 import utils.ConcreteGameObject;
 import utils.EnvironmentCubeMap;
-import utils.GameController;
 import mechanics.Player;
 import mechanics.PlayerController;
-import mechanics.Score;
-import java.util.concurrent.TimeUnit;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.utils.IntArray;
 import mechanics.AIController;
-import terrain.TreeList;
+import mechanics.Flag;
+import mechanics.Flag.Occupant;
+import static mechanics.GlobalState.UNITS_PER_METER;
+import static mechanics.GlobalState.assetsManager;
+import static mechanics.GlobalState.flagsManager;
+import static mechanics.GlobalState.miniMap;
+import static mechanics.GlobalState.scoreBoard;
 
 
 /**
@@ -50,44 +50,20 @@ import terrain.TreeList;
  * @author S.S.Iyer
  */
 public class VoxelTest extends ApplicationAdapter {
-    
-    public final static int UNITS_PER_METER = 16;
-    final float HUMAN_HEIGHT = 3f*UNITS_PER_METER;
     final float[] FOG_COLOR = new float[] {0.13f, 0.13f, 0.13f, 1f};
+    Environment environment;
+    PerspectiveCamera camera;
+    ModelBatch modelBatch;
     SpriteBatch spriteBatch;
     BitmapFont font;
-    ModelBatch modelBatch;
-    PerspectiveCamera camera;
-    Environment environment;
+    boolean assetLoading;
     EnvironmentCubeMap skyBox;
+    VoxelWorld voxelWorld;
     Array<ConcreteGameObject> instances;
+    Array<Player> players = new Array<>();
     Player player;
     PlayerController playerController;
-    Cube cube;
-    Chunk chunk;
-     
-    public static final int miniWidth = 800;
-    public static final int miniHeight = 480;
-    public static final int miniScale = 4;
-    public static final int markerSize = 20;
-    public static final int miniMapLeft = 0;
-    public static final int miniMapRight = 200;
-    public static final int miniMapTop = 480;
-    public static final int miniMapBottom = 280;
-    private Texture playerMarker;
-    private Texture heightMap;
-    private Sprite mapSprite;
-    private Texture flagMarkerBlue;
-    private Texture flagMarkerRed;
-    private Texture flagMarkerGrey;
-    private Texture hudMap;
-    private Texture hudScore;
-    private Texture flagTexture;
-    private Sprite hudMapSprite;
-    Score score;
-    long startTime;
-    long elapsedTime; 
-    
+    Player AI;
     ReinforcementLearning RL;
     Boolean step = true;
     Boolean evaluate = false;
@@ -130,67 +106,43 @@ public class VoxelTest extends ApplicationAdapter {
         GlobalState.assetsManager.load("trees/tree2.g3db", Model.class);
         GlobalState.assetsManager.load("trees/tree3.g3db", Model.class);
         GlobalState.assetsManager.load("trees/tree4.g3db", Model.class);
-        GlobalState.assetsManager.load("spacesphere/spacesphere.g3db", Model.class);
-        GlobalState.assetsManager.load("skyDome/skydome.g3db", Model.class);
         GlobalState.assetsManager.load("characters/BlueWalk.g3db", Model.class);
-        GlobalState.assetLoading = true;
+        assetLoading = true;
         
         // Create a voxel terrain
-        GlobalState.voxelTextures = new Texture(Gdx.files.internal("tiles.png"));
-        GlobalState.voxelWorld = new VoxelWorld(20, 4, 20);
-        SimplexNoise.generateHeightMap(GlobalState.voxelWorld, 0, 64, 10, 0.5f, 0.007f, 0.002f);
-        GlobalState.voxelTextures.bind(0);
+        voxelWorld = new VoxelWorld(new Texture(Gdx.files.internal("tiles.png")), 
+                20, 4, 20,400, 4);
+        SimplexNoise.generateHeightMap(voxelWorld, 0, 64, 10, 0.5f, 0.007f, 0.002f);
+        voxelWorld.voxelTextures.bind(0);
 //        PerlinNoiseGenerator.generateVoxels(model, 0, 64, 10);
 //        float camX = model.voxelsX / 2f;
 //        float camZ = model.voxelsZ / 2f;
 //        float camY = model.getHeight(camX, camZ) + 1.5f;
 //        camera.position.set(camX, camY, camZ);
-        GlobalState.voxelWorld.setScale(UNITS_PER_METER);
-        
-        // Pass the voxelworld to the trees 
-        GlobalState.treeList = new TreeList(400);
+        voxelWorld.setScale(UNITS_PER_METER);
         
         // Load the player
         player = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
                 , Vector3.Zero, camera.direction);
-        
-        
         playerController = new PlayerController(player, camera, 
                 new Vector3(0, 7*UNITS_PER_METER, -5*UNITS_PER_METER));
         playerController.setVelocity(22*UNITS_PER_METER);
+        players.add(player);
         
         // Load the AI
-        GlobalState.AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
+        AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
                 , Vector3.Zero, camera.direction);
-        RL = new ReinforcementLearning();
-        aiController = new AIController(GlobalState.AI);
+        RL = new ReinforcementLearning(AI);
+        aiController = new AIController(AI, voxelWorld);
         aiController.setVelocity(22*UNITS_PER_METER);
-        
+        players.add(AI);
+
         // Set the initial camera position
         camera.position.set(new Vector3().set(player.getPosition())
                 .add(playerController.cameraOffset));
         
-        // Setup a minimap camera
-        //miniMapCam = new OrthographicCamera(miniWidth, miniHeight);
-        //miniMapCam.zoom = miniScale;
-        playerMarker = new Texture(Gdx.files.internal("markers/playerdot.png"));
-        heightMap = new Texture(Gdx.files.internal("simplexmap.png"));
-        mapSprite = new Sprite(heightMap);
-        flagMarkerBlue = new Texture(Gdx.files.internal("markers/blue.png"));
-        flagMarkerRed = new Texture(Gdx.files.internal("markers/red.png"));
-        flagMarkerGrey = new Texture(Gdx.files.internal("markers/grey.png"));
-        hudMap = new Texture(Gdx.files.internal("markers/hudMap.png"));
-        hudMapSprite = new Sprite(hudMap);
-        hudScore = new Texture(Gdx.files.internal("markers/hudScore.png"));
-        score = new Score();    
-        
-        // Time
-        startTime = System.currentTimeMillis();
-        elapsedTime = 0;      
-        
         // Setup all input sources
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
-        GlobalState.gameController = new GameController();
         inputMultiplexer.addProcessor(GlobalState.gameController);
         inputMultiplexer.addProcessor(playerController);
         Gdx.input.setInputProcessor(inputMultiplexer);
@@ -206,8 +158,9 @@ public class VoxelTest extends ApplicationAdapter {
         Gdx.gl.glViewport(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         
         // Load assetsManager once asset manager is done loading the asset
-        if(GlobalState.assetLoading && GlobalState.assetsManager.update()) {
-            GlobalState.assetsLoading(instances);
+        if(assetLoading && GlobalState.assetsManager.update()) {
+            assetsLoading(instances);
+            assetLoading = false;
         }
         
         // Update the camera, the player and the player's animation
@@ -222,19 +175,19 @@ public class VoxelTest extends ApplicationAdapter {
         //DefaultShader.defaultCullFace = GL20.GL_FRONT;
         DefaultShader.defaultCullFace = GL20.GL_NONE;
         // Render the voxel terrain
-        if(GlobalState.voxelWorld.isVisible(camera)) {
-            modelBatch.render(GlobalState.voxelWorld, environment);
+        if(voxelWorld.isVisible(camera)) {
+            modelBatch.render(voxelWorld, environment);
         }
         modelBatch.flush();
         DefaultShader.defaultCullFace = GL20.GL_BACK;
         
         // Render all loaded models
-        for(ConcreteGameObject gameObject : instances) {
-            if(gameObject.isVisible(camera)) {
-                modelBatch.render(gameObject);
-                GlobalState.visibleCount++;
-            }
-        }
+//        for(ConcreteGameObject gameObject : instances) {
+//            if(gameObject.isVisible(camera)) {
+//                modelBatch.render(gameObject);
+//                GlobalState.visibleCount++;
+//            }
+//        }
         if(step) {
             System.out.println("HI");
             path = RL.step();
@@ -253,19 +206,21 @@ public class VoxelTest extends ApplicationAdapter {
             //step = true;
             evaluate = false;
         }
+        
         // Render the player character
         if(player.isVisible(camera) && !GlobalState.isFirstPerson) {
             modelBatch.render(player);
             GlobalState.visibleCount++;
         }
-        if(GlobalState.AI.isVisible(camera)) {
-            modelBatch.render(GlobalState.AI);
+        
+        // Render the AI character
+        if(AI.isVisible(camera)) {
+            modelBatch.render(AI);
             GlobalState.visibleCount++;
         }
         
-        // Time
-        elapsedTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
-        score.updateScore(elapsedTime, GlobalState.flagsManager);
+        // Update the scoreBoard board
+        scoreBoard.updateScore();
 
         modelBatch.end();
         
@@ -273,8 +228,8 @@ public class VoxelTest extends ApplicationAdapter {
         spriteBatch.begin();
         font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 10, 
                 camera.viewportHeight - 10);
-        font.draw(spriteBatch, "#visible chunks: " + GlobalState.voxelWorld.renderedChunks 
-                + "/" + GlobalState.voxelWorld.numChunks, 10, camera.viewportHeight - 25);
+        font.draw(spriteBatch, "#visible chunks: " + voxelWorld.renderedChunks 
+                + "/" + voxelWorld.numChunks, 10, camera.viewportHeight - 25);
         font.draw(spriteBatch, "#visible objects: "+GlobalState.visibleCount, 10, camera.viewportHeight - 40);
         font.draw(spriteBatch, "First person mode (Num 3): "+GlobalState.isFirstPerson, 10, 
                 camera.viewportHeight - 55);
@@ -286,34 +241,9 @@ public class VoxelTest extends ApplicationAdapter {
                 camera.viewportHeight - 100);
         
         // Draw minimap and HUD
-        spriteBatch.draw(hudMap, hudMapSprite.getX()-6, hudMapSprite.getY()-6);
-        spriteBatch.draw(hudScore, camera.viewportWidth/2 -250, camera.viewportHeight - 70);
-        spriteBatch.draw(heightMap, mapSprite.getX(), mapSprite.getY());    
+        scoreBoard.draw(spriteBatch, camera, font);
+        miniMap.draw(spriteBatch, camera, players);
         
-        font.setColor(0,0,0,1);
-        font.draw(spriteBatch, "" + score.getPS(), camera.viewportWidth/2 - 90, camera.viewportHeight - 20);
-        font.draw(spriteBatch, "" + score.getCS(), camera.viewportWidth/2 + 80, camera.viewportHeight - 20);
-        font.draw(spriteBatch, "" + String.valueOf(elapsedTime), camera.viewportWidth/2 -3, camera.viewportHeight - 20);
-        
-        Vector3 tmp = new Vector3();
-        for (int i = 0; i < 5; i++) {
-            switch (GlobalState.flagsManager.getOccupant(i)) {
-                case AI:
-                    flagTexture = flagMarkerRed;
-                    break;
-                case PLAYER:
-                    flagTexture = flagMarkerBlue;
-                    break;
-                case NONE:  
-                    flagTexture = flagMarkerGrey;
-                    break;
-            }
-            tmp.set(GlobalState.flagsManager.getFlagPosition(i));
-            spriteBatch.draw(flagTexture, tmp.z, tmp.x);
-        }
-        spriteBatch.draw(playerMarker, player.getPosition().z/UNITS_PER_METER, 
-                player.getPosition().x/UNITS_PER_METER);
-        spriteBatch.draw(playerMarker, GlobalState.AI.getPosition().z/UNITS_PER_METER, GlobalState.AI.getPosition().x/UNITS_PER_METER);
         spriteBatch.end();
     }
 
@@ -330,5 +260,23 @@ public class VoxelTest extends ApplicationAdapter {
         modelBatch.dispose();
         instances.clear();
         GlobalState.dispose();
+    }
+    
+    public void assetsLoading(Array<ConcreteGameObject> instances) {
+        // Load the tower
+        ConcreteGameObject gameObject = new ConcreteGameObject(
+                assetsManager.get("tower/tower.g3db", Model.class));
+        instances.add(gameObject);
+        
+        // Load trees in the voxel world
+        voxelWorld.loadTrees();
+        
+        // Load the flag models
+        Flag.redFlag = new ModelInstance(assetsManager.get("flags/flagRed.g3db", Model.class));
+        Flag.blueFlag = new ModelInstance(assetsManager.get("flags/flagBlue.g3db", Model.class));
+        Flag.noneFlag = new ModelInstance(assetsManager.get("flags/flagNone.g3db", Model.class));
+        
+        // Load new flags into the game
+        flagsManager.generateFlags();
     }
 }

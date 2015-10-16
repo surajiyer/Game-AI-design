@@ -18,8 +18,8 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import static main.VoxelTest.UNITS_PER_METER;
 import mechanics.GlobalState;
+import static mechanics.GlobalState.UNITS_PER_METER;
 import utils.GameObject;
 
 
@@ -223,8 +223,8 @@ public class VoxelChunk extends GameObject {
     public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
         Renderable renderable = pool.obtain();
         renderable.worldTransform.set(updateWorldTranform());
-        renderable.material = GlobalState.voxelTextures == null ? material : 
-                new Material(TextureAttribute.createDiffuse(GlobalState.voxelTextures));
+        renderable.material = parent.voxelTextures == null ? material : 
+                new Material(TextureAttribute.createDiffuse(parent.voxelTextures));
         renderable.mesh = mesh;
         renderable.meshPartOffset = 0;
         renderable.meshPartSize = numVerts * (6 / NROF_VERTICES_PER_FACE);

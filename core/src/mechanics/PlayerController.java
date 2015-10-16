@@ -11,8 +11,8 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
+import static mechanics.GlobalState.UNITS_PER_METER;
 import utils.MultipleAnimationsController;
-import static main.VoxelTest.UNITS_PER_METER;
 
 /**
  * Used to control the camera.

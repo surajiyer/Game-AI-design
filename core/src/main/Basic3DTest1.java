@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import utils.Drawables;
 import mechanics.Flag.Occupant;
 import mechanics.FlagsManager;
-import mechanics.Score;
+import mechanics.ScoreBoard;
 
 /**
  *
@@ -52,7 +52,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
     Array<ModelInstance> instances;
     Environment environment;
     InfiniteGrid grid;
-    Score score;
+    ScoreBoard score;
     BitmapFont font;
     long startTime;
     long elapsedTime;
@@ -68,7 +68,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
         spriteBatch = new SpriteBatch();
         instances = new Array<>();
         assets = new AssetManager();
-        score = new Score();
+        score = new ScoreBoard();
         font = new BitmapFont();
         startTime = System.currentTimeMillis();
         elapsedTime = 0;
@@ -140,7 +140,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
        
         // Time
         elapsedTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
-        score.updateScore(elapsedTime, flagList);
+        score.updateScore();
         
         // Render everything
         modelBatch.begin(camera);

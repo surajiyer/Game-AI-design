@@ -6,15 +6,22 @@
 package terrain;
 
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.Renderable;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import mechanics.GlobalState;
+import static mechanics.GlobalState.UNITS_PER_METER;
+import static mechanics.GlobalState.assetsManager;
 import static terrain.VoxelChunk.CHUNK_SIZE_X;
 import static terrain.VoxelChunk.CHUNK_SIZE_Y;
 import static terrain.VoxelChunk.CHUNK_SIZE_Z;
 import static terrain.VoxelChunk.indices;
+import utils.ConcreteGameObject;
 import utils.GameObject;
 
 /**
@@ -23,6 +30,7 @@ import utils.GameObject;
  */
 public class VoxelWorld extends GameObject {
     public final VoxelChunk[] chunks;
+    public final Texture voxelTextures;
     public final int chunksX;
     public final int chunksY;
     public final int chunksZ;
@@ -31,8 +39,14 @@ public class VoxelWorld extends GameObject {
     public final int voxelsZ;
     public int renderedChunks;
     public int numChunks;
+    
+    Array<ConcreteGameObject> trees;
+    public final int NROF_TREES;
+    public final int NROF_TREES_TYPES;
 
-    public VoxelWorld (int chunksX, int chunksY, int chunksZ) {
+    public VoxelWorld (Texture texture, int chunksX, int chunksY, int chunksZ, int numberOfTrees,
+            int numberOfTreeTypes) {
+        this.voxelTextures = texture;
         this.chunksX = chunksX;
         this.chunksY = chunksY;
         this.chunksZ = chunksZ;
@@ -65,6 +79,10 @@ public class VoxelWorld extends GameObject {
             indices[i + 4] = (short)(j + 3);
             indices[i + 5] = (short)(j + 0);
         }
+        
+        this.NROF_TREES = numberOfTrees;
+        this.NROF_TREES_TYPES = numberOfTreeTypes;
+        this.trees = new Array<>();
     }
 
     public void set (float x, float y, float z, byte voxel) {
@@ -140,6 +158,22 @@ public class VoxelWorld extends GameObject {
                     set(ix, iy, iz, voxel);
                 }
             }
+        }
+    }
+    
+    public void loadTrees() {
+        int x, y, z, type;
+        for (int i = 0; i < NROF_TREES; i++) {
+            x = MathUtils.random(GlobalState.widthField);
+            z = MathUtils.random(GlobalState.heightField);
+            y = (int) getHeight(x, z);
+            type = MathUtils.random(1, NROF_TREES_TYPES);
+            if (y < 18) continue;
+            trees.add(new ConcreteGameObject(
+                    assetsManager.get("trees/tree"+type+".g3db", Model.class)));
+            trees.get(i).setPosition(tmp.set(x * UNITS_PER_METER,
+                    y * UNITS_PER_METER, 
+                    z * UNITS_PER_METER));
         }
     }
     
