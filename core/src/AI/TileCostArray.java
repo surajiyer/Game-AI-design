@@ -117,7 +117,7 @@ public class TileCostArray {
                             }                     
                         }
                     }
-                    if(heightMap[x][y] < 20) {
+                    if(heightMap[x][y] < 10) {
                         tileCost[x][y][m] = 4f; 
                     }
                 }
