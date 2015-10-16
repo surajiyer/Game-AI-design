@@ -80,6 +80,8 @@ public class Basic3DTest1 extends ApplicationAdapter {
         camera.far = 60f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
+        
+        // Set up flags
         flagList = new FlagsManager(5);
         flagList.setOccupant(0, Occupant.AI);
         flagList.setOccupant(1,Occupant.AI);
@@ -88,8 +90,6 @@ public class Basic3DTest1 extends ApplicationAdapter {
         flagList.setOccupant(4,Occupant.PLAYER);
         
         // Setup a camera controller to control the camera movements
-        camController = new BobController(camera);
-//        camController.setVelocity(9f*UNITS_PER_METER);
         camController = new BobController(camera);
         camController.setVelocity(9f*UNITS_PER_METER);
         Gdx.input.setInputProcessor(camController);

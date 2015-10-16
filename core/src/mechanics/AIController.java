@@ -92,25 +92,34 @@ public class AIController extends InputAdapter {
     public float getVelocity() {
         return velocity;
     }
+    public boolean init = true;
+    int index = 0;
 
     public boolean update(IntArray path) {
+        if (init) {
+            index = path.size - 1;
+            init = false;
+        }
         this.path = path;
         return update(Gdx.graphics.getDeltaTime());
 
     }
-    int index = 0;
+    
     int times = 0;
+
     public boolean update(float deltaTime) {
         Vector3 movement = new Vector3(path.get(index),
                 GlobalState.voxelWorld.getHeight(path.get(index), path.get(index + 1)), path.get(index + 1));
         tmp.set(movement).nor().scl(Gdx.graphics.getDeltaTime() * velocity);
-        player.setPosition(tmp1.set(player.getPosition()).scl(1,0,1).add(tmp));
+        //player.setPosition(tmp1.set(player.getPosition()).scl(1, 0, 1).add(tmp));
+        player.setPosition(movement.scl(16f));
         times += 1;
-        if(times == 16) {
-            index +=2;
+        if(times == 2) {
+            index -=2;
             times = 0;
         }
-        if (index >= path.size) {
+        if (index <= 0) {
+            init = true;
             return false;
         }
         return true;
