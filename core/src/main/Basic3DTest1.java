@@ -25,7 +25,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import java.util.concurrent.TimeUnit;
-import utils.Drawables;
 import mechanics.Flag.Occupant;
 import mechanics.FlagsManager;
 import mechanics.ScoreBoard;
@@ -229,7 +228,6 @@ public class Basic3DTest1 extends ApplicationAdapter {
         
         bobber = new ModelInstance(assets.get("trees/tree1.g3db", Model.class));
         bobber.transform.setToTranslation(camera.position.x, 0, camera.position.z);
-        bobberBox = Drawables.drawBoundingBox(bobber, true);
         assetLoading = false;
 
     }

@@ -183,6 +183,11 @@ public class VoxelTest extends ApplicationAdapter {
 //            }
 //        }
         
+        // Render the flags
+        for(Flag flag : GlobalState.flagsManager.getFlagsList()) {
+            modelBatch.render(flag);
+        }
+        
         // Render the player character
         if(player.isVisible(camera) && !GlobalState.isFirstPerson) {
             modelBatch.render(player);
@@ -194,10 +199,6 @@ public class VoxelTest extends ApplicationAdapter {
             modelBatch.render(AI);
             GlobalState.visibleCount++;
         }
-        
-        // Update the scoreBoard board
-        scoreBoard.updateScore();
-
         modelBatch.end();
         
         // Render the 2D text
@@ -217,6 +218,7 @@ public class VoxelTest extends ApplicationAdapter {
                 camera.viewportHeight - 100);
         
         // Draw minimap and HUD
+        scoreBoard.updateScore();
         scoreBoard.draw(spriteBatch, camera, font);
         miniMap.draw(spriteBatch, camera, players);
         

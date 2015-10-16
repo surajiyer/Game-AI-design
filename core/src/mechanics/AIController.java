@@ -82,6 +82,7 @@ public class AIController {
                 index = path.size;
                 break;
             case MOVE:
+                System.out.println("Path found");
                 update(Gdx.graphics.getDeltaTime());
                 break;
             case EVAL:
@@ -103,7 +104,7 @@ public class AIController {
             movement.set(path.get(index),
                     playerWorld.getHeight(path.get(index), path.get(index + 1)), 
                     path.get(index + 1));
-            movement.scl(16f);
+            movement.scl(GlobalState.UNITS_PER_METER);
             player.direction.set(tmp.set(movement).sub(player.getPosition()));
         }
         

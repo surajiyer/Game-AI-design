@@ -70,6 +70,7 @@ public class Minimap {
         
         // Load markers for all players
         for(Player player : players) {
+            System.out.println(player.getPosition());
             spriteBatch.draw(playerMarker, player.getPosition().z/UNITS_PER_METER, 
                 player.getPosition().x/UNITS_PER_METER);
         }

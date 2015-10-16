@@ -191,6 +191,8 @@ public class PlayerController extends InputAdapter {
         // Move forward
         if (keys.containsKey(FORWARD)) {
             tmp.set(player.direction).nor().scl(deltaTime * velocity);
+            //tmp.set(player.getPosition().add(tmp));
+            //tmp.y = voxelWorld.getHeight(tmp.x, tmp.z);
             player.setPosition(player.getPosition().add(tmp));
             camera.position.set(tmp.set(player.getPosition()).add(cameraOffset));
         }

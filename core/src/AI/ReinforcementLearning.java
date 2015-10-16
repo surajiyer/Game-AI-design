@@ -114,7 +114,6 @@ public class ReinforcementLearning {
                 .getPosition());
         IntArray path = astar.getPath((int) AIPlayer.getPosition().x, 
                 (int) AIPlayer.getPosition().z, (int) tmp.x, (int) tmp.z, tileCost);
-        System.out.println("path found");
         return path;
     }
 

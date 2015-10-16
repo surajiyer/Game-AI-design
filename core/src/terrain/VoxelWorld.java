@@ -223,5 +223,10 @@ public class VoxelWorld extends GameObject {
                 renderedChunks++;
             }
         }
+        
+        // Render trees
+        for(ConcreteGameObject tree : trees) {
+            tree.getRenderables(renderables, pool);
+        }
     }
 }
