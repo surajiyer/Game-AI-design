@@ -3,7 +3,6 @@ package mechanics;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import java.util.Random;
-import utils.GameInfo;
 
 /**
  *
@@ -26,33 +25,33 @@ public class FlagsManager {
         for (int i = 0; i < NROF_FLAGS; i++) {
             quadrant = i % 5;
             if (quadrant == 0) {
-                int x = random.nextInt((GameInfo.widthField/3 - 20) + 1) + 20;
+                int x = random.nextInt((GlobalState.widthField/3 - 20) + 1) + 20;
                 int y = 0;
-                int z = random.nextInt((GameInfo.heightField/2 - 20) + 1) + 20;
+                int z = random.nextInt((GlobalState.heightField/2 - 20) + 1) + 20;
                 flagPositions.add(tmp.set(x,y,z));
                 flagList.add(new Flag(tmp, 5));
             } else if (quadrant == 1) {
-                int x = random.nextInt((GameInfo.widthField/3 - 20) + 1) + 20;
+                int x = random.nextInt((GlobalState.widthField/3 - 20) + 1) + 20;
                 int y = 0;
-                int z = random.nextInt((GameInfo.heightField-20 - GameInfo.heightField/2) + 1) + GameInfo.heightField/2;
+                int z = random.nextInt((GlobalState.heightField-20 - GlobalState.heightField/2) + 1) + GlobalState.heightField/2;
                 flagPositions.add(tmp.set(x,y,z));
                 flagList.add(new Flag(tmp.set(x,y,z), 5));
             } else if (quadrant == 2) {
-                int x = random.nextInt((GameInfo.widthField/3*2 - GameInfo.widthField/3) + 1) + GameInfo.widthField/3;
+                int x = random.nextInt((GlobalState.widthField/3*2 - GlobalState.widthField/3) + 1) + GlobalState.widthField/3;
                 int y = 0;
-                int z = random.nextInt((GameInfo.heightField/4*3 - GameInfo.heightField/4) + 1) + GameInfo.heightField/4;
+                int z = random.nextInt((GlobalState.heightField/4*3 - GlobalState.heightField/4) + 1) + GlobalState.heightField/4;
                 flagPositions.add(tmp.set(x,y,z));
                 flagList.add(new Flag(tmp.set(x,y,z), 5));
             } else if (quadrant == 3) {
-                int x = random.nextInt((GameInfo.widthField-20 - GameInfo.widthField/3*2) + 1) + GameInfo.widthField/3*2;
+                int x = random.nextInt((GlobalState.widthField-20 - GlobalState.widthField/3*2) + 1) + GlobalState.widthField/3*2;
                 int y = 0;
-                int z = random.nextInt((GameInfo.heightField/2 - 20) + 1) + 20;
+                int z = random.nextInt((GlobalState.heightField/2 - 20) + 1) + 20;
                 flagPositions.add(tmp.set(x,y,z));
                 flagList.add(new Flag(tmp.set(x,y,z), 5));
             } else if(quadrant == 4) {
-                int x = random.nextInt((GameInfo.widthField-20 - GameInfo.widthField/3*2) + 1) + GameInfo.widthField/3*2;
+                int x = random.nextInt((GlobalState.widthField-20 - GlobalState.widthField/3*2) + 1) + GlobalState.widthField/3*2;
                 int y = 0;
-                int z = random.nextInt((GameInfo.heightField-20 - GameInfo.heightField/2) + 1) + GameInfo.heightField/2;
+                int z = random.nextInt((GlobalState.heightField-20 - GlobalState.heightField/2) + 1) + GlobalState.heightField/2;
                 flagPositions.add(tmp.set(x,y,z));
                 flagList.add(new Flag(tmp.set(x,y,z), 5));
             }

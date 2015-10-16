@@ -8,13 +8,11 @@ package mechanics;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.utils.IntIntMap;
 import utils.MultipleAnimationsController;
 import static main.VoxelTest.UNITS_PER_METER;
-import utils.GameInfo;
 
 /**
  * Used to control the camera.
@@ -104,7 +102,7 @@ public class AIController extends InputAdapter {
     int times = 0;
     public boolean update(float deltaTime) {
         Vector3 movement = new Vector3(path.get(index),
-                GameInfo.world.getHeight(path.get(index), path.get(index + 1)), path.get(index + 1));
+                GlobalState.voxelWorld.getHeight(path.get(index), path.get(index + 1)), path.get(index + 1));
         tmp.set(movement).nor().scl(Gdx.graphics.getDeltaTime() * velocity);
         player.setPosition(tmp1.set(player.getPosition()).scl(1,0,1).add(tmp));
         times += 1;
@@ -120,7 +118,7 @@ public class AIController extends InputAdapter {
 
     public boolean move(IntArray path) {
         for (int i = 0; i < path.size; i += 2) {
-            Vector3 movement = new Vector3(path.get(i), GameInfo.world.getHeight(path.get(i), path.get(i + 1)), path.get(i + 1));
+            Vector3 movement = new Vector3(path.get(i), GlobalState.voxelWorld.getHeight(path.get(i), path.get(i + 1)), path.get(i + 1));
             while (!player.getPosition().equals(movement)) {
                 tmp.set(movement).nor().scl(Gdx.graphics.getDeltaTime() * velocity);
                 player.setPosition(player.getPosition().add(tmp));

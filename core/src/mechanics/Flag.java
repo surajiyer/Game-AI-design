@@ -56,13 +56,13 @@ public class Flag extends GameObject {
         this.occupant = occupant;
         switch(occupant) {
             case AI:
-                this.model = redFlag;
+                this.model = redFlag.copy();
                 break;
             case PLAYER:
-                this.model = blueFlag;
+                this.model = blueFlag.copy();
                 break;
             case NONE:
-                this.model = noneFlag;
+                this.model = noneFlag.copy();
                 break;
         }
     }

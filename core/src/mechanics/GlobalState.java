@@ -12,18 +12,19 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import static main.VoxelTest.UNITS_PER_METER;
+import mechanics.Flag.Occupant;
+import terrain.TreeList;
+import terrain.VoxelWorld;
 import utils.ConcreteGameObject;
 import utils.GameController;
-import utils.GameInfo;
 
 /**
  *
  * @author S.S.Iyer
  */
 public class GlobalState {
-    public static int visibleCount;
     public static GameController gameController;
-    public static AssetManager assetsManager;
+    public final static AssetManager assetsManager = new AssetManager();
     public static boolean assetLoading;
     public static boolean fullScreen = false;
     public static boolean descendLimit = true;
@@ -31,7 +32,35 @@ public class GlobalState {
     public static boolean cursorCaught = true;
     public static boolean isFirstPerson = false;
     public static int oldWidth, oldHeight;
+    public static int visibleCount;
+    public static VoxelWorld voxelWorld;
     public static Texture voxelTextures;
+    public final static FlagsManager flagsManager = new FlagsManager(5);
+    public static Score score = new Score();
+    public static float[][] heightMap;
+    public static int[][] intHeightMap;
+    public static int widthField = 320;
+    public static int heightField = 320;
+    public static Player AI;
+    static int latestPlayerCapture;
+    static int latestAiCapture;
+    public static TreeList treeList;
+    
+    public static int getLatestPlayerCapture() {
+        return latestPlayerCapture;
+    }
+    
+    public static void setLatestPlayerCapture(int capture) {
+        latestPlayerCapture = capture;
+    }
+    
+    public static FlagsManager getFlagManager() {
+        return flagsManager;
+    }
+    
+    public static Score getScore() {
+        return score;
+    }
     
     public static void dispose() {
         assetsManager.dispose();
@@ -44,25 +73,23 @@ public class GlobalState {
         ConcreteGameObject gameObject = new ConcreteGameObject(assetsManager.get("tower/tower.g3db", Model.class));
         instances.add(gameObject);
         
-        // Load tree 1
-        gameObject = new ConcreteGameObject(assetsManager.get("trees/tree1.g3db", Model.class));
-        gameObject.setPosition(tmp.set(0, 0, -12*UNITS_PER_METER));
-        instances.add(gameObject);
-        
-        // Load tree 2
-        gameObject = new ConcreteGameObject(assetsManager.get("trees/tree2.g3db", Model.class));
-        gameObject.setPosition(tmp.set(-12*UNITS_PER_METER, 0, -6*UNITS_PER_METER));
-        instances.add(gameObject);
-        
-        // Load tree 3
-        gameObject = new ConcreteGameObject(assetsManager.get("trees/tree3.g3db", Model.class));
-        gameObject.setPosition(tmp.set(-12*UNITS_PER_METER, 0, 6*UNITS_PER_METER));
-        instances.add(gameObject);
-        
-        // Load tree 4
-        gameObject = new ConcreteGameObject(assetsManager.get("trees/tree4.g3db", Model.class));
-        gameObject.setPosition(tmp.set(0, 0, 12*UNITS_PER_METER));
-        instances.add(gameObject);
+        // Load trees
+        int[][] trees = treeList.getTreeList();
+        for (int[] tree : trees) {
+            if (tree[1] >= 18) {
+                if (tree[3] == 0) {
+                    gameObject = new ConcreteGameObject(assetsManager.get("trees/tree1.g3db", Model.class));
+                } else if (tree[3] == 1) {
+                    gameObject = new ConcreteGameObject(assetsManager.get("trees/tree2.g3db", Model.class));
+                } else if (tree[3] == 2) {
+                    gameObject = new ConcreteGameObject(assetsManager.get("trees/tree3.g3db", Model.class));
+                } else if (tree[3] == 3) {
+                    gameObject = new ConcreteGameObject(assetsManager.get("trees/tree4.g3db", Model.class));
+                }
+                gameObject.setPosition(tmp.set(tree[0] * UNITS_PER_METER, tree[1] * UNITS_PER_METER, tree[2] * UNITS_PER_METER));
+                instances.add(gameObject);
+            }
+        }
         
         // Load the red flag
         Flag.redFlag = new ModelInstance(assetsManager.get("flags/flagRed.g3db", Model.class));
@@ -73,13 +100,12 @@ public class GlobalState {
         // Load the uncaptured flag
         Flag.noneFlag = new ModelInstance(assetsManager.get("flags/flagNone.g3db", Model.class));
         
-        // Load all the flags
-        Array<Flag> flags = GameInfo.flagsManager.getFlagsList();
-        for(int i = 0; i < flags.size; i++) {
-            Vector3 pos = GameInfo.flagsManager.getFlagPosition(i);
-            gameObject.setPosition(tmp.set(pos).scl(UNITS_PER_METER));
-            instances.add(gameObject);
-        }
+        // Load new flags in the game
+        flagsManager.setOccupant(0,Occupant.AI);
+        flagsManager.setOccupant(1,Occupant.AI);
+        flagsManager.setOccupant(2,Occupant.PLAYER);
+        flagsManager.setOccupant(3,Occupant.PLAYER);
+        flagsManager.setOccupant(4,Occupant.PLAYER);
         
         // Done loading assets
         assetLoading = false;

@@ -20,8 +20,8 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 import mechanics.FlagsManager;
+import mechanics.GlobalState;
 import terrain.SimplexNoise;
-import utils.GameInfo;
 
 
 public class AstarTest extends ApplicationAdapter {
@@ -52,7 +52,7 @@ public class AstarTest extends ApplicationAdapter {
             // get the fags list
             flagList = new FlagsManager(nrOfFlags);
             flagLocations = flagList.getFlagPositions();
-            flagList = GameInfo.flagsManager;//new FlagList(nrOfFlags);
+            flagList = GlobalState.flagsManager;//new FlagList(nrOfFlags);
             flagLocations = flagList.getFlagPositions();
             
         float[][] t = SimplexNoise.generateOctavedSimplexNoise(widthField, heightField, 6, 0.5f, 0.007f); // SIMPLEX NOISE

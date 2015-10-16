@@ -11,7 +11,7 @@ import java.io.IOException;
 import static java.lang.Math.abs;
 import javax.imageio.ImageIO;
 import java.util.*;
-import utils.GameInfo;
+import mechanics.GlobalState;
 
 public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
 
@@ -229,18 +229,18 @@ public class SimplexNoise { // Simplex noise in 2D, 3D and 4D
 
     public static void generateHeightMap(VoxelWorld voxelWorld, int min, int max, int octaves,
             float roughness, float terrainScale, float riverScale) {
-        GameInfo.heightMap = combineNoise(
+        GlobalState.heightMap = combineNoise(
                 generateOctavedSimplexNoise(voxelWorld.voxelsX, voxelWorld.voxelsZ,
                         octaves, roughness, terrainScale),
                 generateRidgedNoise(voxelWorld.voxelsX, voxelWorld.voxelsZ, riverScale));
-        createImage(GameInfo.heightMap, "simplexmap.png");
-        GameInfo.intHeightMap = new int[voxelWorld.voxelsX][voxelWorld.voxelsZ];
+        createImage(GlobalState.heightMap, "simplexmap.png");
+        GlobalState.intHeightMap = new int[voxelWorld.voxelsX][voxelWorld.voxelsZ];
         int range = max - min;
         for (int z = 0; z < voxelWorld.voxelsZ; z++) {
             for (int x = 0; x < voxelWorld.voxelsX; x++) {
-                GameInfo.heightMap[x][z] = (GameInfo.heightMap[x][z] / 255f * range) + min;
-                voxelWorld.setColumn(x, (int) Math.floor(GameInfo.heightMap[x][z]), z, (byte) 1);
-                GameInfo.intHeightMap[x][z] = (int) Math.floor(GameInfo.heightMap[x][z]);
+                GlobalState.heightMap[x][z] = (GlobalState.heightMap[x][z] / 255f * range) + min;
+                voxelWorld.setColumn(x, (int) Math.floor(GlobalState.heightMap[x][z]), z, (byte) 1);
+                GlobalState.intHeightMap[x][z] = (int) Math.floor(GlobalState.heightMap[x][z]);
             }
         }
     }

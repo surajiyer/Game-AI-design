@@ -5,12 +5,10 @@ import com.badlogic.gdx.utils.IntArray;
 import java.util.Random;
 import main.Basic3DTest1;
 import mechanics.AIController;
-import mechanics.Flag;
 import mechanics.Flag.Occupant;
 import mechanics.FlagsManager;
+import mechanics.GlobalState;
 import mechanics.State;
-import utils.GameInfo;
-import static utils.GameInfo.AI;
 
 /**
  *
@@ -49,31 +47,31 @@ public class ReinforcementLearning {
     boolean isOptValCalc;
     double PRECISION = 0.01;
     FlagsManager flagList;
-    float[][][] tileCost = new float[GameInfo.widthField][GameInfo.heightField][8];
+    float[][][] tileCost = new float[GlobalState.widthField][GlobalState.heightField][8];
     PathCostArray pathcostarray;
-    int[] closestFlagArray = new int[GameInfo.flagsManager.getFlagsList().size];
+    int[] closestFlagArray = new int[GlobalState.flagsManager.getFlagsList().size];
     Astar astar;
 
     public ReinforcementLearning() {
         tileCost = TileCostArray.generateTileCostArray(
-                GameInfo.widthField, GameInfo.heightField, 
-                GameInfo.intHeightMap, 8, 
-                GameInfo.widthField - 1, 
-                GameInfo.heightField - 1);
-        pathcostarray = new PathCostArray(GameInfo.widthField, 
-                GameInfo.heightField, 
-                GameInfo.getFlagManager().getFlagPositions(), 
-                GameInfo.flagsManager.getFlagsList().size, tileCost);
+                GlobalState.widthField, GlobalState.heightField, 
+                GlobalState.intHeightMap, 8, 
+                GlobalState.widthField - 1, 
+                GlobalState.heightField - 1);
+        pathcostarray = new PathCostArray(GlobalState.widthField, 
+                GlobalState.heightField, 
+                GlobalState.getFlagManager().getFlagPositions(), 
+                GlobalState.flagsManager.getFlagsList().size, tileCost);
         closestFlagArray = pathcostarray.generateClosestFlagArrayAtLocation(pathCost, pathCost);
         start = new State(closestFlagArray[0], 0);
         currState = new State(closestFlagArray[0], 0);
         rand = new Random();
-        flagList = GameInfo.flagsManager;
+        flagList = GlobalState.flagsManager;
         policy = new int[5][5];
         qsa = new double[flagList.getFlagsList().size]
                 [flagList.getFlagsList().size]
                 [flagList.getFlagsList().size];
-        astar = new Astar(GameInfo.widthField, GameInfo.heightField);
+        astar = new Astar(GlobalState.widthField, GlobalState.heightField);
         initialize();
     }
 
@@ -115,13 +113,13 @@ public class ReinforcementLearning {
         //Select action using epsilon greedy exploration policy
         currAction = chooseAction(currState, rand.nextDouble());
         currStateQ = qsa[currState.x][currState.y][currAction];
-        scoreDiffPrev = GameInfo.score.getCS() - GameInfo.score.getPS();
-        Vector3 tmp = new Vector3(GameInfo.getFlagManager()
+        scoreDiffPrev = GlobalState.score.getCS() - GlobalState.score.getPS();
+        Vector3 tmp = new Vector3(GlobalState.getFlagManager()
                 .getFlagsList()
                 .get(currAction)
                 .getPosition());
-        IntArray path = astar.getPath((int) GameInfo.AI.getPosition().x, 
-                (int) GameInfo.AI.getPosition().z, (int) tmp.x, (int) tmp.z, tileCost);
+        IntArray path = astar.getPath((int) GlobalState.AI.getPosition().x, 
+                (int) GlobalState.AI.getPosition().z, (int) tmp.x, (int) tmp.z, tileCost);
         System.out.println("path found");
         return path;
     }
@@ -132,8 +130,8 @@ public class ReinforcementLearning {
 
         //observeer je de nieuwe state
         //Perform choosen action based on pjog (noise of environment)
-        nextState = new State(currAction, GameInfo.getLatestPlayerCapture());
-        int scoreDiffNext = GameInfo.score.getCS() - GameInfo.score.getPS();
+        nextState = new State(currAction, GlobalState.getLatestPlayerCapture());
+        int scoreDiffNext = GlobalState.score.getCS() - GlobalState.score.getPS();
         //Utility.show(" next st="+nextState.x+","+nextState.y);
 
         //If not a valid transition stay in same state and add penalty;
@@ -182,7 +180,7 @@ public class ReinforcementLearning {
         int bestAction = 0;
         double min = actions[0];
         for (int i = 0; i < actions.length; i++) {
-            if (min > actions[i] && !GameInfo.flagsManager.getOccupant(i).equals(Occupant.AI)) {
+            if (min > actions[i] && !GlobalState.flagsManager.getOccupant(i).equals(Occupant.AI)) {
                 min = actions[i];
                 bestAction = i;
             }
