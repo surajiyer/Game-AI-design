@@ -24,12 +24,13 @@ public class ReinforcementLearning {
     public static double LearningRate = 2;
     public static double Epsilon = 3;
     public static double DecayingLR = 4;
-    private double maxLearningRate = 0.7, pjog, epsilon;
+    private final double maxLearningRate = 0.7;
+    private double epsilon;
     private final int pathCost = 1;
-    private int[][] policy;
-    private double[][][] qsa;
-    State start, currState;
-    Player AIPlayer;
+    private final int[][] policy;
+    private final double[][][] qsa;
+    private State start, currState;
+    private Player AIPlayer;
 
     public boolean isBestAct = true;
     public boolean receivedPenalty = false;
@@ -46,10 +47,10 @@ public class ReinforcementLearning {
     int[][] optPolicy;
     boolean isOptValCalc;
     double PRECISION = 0.01;
-    FlagsManager flagList;
-    float[][][] tileCost = new float[GlobalState.widthField][GlobalState.heightField][8];
+    FlagsManager flagsManager;
+    float[][][] tileCost;
     PathCostArray pathcostarray;
-    int[] closestFlagArray = new int[GlobalState.flagsManager.getFlagsList().size];
+    int[] closestFlagArray;
     Astar astar;
 
     public ReinforcementLearning(Player AIPlayer) {
@@ -62,15 +63,16 @@ public class ReinforcementLearning {
         pathcostarray = new PathCostArray(GlobalState.widthField, 
                 GlobalState.heightField, 
                 GlobalState.flagsManager.getFlagPositions(), 
-                GlobalState.flagsManager.getFlagsList().size, tileCost);
+                GlobalState.flagsManager.getNumberOfFlags(), tileCost);
+        closestFlagArray = new int[GlobalState.flagsManager.getNumberOfFlags()];
         closestFlagArray = pathcostarray.generateClosestFlagArrayAtLocation(pathCost, pathCost);
         start = new State(closestFlagArray[0], 0);
         currState = new State(closestFlagArray[0], 0);
-        flagList = GlobalState.flagsManager;
+        flagsManager = GlobalState.flagsManager;
         policy = new int[5][5];
-        qsa = new double[flagList.getFlagsList().size]
-                [flagList.getFlagsList().size]
-                [flagList.getFlagsList().size];
+        qsa = new double[flagsManager.getFlagsList().size]
+                [flagsManager.getFlagsList().size]
+                [flagsManager.getFlagsList().size];
         astar = new Astar(GlobalState.widthField, GlobalState.heightField);
         init();
     }
@@ -166,11 +168,7 @@ public class ReinforcementLearning {
             }
         }
 
-        if (choosenAction == bestAction) {
-            isBestAct = true;
-        } else {
-            isBestAct = false;
-        }
+        isBestAct = choosenAction == bestAction;
 
         return choosenAction;
     }

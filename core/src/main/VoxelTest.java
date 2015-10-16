@@ -37,7 +37,6 @@ import mechanics.PlayerController;
 import com.badlogic.gdx.utils.IntArray;
 import mechanics.AIController;
 import mechanics.Flag;
-import mechanics.Flag.Occupant;
 import static mechanics.GlobalState.UNITS_PER_METER;
 import static mechanics.GlobalState.assetsManager;
 import static mechanics.GlobalState.flagsManager;

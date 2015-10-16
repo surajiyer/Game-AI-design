@@ -4,7 +4,6 @@ package AI;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
-import java.util.Arrays;
 /**
  *
  * @author Mike de Brouwer
@@ -23,7 +22,8 @@ public class PathCostArray {
     float pathCost;
     
 
-    public PathCostArray(int width, int height, Array<Vector3> flagLocations, int nrOfFlags, float[][][] tileCost) { 
+    public PathCostArray(int width, int height, Array<Vector3> flagLocations, 
+            int nrOfFlags, float[][][] tileCost) { 
         this.width = width;
         this.height = height;
         this.flagLocations = new int[flagLocations.size*2];

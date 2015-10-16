@@ -6,12 +6,6 @@
 package mechanics;
 
 import com.badlogic.gdx.assets.AssetManager;
-import com.badlogic.gdx.graphics.g3d.Model;
-import com.badlogic.gdx.graphics.g3d.ModelInstance;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.Array;
-import mechanics.Flag.Occupant;
-import utils.ConcreteGameObject;
 import utils.GameController;
 
 /**
@@ -34,10 +28,17 @@ public class GlobalState {
     public static int heightField = 320;
     public static int latestPlayerCapture;
     public static int latestAiCapture;
-    public final static ScoreBoard scoreBoard = new ScoreBoard();
-    public final static FlagsManager flagsManager = new FlagsManager(5);
-    public final static Minimap miniMap = new Minimap();
-    public final static GameController gameController = new GameController();
+    public final static ScoreBoard scoreBoard;
+    public final static FlagsManager flagsManager;
+    public final static Minimap miniMap;
+    public final static GameController gameController;
+    
+    static {
+        scoreBoard = new ScoreBoard();
+        flagsManager = new FlagsManager(5);
+        miniMap = new Minimap();
+        gameController = new GameController();
+    }
     
     public static void dispose() {
         assetsManager.dispose();

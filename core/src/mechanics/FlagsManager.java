@@ -61,6 +61,10 @@ public class FlagsManager {
             }
         }
     }
+    
+    public int getNumberOfFlags() {
+        return NROF_FLAGS;
+    }
 
     public Array<Flag> getFlagsList() {
         return flagList;
