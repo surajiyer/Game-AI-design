@@ -65,7 +65,7 @@ public class Basic3DTest1 extends ApplicationAdapter {
         spriteBatch = new SpriteBatch();
         instances = new Array<>();
         assets = new AssetManager();
-        score = new ScoreBoard();
+        score = new ScoreBoard(100);
         font = new BitmapFont();
         startTime = System.currentTimeMillis();
         elapsedTime = 0;
