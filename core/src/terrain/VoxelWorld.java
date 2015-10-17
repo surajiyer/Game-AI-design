@@ -14,7 +14,6 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import mechanics.GlobalState;
-import static mechanics.GlobalState.UNITS_PER_METER;
 import static mechanics.GlobalState.assetsManager;
 import static terrain.VoxelChunk.CHUNK_SIZE_X;
 import static terrain.VoxelChunk.CHUNK_SIZE_Y;

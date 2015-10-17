@@ -38,16 +38,22 @@ public class Player extends GameObject {
         }
     }    
     
+    public enum PlayerType {
+        HUMAN, AI;
+    }
+    
     public final ModelInstance instance;
     private final Vector3 direction;
     public final Vector3 up;
     public int flags;
+    public final PlayerType type;
     
     private final Node headNode;
     private final Quaternion tmpQuat = new Quaternion();
     
-    public Player(Model model, Vector3 pos, Vector3 dir) {
+    public Player(Model model, PlayerType type, Vector3 pos, Vector3 dir) {
         instance = new ModelInstance(model);
+        this.type = type;
         headNode = instance.nodes.get(PlayerParts.HEAD_PART.id);
         setPosition(pos);
         direction = new Vector3(dir).nor().scl(1, 0, 1);

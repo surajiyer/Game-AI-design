@@ -27,15 +27,12 @@ public class Flag extends GameObject {
     private final int id;
     private final int scoreWeight;
     private Occupant occupant;
-    private final BoundingBox captureBox;
     
     public Flag(Vector3 pos, int scoreWeight) {
         this.id = idCount++;
         this.scoreWeight = scoreWeight;
         this.occupant = Occupant.NONE;
         this.model = noneFlag.copy();
-        worldTrans.set(model.transform);
-        this.captureBox = new BoundingBox();
         setPosition(pos);
         calculateBounds();
     }
@@ -65,19 +62,14 @@ public class Flag extends GameObject {
                 this.model = noneFlag.copy();
                 break;
         }
-    }
-    
-    public BoundingBox getCaptureBox() {
-        return captureBox;
+        model.transform.set(worldTrans);
     }
 
     @Override
     public void setScale(float scl) {
         scale = scl / scale;
-        blueFlag.transform.scl(scale);
-        redFlag.transform.scl(scale);
-        noneFlag.transform.scl(scale);
         model.transform.scl(scale);
+        worldTrans.set(model.transform);
         scale = scl;
     }
 
@@ -85,13 +77,13 @@ public class Flag extends GameObject {
     public void setPosition(Vector3 pos) {
         position.set(pos);
         model.transform.setTranslation(position);
+        worldTrans.set(model.transform);
     }
 
     @Override
     protected void calculateBounds() {
         model.calculateBoundingBox(bounds);
         super.calculateBounds();
-        captureBox.set(bounds).mul(new Matrix4().scl(4));
     }
 
     @Override

@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
 import static mechanics.GlobalState.UNITS_PER_METER;
+import static mechanics.GlobalState.flagsManager;
 import terrain.VoxelWorld;
 import utils.MultipleAnimationsController;
 
@@ -132,6 +133,7 @@ public class PlayerController extends InputAdapter {
                 updateThirdPerson(deltaTime);
             }
         }
+        flagsManager.captureFlag(player);
     }
     
     public void updateThirdPerson(float deltaTime) {

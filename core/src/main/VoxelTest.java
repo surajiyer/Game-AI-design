@@ -41,6 +41,7 @@ import static mechanics.GlobalState.assetsManager;
 import static mechanics.GlobalState.flagsManager;
 import static mechanics.GlobalState.miniMap;
 import static mechanics.GlobalState.scoreBoard;
+import mechanics.Player.PlayerType;
 
 
 /**
@@ -118,16 +119,16 @@ public class VoxelTest extends ApplicationAdapter {
         GlobalState.init(voxelWorld);
         
         // Load the player
-        player = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
-                , Vector3.Zero, camera.direction);
+        player = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj")), 
+                PlayerType.HUMAN, Vector3.Zero, camera.direction);
         playerController = new PlayerController(player, camera, voxelWorld,
                 new Vector3(0, 7*UNITS_PER_METER, -5*UNITS_PER_METER));
         playerController.setVelocity(22*UNITS_PER_METER);
         players.add(player);
         
         // Load the AI
-        AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj"))
-                , Vector3.Zero, camera.direction);
+        AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj")), 
+                PlayerType.AI, Vector3.Zero, camera.direction);
         aiController = new AIController(AI, voxelWorld);
         aiController.setVelocity(22 * UNITS_PER_METER);
         players.add(AI);

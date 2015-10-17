@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import mechanics.Flag.Occupant;
+import static mechanics.GlobalState.UNITS_PER_METER;
 import terrain.VoxelWorld;
 
 /**
@@ -62,6 +63,25 @@ public class FlagsManager {
 
     public Array<Vector3> getFlagPositions() {
         return flagPositions;
+    }
+    
+    public void captureFlag(Player player) {
+        Vector3 position = player.getPosition();
+        for(Flag flag : flagList) {
+            if(position.dst(flag.getPosition()) > UNITS_PER_METER) continue;
+            if(flag.getOccupant() == Occupant.NONE 
+                || (flag.getOccupant() == Occupant.AI && player.type == Player.PlayerType.HUMAN) 
+                || (flag.getOccupant() == Occupant.PLAYER && player.type == Player.PlayerType.AI)) {
+                switch(player.type) {
+                    case HUMAN:
+                        flag.setOccupant(Occupant.PLAYER);
+                        break;
+                    case AI:
+                        flag.setOccupant(Occupant.AI);
+                }
+                break;
+            }
+        }
     }
 
     public void setOccupant(int index, Occupant occupant) {

@@ -1,4 +1,4 @@
-package mdesl.swipe;
+package utils;
 
 import com.badlogic.gdx.utils.Array;
 

@@ -10,6 +10,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntArray;
 import static mechanics.GlobalState.UNITS_PER_METER;
+import static mechanics.GlobalState.flagsManager;
 import terrain.VoxelWorld;
 import utils.MultipleAnimationsController;
 
@@ -92,6 +93,7 @@ public class AIController {
                 break;
             case EVAL:
                 System.out.println("Evaluating");
+                flagsManager.captureFlag(player);
                 RL.evaluate();
                 state = AIState.STEP;
                 //state = AIState.DEFAULT;

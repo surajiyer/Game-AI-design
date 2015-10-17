@@ -81,10 +81,10 @@ public class Basic3DTest1 extends ApplicationAdapter {
         // Set up flags
         flagList = new FlagsManager(5);
         flagList.setOccupant(0, Occupant.AI);
-        flagList.setOccupant(1,Occupant.AI);
-        flagList.setOccupant(2,Occupant.PLAYER);
-        flagList.setOccupant(3,Occupant.PLAYER);
-        flagList.setOccupant(4,Occupant.PLAYER);
+        flagList.setOccupant(1, Occupant.AI);
+        flagList.setOccupant(2, Occupant.PLAYER);
+        flagList.setOccupant(3, Occupant.PLAYER);
+        flagList.setOccupant(4, Occupant.PLAYER);
         
         // load a 3d Model  
         assets.load("trees/tree1.g3db", Model.class);
