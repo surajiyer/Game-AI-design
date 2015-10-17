@@ -123,8 +123,6 @@ public class AIController {
         tmp.set(player.getPosition().add(tmp));
         tmp.y = playerWorld.getHeight(tmp.x, tmp.z);
         player.setPosition(tmp);
-        if(tmp.dst(destination) <= UNITS_PER_METER) {
-            pointReached = true;
-        }
+        pointReached = tmp.dst(destination) <= UNITS_PER_METER;
     }
 }
