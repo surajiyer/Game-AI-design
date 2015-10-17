@@ -6,6 +6,7 @@
 package mechanics;
 
 import com.badlogic.gdx.assets.AssetManager;
+import terrain.VoxelWorld;
 import utils.GameController;
 
 /**
@@ -24,8 +25,8 @@ public class GlobalState {
     public static int visibleCount;
     public static float[][] heightMap;
     public static int[][] intHeightMap;
-    public static int widthField = 320;
-    public static int heightField = 320;
+    public static int widthField;
+    public static int depthField;
     public static int latestPlayerCapture;
     public static int latestAiCapture;
     public final static ScoreBoard scoreBoard;
@@ -38,6 +39,11 @@ public class GlobalState {
         flagsManager = new FlagsManager(5);
         miniMap = new Minimap();
         gameController = new GameController();
+    }
+    
+    public static void init(VoxelWorld world) {
+        widthField = world.chunksX * UNITS_PER_METER;
+        depthField = world.chunksZ * UNITS_PER_METER;
     }
     
     public static void dispose() {

@@ -26,7 +26,7 @@ import com.badlogic.gdx.utils.Pool;
  * @author S.S.Iyer
  */
 public abstract class GameObject implements RenderableProvider {
-    public Matrix4 worldTrans = new Matrix4();
+    public final Matrix4 worldTrans = new Matrix4();
     protected final Vector3 position = new Vector3();
     protected float scale = 1f;
     protected final BoundingBox bounds = new BoundingBox();
@@ -54,11 +54,11 @@ public abstract class GameObject implements RenderableProvider {
     
     /** @return the world position of the cube */
     public Vector3 getPosition() {
-        return position;
+        return new Vector3(position);
     }
     
     public ModelInstance boundingBoxModel() {
-        calculateBounds();
+        //calculateBounds();
             
         if(boundsModel != null) {
             boundsModel.transform.set(worldTrans);

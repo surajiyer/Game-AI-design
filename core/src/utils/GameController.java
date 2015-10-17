@@ -11,6 +11,8 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import mechanics.GlobalState;
 import mechanics.PlayerController;
 
@@ -54,6 +56,13 @@ public class GameController extends InputAdapter {
         return false;
     }
     
+    /** Sleep to prevent sticky keys */
+    public void sleep() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException ex) {}
+    }
+    
     public void update(PlayerController playerController, Camera camera) {
         // Toggle catching the cursor
         if(keys.containsKey(RELEASE_CURSOR) && !GlobalState.fullScreen) {
@@ -62,22 +71,25 @@ public class GameController extends InputAdapter {
         }
         
         // Toggle catching the cursor
-        if(Gdx.input.isKeyPressed(TOGGLE_FIRST_PERSON)) {
+        if(keys.containsKey(TOGGLE_FIRST_PERSON)) {
             GlobalState.isFirstPerson = !GlobalState.isFirstPerson;
             if(!GlobalState.isFirstPerson) {
                 playerController.player.setPosition(tmp.set(camera.position)
                         .sub(playerController.cameraOffset));
             }
+            sleep();
         }
         
         // Toggle wireframe output for VoxelWorld
         if (keys.containsKey(TOGGLE_WIREFRAME)) {
             GlobalState.enableWireframe = !GlobalState.enableWireframe;
+            sleep();
         }
         
         // Toggle the depth limit for the camera
         if (keys.containsKey(TOGGLE_DESCEND_LIMIT)) {
             GlobalState.descendLimit = !GlobalState.descendLimit;
+            sleep();
         }
         
         // Toggle full screen

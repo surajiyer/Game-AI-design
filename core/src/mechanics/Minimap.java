@@ -29,7 +29,6 @@ public class Minimap {
     public static final int miniMapBottom = 280;
     
     private final Texture playerMarker;
-    private final Texture hudScore;
     private final Texture flagMarkerBlue;
     private final Texture flagMarkerRed;
     private final Texture flagMarkerGrey;
@@ -45,13 +44,13 @@ public class Minimap {
         flagMarkerRed = new Texture(Gdx.files.internal("markers/red.png"));
         flagMarkerGrey = new Texture(Gdx.files.internal("markers/grey.png"));
         hudMapSprite = new Sprite(new Texture(Gdx.files.internal("markers/hudMap.png")));
-        hudScore = new Texture(Gdx.files.internal("markers/hudScore.png"));
     }
     
     public void draw(SpriteBatch spriteBatch, Camera camera, Array<Player> players) {
         spriteBatch.draw(hudMapSprite, hudMapSprite.getX()-6, hudMapSprite.getY()-6);
-        spriteBatch.draw(hudScore, camera.viewportWidth/2 -250, camera.viewportHeight - 70);
         spriteBatch.draw(mapSprite, mapSprite.getX(), mapSprite.getY());
+        
+        // Load flag marker for each flag
         for (int i = 0; i < 5; i++) {
             switch (GlobalState.flagsManager.getOccupant(i)) {
                 case AI:
@@ -60,19 +59,18 @@ public class Minimap {
                 case PLAYER:
                     flagTexture = flagMarkerBlue;
                     break;
-                case NONE:  
+                case NONE:
                     flagTexture = flagMarkerGrey;
                     break;
             }
-            tmp.set(GlobalState.flagsManager.getFlagPosition(i));
+            tmp.set(GlobalState.flagsManager.getFlagPosition(i)).scl(1/(float)UNITS_PER_METER);
             spriteBatch.draw(flagTexture, tmp.z, tmp.x);
         }
         
         // Load markers for all players
         for(Player player : players) {
-            System.out.println(player.getPosition());
-            spriteBatch.draw(playerMarker, player.getPosition().z/UNITS_PER_METER, 
-                player.getPosition().x/UNITS_PER_METER);
+            tmp.set(player.getPosition().scl(1/(float)UNITS_PER_METER));
+            spriteBatch.draw(playerMarker, tmp.z, tmp.x);
         }
         
     }

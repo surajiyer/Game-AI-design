@@ -99,7 +99,6 @@ public class EnvironmentCubeMap implements Disposable{
                 if(x>=w*3/4 && x<=w && y>=h/3 && y<=h*2/3) data[5].drawPixel(x-w*3/4, y-h/3, cubemap.getPixel(x, y));
             }
         cubemap.dispose();
-        cubemap = null;
         init();     
     }
 
@@ -153,7 +152,8 @@ public class EnvironmentCubeMap implements Disposable{
     }
 
     public Mesh createQuad(){
-        Mesh mesh = new Mesh(true, 4, 6, VertexAttribute.Position(), VertexAttribute.  ColorUnpacked(), VertexAttribute.TexCoords(0));
+        Mesh mesh = new Mesh(true, 4, 6, VertexAttribute.Position(), 
+                VertexAttribute.ColorUnpacked(), VertexAttribute.TexCoords(0));
         mesh.setVertices(new float[] 
         {-1f, -1f, 0, 1, 1, 1, 1, 0, 1,
         1f, -1f, 0, 1, 1, 1, 1, 1, 1,
@@ -161,6 +161,12 @@ public class EnvironmentCubeMap implements Disposable{
         -1f, 1f, 0, 1, 1, 1, 1, 0, 0});
         mesh.setIndices(new short[] {0, 1, 2, 2, 3, 0});
         return mesh;
+    }
+    
+    public void setScale(float scale) {
+        if(worldTrans != null) {
+            worldTrans.scl(scale / worldTrans.getScaleX());
+        }
     }
 
     @Override

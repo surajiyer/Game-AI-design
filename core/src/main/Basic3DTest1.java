@@ -5,7 +5,6 @@
  */
 package main;
 
-import mechanics.BobController;
 import terrain.InfiniteGrid;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -41,7 +40,6 @@ public class Basic3DTest1 extends ApplicationAdapter {
     ModelBatch modelBatch;
     SpriteBatch spriteBatch;
     PerspectiveCamera camera;
-    BobController camController;
     boolean fullscreen = false;
     boolean descendLimit = true;
     int oldWidth, oldHeight;
@@ -88,11 +86,6 @@ public class Basic3DTest1 extends ApplicationAdapter {
         flagList.setOccupant(3,Occupant.PLAYER);
         flagList.setOccupant(4,Occupant.PLAYER);
         
-        // Setup a camera controller to control the camera movements
-        camController = new BobController(camera);
-        camController.setVelocity(9f*UNITS_PER_METER);
-        Gdx.input.setInputProcessor(camController);
-        
         // load a 3d Model  
         assets.load("trees/tree1.g3db", Model.class);
         assets.load("flags/flagNone.g3db", Model.class);
@@ -128,7 +121,6 @@ public class Basic3DTest1 extends ApplicationAdapter {
         }
         
         // Update the camera controller
-        camController.update();
         if(descendLimit) {
             if(camera.position.y < grid.getHeight()+HUMAN_HEIGHT) {
                 camera.position.set(camera.position.x, 

@@ -48,13 +48,12 @@ public class ReinforcementLearning {
 
     public ReinforcementLearning(Player AIPlayer) {
         this.AIPlayer = AIPlayer;
-        tileCost = TileCostArray.generateTileCostArray(
-                GlobalState.widthField, GlobalState.heightField, 
+        tileCost = TileCostArray.generateTileCostArray(GlobalState.widthField, GlobalState.depthField, 
                 GlobalState.intHeightMap, 8, 
                 GlobalState.widthField - 1, 
-                GlobalState.heightField - 1);
+                GlobalState.depthField - 1);
         pathcostarray = new PathCostArray(GlobalState.widthField, 
-                GlobalState.heightField, 
+                GlobalState.depthField, 
                 GlobalState.flagsManager.getFlagPositions(), 
                 GlobalState.flagsManager.getNumberOfFlags(), tileCost);
         closestFlagArray = new int[GlobalState.flagsManager.getNumberOfFlags()];
@@ -65,7 +64,7 @@ public class ReinforcementLearning {
         qsa = new double[GlobalState.flagsManager.getNumberOfFlags()]
                 [GlobalState.flagsManager.getNumberOfFlags()]
                 [GlobalState.flagsManager.getNumberOfFlags()];
-        astar = new Astar(GlobalState.widthField, GlobalState.heightField);
+        astar = new Astar(GlobalState.widthField, GlobalState.depthField);
         init();
     }
 

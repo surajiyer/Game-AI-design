@@ -38,7 +38,8 @@ public class AIController {
     
     public AIController(Player player, VoxelWorld world) {
         this.player = player;
-
+        this.playerWorld = world;
+        
         // Set up an animation controller for the walking action of the player
         playerAnimsController = new MultipleAnimationsController();
         playerAnimsController.addAnimations(new String[]{
@@ -48,11 +49,11 @@ public class AIController {
             "Left Hand|Left HandAction",
             "Right Leg|Right LegAction",
             "Left Leg|Left LegAction"}, player.instance);
-        this.playerWorld = world;
         
         // Setup the brain of the AI
         this.RL = new ReinforcementLearning(player);
         
+        // Set the starting state of the AI
         this.state = AIState.STEP;
     }
 
@@ -80,9 +81,9 @@ public class AIController {
                 path = RL.step();
                 state = AIState.MOVE;
                 index = path.size;
+                System.out.println("Path found");
                 break;
             case MOVE:
-                System.out.println("Path found");
                 update(Gdx.graphics.getDeltaTime());
                 break;
             case EVAL:
@@ -106,11 +107,14 @@ public class AIController {
                     path.get(index + 1));
             movement.scl(GlobalState.UNITS_PER_METER);
             player.direction.set(tmp.set(movement).sub(player.getPosition()));
+            
         }
         
         // Move the AI to the next point
         tmp.set(player.direction).nor().scl(deltaTime * velocity);
-        player.setPosition(player.getPosition().add(tmp));
+        tmp.set(player.getPosition().add(tmp));
+        tmp.y = playerWorld.getHeight(tmp.x, tmp.z);
+        player.setPosition(tmp);
         pointReached = player.getPosition().equals(movement);
     }
 }

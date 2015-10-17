@@ -133,7 +133,6 @@ public class VoxelChunk extends GameObject {
                 MathUtils.random(0.5f, 1f),
                 MathUtils.random(0.5f, 1f),
                 MathUtils.random(0.5f, 1f), 1));
-        this.worldTrans = new Matrix4();
         this.localTrans = new Matrix4();
         this.mesh = new Mesh(true, CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z * NROF_FACES 
                 * NROF_VERTICES_PER_FACE, indices.length, VertexAttribute.Position(), 

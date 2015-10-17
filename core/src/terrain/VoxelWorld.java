@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
@@ -55,7 +54,6 @@ public class VoxelWorld extends GameObject {
         this.voxelsX = chunksX * CHUNK_SIZE_X;
         this.voxelsY = chunksY * CHUNK_SIZE_Y;
         this.voxelsZ = chunksZ * CHUNK_SIZE_Z;
-        this.worldTrans = new Matrix4();
         
         // Create the chunk objects (does not actually generate them yet)
         int i = 0;
@@ -114,13 +112,13 @@ public class VoxelWorld extends GameObject {
     }
 
     public float getHeight (float x, float z) {
-        int ix = (int)x;
-        int iz = (int)z;
+        int ix = (int) x/(int)scale;
+        int iz = (int) z/(int)scale;
         if (ix < 0 || ix >= voxelsX) return 0;
         if (iz < 0 || iz >= voxelsZ) return 0;
         // FIXME optimize
         for (int y = voxelsY - 1; y > 0; y--) {
-            if (get(ix, y, iz) > 0) return y + 1;
+            if (get(ix, y, iz) > 0) return (y + 1)*scale;
         }
         return 0;
     }
@@ -162,19 +160,18 @@ public class VoxelWorld extends GameObject {
     }
     
     public void loadTrees() {
-        int x, y, z, type;
+        float x, y, z;
+        int type;
         ConcreteGameObject tmpObject;
         for (int i = 0; i < NROF_TREES; i++) {
-            x = MathUtils.random(GlobalState.widthField);
-            z = MathUtils.random(GlobalState.heightField);
+            x = MathUtils.random(GlobalState.widthField)*scale;
+            z = MathUtils.random(GlobalState.depthField)*scale;
             y = (int) getHeight(x, z);
             type = MathUtils.random(1, NROF_TREES_TYPES);
             if (y < 18) continue;
             tmpObject = new ConcreteGameObject(
                     assetsManager.get("trees/tree"+type+".g3db", Model.class));
-            tmpObject.setPosition(tmp.set(x * UNITS_PER_METER,
-                    y * UNITS_PER_METER, 
-                    z * UNITS_PER_METER));
+            tmpObject.setPosition(tmp.set(x, y, z));
             trees.add(tmpObject);
         }
     }

@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.model.Node;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
@@ -69,10 +70,27 @@ public class Player extends GameObject {
     }
     
     public void rotate(Vector3 dir, float deltaX, float deltaY) {
-        headNode.rotation.mul(tmpQuat.setEulerAngles(0, -deltaY, 0));
+//        headNode.rotation.mul(tmpQuat.setEulerAngles(0, -deltaY, 0));
+//        headNode.calculateTransforms(true);
+//        instance.transform.mul(new Matrix4().setToRotation(up, deltaX));
+        //direction.set(dir).nor().scl(1, 0, 1);
+    }
+    
+    public void rotate(Vector3 dir) {
+        // Calculate head rotation
+        float deltaY = (float) (Math.asin(tmp.set(dir.nor()).crs(Vector3.Y).len()) 
+                * MathUtils.radDeg);
+        if(dir.y < 0) deltaY *= -1; else deltaY -= 180;
+        headNode.rotation.setEulerAngles(0, deltaY, 0);
         instance.calculateTransforms();
-        instance.transform.mul(new Matrix4().setToRotation(up, deltaX));
-        direction.set(dir).nor().scl(1, 0, 1);
+        
+        // Calculate body rotation
+        tmp.set(direction).scl(1, 0, 1);
+        direction.set(dir).scl(1, 0, 1);
+        float deltaX = (float) (Math.asin(tmp.crs(direction).len()) * MathUtils.radDeg);
+        if(tmp.y > 0) deltaX *= -1;
+        System.out.println(deltaX);
+        instance.transform.rotate(up, -deltaX);
     }
     
     public void rotateBody(float deltaX) {

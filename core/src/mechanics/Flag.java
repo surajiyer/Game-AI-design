@@ -30,13 +30,13 @@ public class Flag extends GameObject {
     private final BoundingBox captureBox;
     
     public Flag(Vector3 pos, int scoreWeight) {
-        this.position.set(pos);
         this.id = idCount++;
         this.scoreWeight = scoreWeight;
         this.occupant = Occupant.NONE;
         this.model = noneFlag.copy();
-        this.worldTrans = model.transform;
+        worldTrans.set(model.transform);
         this.captureBox = new BoundingBox();
+        setPosition(pos);
         calculateBounds();
     }
 

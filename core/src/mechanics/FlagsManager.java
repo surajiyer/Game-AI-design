@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import mechanics.Flag.Occupant;
+import terrain.VoxelWorld;
 
 /**
  *
@@ -22,43 +23,32 @@ public class FlagsManager {
         flagPositions = new Array<>();
     }
     
-    public void generateFlags() {
+    public void generateFlags(VoxelWorld world) {
         flagList.clear();
         flagPositions.clear();
-        int quadrant;
+        float scale = world.getScale();
+        int x = 0, y, z = 0, quadrant;
         for (int i = 0; i < NROF_FLAGS; i++) {
             quadrant = i % 5;
             if (quadrant == 0) {
-                int x = MathUtils.random((GlobalState.widthField/3 - 20)) + 20;
-                int y = 0;
-                int z = MathUtils.random((GlobalState.heightField/2 - 20)) + 20;
-                flagPositions.add(tmp.set(x,y,z));
-                flagList.add(new Flag(tmp, 5));
+                x = MathUtils.random((GlobalState.widthField/3 - 20)) + 20;
+                z = MathUtils.random((GlobalState.depthField/2 - 20)) + 20;
             } else if (quadrant == 1) {
-                int x = MathUtils.random((GlobalState.widthField/3 - 20)) + 20;
-                int y = 0;
-                int z = MathUtils.random((GlobalState.heightField-20 - GlobalState.heightField/2)) + GlobalState.heightField/2;
-                flagPositions.add(tmp.set(x,y,z));
-                flagList.add(new Flag(tmp.set(x,y,z), 5));
+                x = MathUtils.random((GlobalState.widthField/3 - 20)) + 20;
+                z = MathUtils.random((GlobalState.depthField-20 - GlobalState.depthField/2)) + GlobalState.depthField/2;
             } else if (quadrant == 2) {
-                int x = MathUtils.random((GlobalState.widthField/3*2 - GlobalState.widthField/3)) + GlobalState.widthField/3;
-                int y = 0;
-                int z = MathUtils.random((GlobalState.heightField/4*3 - GlobalState.heightField/4)) + GlobalState.heightField/4;
-                flagPositions.add(tmp.set(x,y,z));
-                flagList.add(new Flag(tmp.set(x,y,z), 5));
+                x = MathUtils.random((GlobalState.widthField/3*2 - GlobalState.widthField/3)) + GlobalState.widthField/3;
+                z = MathUtils.random((GlobalState.depthField/4*3 - GlobalState.depthField/4)) + GlobalState.depthField/4;
             } else if (quadrant == 3) {
-                int x = MathUtils.random((GlobalState.widthField-20 - GlobalState.widthField/3*2)) + GlobalState.widthField/3*2;
-                int y = 0;
-                int z = MathUtils.random((GlobalState.heightField/2 - 20)) + 20;
-                flagPositions.add(tmp.set(x,y,z));
-                flagList.add(new Flag(tmp.set(x,y,z), 5));
+                x = MathUtils.random((GlobalState.widthField-20 - GlobalState.widthField/3*2)) + GlobalState.widthField/3*2;
+                z = MathUtils.random((GlobalState.depthField/2 - 20)) + 20;
             } else if(quadrant == 4) {
-                int x = MathUtils.random((GlobalState.widthField-20 - GlobalState.widthField/3*2)) + GlobalState.widthField/3*2;
-                int y = 0;
-                int z = MathUtils.random((GlobalState.heightField-20 - GlobalState.heightField/2)) + GlobalState.heightField/2;
-                flagPositions.add(tmp.set(x,y,z));
-                flagList.add(new Flag(tmp.set(x,y,z), 5));
+                x = MathUtils.random((GlobalState.widthField-20 - GlobalState.widthField/3*2)) + GlobalState.widthField/3*2;
+                z = MathUtils.random((GlobalState.depthField-20 - GlobalState.depthField/2)) + GlobalState.depthField/2;
             }
+            y = (int) world.getHeight(x*=scale, z*=scale);
+            flagPositions.add(tmp.set(x, y, z));
+            flagList.add(new Flag(tmp, 5));
         }
     }
     

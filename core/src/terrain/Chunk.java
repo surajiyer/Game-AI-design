@@ -44,7 +44,6 @@ public class Chunk extends GameObject {
         //cubes = new Cube[CHUNK_SIZE*CHUNK_SIZE*CHUNK_SIZE];
         mesh = null;
         position.set(pos);
-        worldTrans = new Matrix4();
         worldTrans.setTranslation(position);
     }
     

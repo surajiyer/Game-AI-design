@@ -104,7 +104,6 @@ public class Cube extends GameObject {
         mesh = null;
         cubeType = type;
         isActive = false;
-        worldTrans = new Matrix4();
         setPosition(pos);
         setScale(scl);
         shader = new CubeShader();
