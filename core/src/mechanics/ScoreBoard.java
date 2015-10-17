@@ -36,8 +36,8 @@ public class ScoreBoard {
         spriteBatch.draw(hudScore, camera.viewportWidth/2 - 250, camera.viewportHeight - 70);
         font.draw(spriteBatch, "" + getPS(), camera.viewportWidth/2 - 90, camera.viewportHeight - 20);
         font.draw(spriteBatch, "" + getCS(), camera.viewportWidth/2 + 80, camera.viewportHeight - 20);
-        font.draw(spriteBatch, "" + String.valueOf(elapsedTime), camera.viewportWidth/2 -3, 
-                camera.viewportHeight - 20);
+        font.draw(spriteBatch, String.format("%02d", elapsedTime/60) + ":" + String.format("%02d", elapsedTime%60), 
+                camera.viewportWidth/2 -3, camera.viewportHeight - 20);
     }
     
     public int getPS() {

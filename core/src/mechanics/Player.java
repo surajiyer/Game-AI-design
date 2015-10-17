@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -40,7 +39,7 @@ public class Player extends GameObject {
     }    
     
     public final ModelInstance instance;
-    public final Vector3 direction;
+    private final Vector3 direction;
     public final Vector3 up;
     public int flags;
     
@@ -76,7 +75,7 @@ public class Player extends GameObject {
         //direction.set(dir).nor().scl(1, 0, 1);
     }
     
-    public void rotate(Vector3 dir) {
+    public void setDirection(Vector3 dir) {
         // Calculate head rotation
         float deltaY = (float) (Math.asin(tmp.set(dir.nor()).crs(Vector3.Y).len()) 
                 * MathUtils.radDeg);
@@ -89,8 +88,12 @@ public class Player extends GameObject {
         direction.set(dir).scl(1, 0, 1);
         float deltaX = (float) (Math.asin(tmp.crs(direction).len()) * MathUtils.radDeg);
         if(tmp.y > 0) deltaX *= -1;
-        System.out.println(deltaX);
+        //System.out.println(deltaX);
         instance.transform.rotate(up, -deltaX);
+    }
+    
+    public Vector3 getDirection() {
+        return new Vector3(direction);
     }
     
     public void rotateBody(float deltaX) {

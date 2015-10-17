@@ -13,6 +13,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import static mechanics.GlobalState.UNITS_PER_METER;
+import static mechanics.GlobalState.worldScale;
 
 /**
  *
@@ -63,13 +64,13 @@ public class Minimap {
                     flagTexture = flagMarkerGrey;
                     break;
             }
-            tmp.set(GlobalState.flagsManager.getFlagPosition(i)).scl(1/(float)UNITS_PER_METER);
+            tmp.set(GlobalState.flagsManager.getFlagPosition(i)).scl(1/worldScale);
             spriteBatch.draw(flagTexture, tmp.z, tmp.x);
         }
         
         // Load markers for all players
         for(Player player : players) {
-            tmp.set(player.getPosition().scl(1/(float)UNITS_PER_METER));
+            tmp.set(player.getPosition().scl(1/worldScale));
             spriteBatch.draw(playerMarker, tmp.z, tmp.x);
         }
         

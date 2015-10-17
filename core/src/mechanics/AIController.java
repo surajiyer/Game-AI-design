@@ -9,6 +9,7 @@ import AI.ReinforcementLearning;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntArray;
+import static mechanics.GlobalState.UNITS_PER_METER;
 import terrain.VoxelWorld;
 import utils.MultipleAnimationsController;
 
@@ -20,7 +21,10 @@ import utils.MultipleAnimationsController;
 public class AIController {
     
     private enum AIState {
-        STEP, MOVE, EVAL;
+        DEFAULT, // Do nothing
+        STEP, // Calculate new path
+        MOVE, // Moving to the destination
+        EVAL; // Evaluating reward at destination
     }
 
     public final VoxelWorld playerWorld;
@@ -33,7 +37,7 @@ public class AIController {
     
     private IntArray path;
     private int index = 0;
-    private final Vector3 movement = new Vector3();
+    private final Vector3 destination = new Vector3();
     boolean pointReached = true;
     
     public AIController(Player player, VoxelWorld world) {
@@ -81,6 +85,10 @@ public class AIController {
                 path = RL.step();
                 state = AIState.MOVE;
                 index = path.size;
+                for(int i=index-2; i >= 0; i-=2) {
+                    System.out.println(path.get(i) + " "+ path.get(i+1));
+                }
+                System.out.println("--------------------");
                 System.out.println("Path found");
                 break;
             case MOVE:
@@ -90,6 +98,7 @@ public class AIController {
                 System.out.println("Evaluating");
                 RL.evaluate();
                 state = AIState.STEP;
+                state = AIState.DEFAULT;
                 break;
         }
     }
@@ -102,19 +111,20 @@ public class AIController {
                 state = AIState.EVAL;
                 return;
             }
-            movement.set(path.get(index),
-                    playerWorld.getHeight(path.get(index), path.get(index + 1)), 
-                    path.get(index + 1));
-            movement.scl(GlobalState.UNITS_PER_METER);
-            player.direction.set(tmp.set(movement).sub(player.getPosition()));
-            
+            float scale = playerWorld.getScale();
+            float x = path.get(index) * scale;
+            float z = path.get(index + 1) * scale;
+            destination.set(x, playerWorld.getHeight(x, z), z);
         }
         
         // Move the AI to the next point
-        tmp.set(player.direction).nor().scl(deltaTime * velocity);
+        player.setDirection(tmp.set(destination).sub(player.getPosition()));
+        tmp.nor().scl(deltaTime * velocity);
         tmp.set(player.getPosition().add(tmp));
         tmp.y = playerWorld.getHeight(tmp.x, tmp.z);
         player.setPosition(tmp);
-        pointReached = player.getPosition().equals(movement);
+        if(tmp.dst(destination) <= UNITS_PER_METER) {
+            pointReached = true;
+        }
     }
 }

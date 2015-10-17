@@ -110,7 +110,7 @@ public class ReinforcementLearning {
         Vector3 tmp = new Vector3(GlobalState.flagsManager
                 .getFlagsList()
                 .get(currAction)
-                .getPosition());
+                .getPosition().scl(1/GlobalState.worldScale));
         IntArray path = astar.getPath((int) AIPlayer.getPosition().x, 
                 (int) AIPlayer.getPosition().z, (int) tmp.x, (int) tmp.z, tileCost);
         return path;

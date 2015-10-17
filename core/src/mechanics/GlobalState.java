@@ -23,6 +23,7 @@ public class GlobalState {
     public static boolean isFirstPerson = false;
     public static int oldWidth, oldHeight;
     public static int visibleCount;
+    public static float worldScale;
     public static float[][] heightMap;
     public static int[][] intHeightMap;
     public static int widthField;

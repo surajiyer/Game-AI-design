@@ -94,7 +94,7 @@ public class PlayerController extends InputAdapter {
                 camera.up.set(Vector3.Y);
             }
             player.rotate(camera.direction, deltaX, deltaY);
-            player.rotate(camera.direction);
+            player.setDirection(camera.direction);
             return true;
         }
         return false;
@@ -143,7 +143,7 @@ public class PlayerController extends InputAdapter {
         
         // Move forward
         if (keys.containsKey(FORWARD)) {
-            tmp.set(player.direction).nor().scl(deltaTime * velocity);
+            tmp.set(player.getDirection().nor().scl(deltaTime * velocity));
             tmp.set(player.getPosition().add(tmp));
             tmp.y = playerWorld.getHeight(tmp.x, tmp.z);
             player.setPosition(tmp);
@@ -152,7 +152,7 @@ public class PlayerController extends InputAdapter {
         
         // Move backward
         if (keys.containsKey(BACKWARD)) {
-            tmp.set(player.direction).nor().scl(-deltaTime * velocity);
+            tmp.set(player.getDirection().nor().scl(-deltaTime * velocity));
             tmp.set(player.getPosition().add(tmp));
             tmp.y = playerWorld.getHeight(tmp.x, tmp.z);
             player.setPosition(tmp);
@@ -161,7 +161,7 @@ public class PlayerController extends InputAdapter {
         
         // Strafe left
         if (keys.containsKey(STRAFE_LEFT)) {
-            tmp.set(player.direction).crs(camera.up).nor().scl(-deltaTime * velocity);
+            tmp.set(player.getDirection().crs(camera.up).nor().scl(-deltaTime * velocity));
             tmp.set(player.getPosition().add(tmp));
             tmp.y = playerWorld.getHeight(tmp.x, tmp.z);
             if(!strafingLeft) {
@@ -177,7 +177,7 @@ public class PlayerController extends InputAdapter {
         
         // Strafe right
         if (keys.containsKey(STRAFE_RIGHT)) {
-            tmp.set(player.direction).crs(camera.up).nor().scl(deltaTime * velocity);
+            tmp.set(player.getDirection().crs(camera.up).nor().scl(deltaTime * velocity));
             tmp.set(player.getPosition().add(tmp));
             tmp.y = playerWorld.getHeight(tmp.x, tmp.z);
             if(!strafingRight) {
@@ -185,7 +185,6 @@ public class PlayerController extends InputAdapter {
                 strafingRight = true;
             }
             player.setPosition(tmp);
-            tmp.set(player.getPosition());
             camera.position.set(tmp.add(cameraOffset));
         } else if(strafingRight) {
             player.rotateBody(40);

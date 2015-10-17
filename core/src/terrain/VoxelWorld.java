@@ -181,6 +181,7 @@ public class VoxelWorld extends GameObject {
         scale = scl / scale;
         worldTrans.scl(scale);
         scale = scl;
+        GlobalState.worldScale = scale;
     }
     
     @Override
