@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntArray;
 import mechanics.Flag.Occupant;
 import mechanics.GlobalState;
+import static mechanics.GlobalState.worldScale;
 import mechanics.Player;
 import mechanics.State;
 
@@ -110,9 +111,12 @@ public class ReinforcementLearning {
         Vector3 tmp = new Vector3(GlobalState.flagsManager
                 .getFlagsList()
                 .get(currAction)
-                .getPosition().scl(1/GlobalState.worldScale));
-        IntArray path = astar.getPath((int) AIPlayer.getPosition().x, 
-                (int) AIPlayer.getPosition().z, (int) tmp.x, (int) tmp.z, tileCost);
+                .getPosition().scl(1/worldScale));
+        IntArray path = astar.getPath((int) (AIPlayer.getPosition().x / worldScale), 
+                (int) (AIPlayer.getPosition().z / worldScale), 
+                (int) tmp.x, 
+                (int) tmp.z, 
+                tileCost);
         return path;
     }
 

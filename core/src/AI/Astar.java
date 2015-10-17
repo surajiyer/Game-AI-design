@@ -42,7 +42,7 @@ public class Astar {
 
         runID++;
         if (runID < 0) runID = 1;
-
+        
         int index = startY * width + startX;
         PathNode root = nodes[index];
         if (root == null) {

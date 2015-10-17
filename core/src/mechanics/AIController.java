@@ -85,10 +85,6 @@ public class AIController {
                 path = RL.step();
                 state = AIState.MOVE;
                 index = path.size;
-                for(int i=index-2; i >= 0; i-=2) {
-                    System.out.println(path.get(i) + " "+ path.get(i+1));
-                }
-                System.out.println("--------------------");
                 System.out.println("Path found");
                 break;
             case MOVE:
@@ -98,7 +94,7 @@ public class AIController {
                 System.out.println("Evaluating");
                 RL.evaluate();
                 state = AIState.STEP;
-                state = AIState.DEFAULT;
+                //state = AIState.DEFAULT;
                 break;
         }
     }
