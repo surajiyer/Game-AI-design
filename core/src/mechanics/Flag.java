@@ -34,7 +34,6 @@ public class Flag extends GameObject {
         this.occupant = Occupant.NONE;
         this.model = noneFlag.copy();
         setPosition(pos);
-        calculateBounds();
     }
 
     public int getScoreWeight() {
@@ -63,6 +62,7 @@ public class Flag extends GameObject {
                 break;
         }
         model.transform.set(worldTrans);
+        calculateBounds();
     }
 
     @Override
@@ -71,6 +71,7 @@ public class Flag extends GameObject {
         model.transform.scl(scale);
         worldTrans.set(model.transform);
         scale = scl;
+        calculateBounds();
     }
 
     @Override

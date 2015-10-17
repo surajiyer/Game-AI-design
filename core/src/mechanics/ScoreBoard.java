@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import java.util.concurrent.TimeUnit;
+import mechanics.Flag.Occupant;
 import static mechanics.GlobalState.flagsManager;
 
 /**
@@ -14,21 +15,25 @@ import static mechanics.GlobalState.flagsManager;
  */
 public class ScoreBoard {
     private int playerScore;
-    private int computerScore;
+    private int AIScore;
+    public final int scoreLimit;
     private final int scoreTime;
     boolean toScore;
     long startTime;
     long elapsedTime;
     private final Texture hudScore;
+    private Occupant winner;
     
-    public ScoreBoard() {
+    public ScoreBoard(final int scoreLimit) {
         playerScore = 0;
-        computerScore = 0;
+        AIScore = 0;
         scoreTime = 3;
         toScore = true;
         startTime = System.currentTimeMillis();
         elapsedTime = 0;
         hudScore = new Texture(Gdx.files.internal("markers/hudScore.png"));
+        this.scoreLimit = scoreLimit;
+        this.winner = Occupant.NONE;
     }
     
     public void draw(SpriteBatch spriteBatch, Camera camera, BitmapFont font) {
@@ -37,7 +42,7 @@ public class ScoreBoard {
         font.draw(spriteBatch, "" + getPS(), camera.viewportWidth/2 - 90, camera.viewportHeight - 20);
         font.draw(spriteBatch, "" + getCS(), camera.viewportWidth/2 + 80, camera.viewportHeight - 20);
         font.draw(spriteBatch, String.format("%02d", elapsedTime/60) + ":" + String.format("%02d", elapsedTime%60), 
-                camera.viewportWidth/2 -3, camera.viewportHeight - 20);
+                camera.viewportWidth/2 - 15, camera.viewportHeight - 20);
     }
     
     public int getPS() {
@@ -45,7 +50,7 @@ public class ScoreBoard {
     }
     
     public int getCS() {
-        return computerScore;
+        return AIScore;
     }
     
     public void setPS(int score) {
@@ -53,7 +58,7 @@ public class ScoreBoard {
     } 
     
     public void setCS(int score) {
-        computerScore = score;
+        AIScore = score;
     }
     
     public void addPS(int score) {
@@ -61,8 +66,12 @@ public class ScoreBoard {
     } 
     
     public void addCS(int score) {
-        computerScore += score;
-    }    
+        AIScore += score;
+    }
+    
+    public Occupant getWinner() {
+        return winner;
+    }
     
     public void updateScore() {
         elapsedTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - startTime);
@@ -71,9 +80,13 @@ public class ScoreBoard {
                 switch(flagsManager.getOccupant(i)) {
                     case PLAYER:
                         addPS(flagsManager.getFlagWeight(i));
+                        if(playerScore >= scoreLimit)
+                            winner = Occupant.PLAYER;
                         break;
                     case AI:
                         addCS(flagsManager.getFlagWeight(i));
+                        if(AIScore >= scoreLimit)
+                            winner = Occupant.AI;
                         break;
                 }
             }

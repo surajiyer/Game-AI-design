@@ -36,7 +36,7 @@ public class GlobalState {
     public final static GameController gameController;
     
     static {
-        scoreBoard = new ScoreBoard();
+        scoreBoard = new ScoreBoard(100);
         flagsManager = new FlagsManager(5);
         miniMap = new Minimap();
         gameController = new GameController();

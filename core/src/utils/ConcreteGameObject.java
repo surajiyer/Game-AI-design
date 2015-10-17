@@ -48,7 +48,7 @@ public class ConcreteGameObject extends GameObject {
     public void setScale(float scl) {
         scale = scl / scale;
         instance.transform.scl(scale);
-        worldTrans.scl(scale);
+        worldTrans.set(instance.transform);
         scale = scl;
     }
 
@@ -56,6 +56,6 @@ public class ConcreteGameObject extends GameObject {
     public void setPosition(Vector3 pos) {
         position.set(pos);
         instance.transform.setTranslation(pos);
-        worldTrans.setTranslation(pos);
+        worldTrans.set(instance.transform);
     }
 }

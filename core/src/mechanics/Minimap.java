@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
-import static mechanics.GlobalState.UNITS_PER_METER;
 import static mechanics.GlobalState.worldScale;
 
 /**

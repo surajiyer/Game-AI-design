@@ -58,7 +58,6 @@ public class Player extends GameObject {
         setPosition(pos);
         direction = new Vector3(dir).nor().scl(1, 0, 1);
         up = new Vector3(Vector3.Y);
-        calculateBounds();
     }
     
     @Override
@@ -66,12 +65,16 @@ public class Player extends GameObject {
         scale = scl / scale;
         instance.transform.scl(scl);
         scale = scl;
+        worldTrans.set(instance.transform);
+        calculateBounds();
     }
     
     @Override
     public void setPosition(Vector3 pos) {
         position.set(pos);
         instance.transform.setTranslation(pos);
+        worldTrans.set(instance.transform);
+        calculateBounds();
     }
     
     public void rotate(Vector3 dir, float deltaX, float deltaY) {
@@ -96,6 +99,7 @@ public class Player extends GameObject {
         if(tmp.y > 0) deltaX *= -1;
         //System.out.println(deltaX);
         instance.transform.rotate(up, -deltaX);
+        worldTrans.set(instance.transform);
     }
     
     public Vector3 getDirection() {

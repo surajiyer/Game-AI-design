@@ -64,6 +64,7 @@ public class VoxelTest extends ApplicationAdapter {
     PlayerController playerController;
     Player AI;
     AIController aiController;
+    boolean existsWinner = false;
     
     @Override
     public void create () {
@@ -161,7 +162,7 @@ public class VoxelTest extends ApplicationAdapter {
         // Update the camera, the player and the AI
         GlobalState.gameController.update(playerController, camera);
         playerController.update();
-        aiController.update();
+        if(!existsWinner) aiController.update();
         
         // Render all 3D stuff      
         GlobalState.visibleCount = 0;
@@ -205,12 +206,19 @@ public class VoxelTest extends ApplicationAdapter {
         // Render the AI character
         if(AI.isVisible(camera)) {
             modelBatch.render(AI);
+            modelBatch.render(AI.boundingBoxModel());
             GlobalState.visibleCount++;
         }
         modelBatch.end();
         
-        // Render the 2D text
+        
         spriteBatch.begin();
+        // Draw minimap and HUD
+        scoreBoard.updateScore();
+        miniMap.draw(spriteBatch, camera, players);
+        scoreBoard.draw(spriteBatch, camera, font);
+        
+        // Render the 2D text
         font.setColor(1,1,1,1);
         font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 10, 
                 camera.viewportHeight - 10);
@@ -225,11 +233,10 @@ public class VoxelTest extends ApplicationAdapter {
                 camera.viewportHeight - 85);
         font.draw(spriteBatch, "Camera direction: "+camera.direction, 10, 
                 camera.viewportHeight - 100);
+        font.draw(spriteBatch, "Winner: "+scoreBoard.getWinner(), 10, camera.viewportHeight - 115);
         
-        // Draw minimap and HUD
-        scoreBoard.updateScore();
-        miniMap.draw(spriteBatch, camera, players);
-        scoreBoard.draw(spriteBatch, camera, font);
+        // Check if there exists a winner, if so, stop the AI
+        existsWinner = scoreBoard.getWinner() != Flag.Occupant.NONE;
         
         spriteBatch.end();
     }
