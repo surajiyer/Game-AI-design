@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
@@ -98,8 +99,10 @@ public class Player extends GameObject {
         float deltaX = (float) (Math.asin(tmp.crs(direction).len()) * MathUtils.radDeg);
         if(tmp.y > 0) deltaX *= -1;
         //System.out.println(deltaX);
-        instance.transform.rotate(up, -deltaX);
+        //instance.transform.rotate(up, -deltaX);
+        instance.transform.mul(new Matrix4().setToRotation(up, -deltaX));
         worldTrans.set(instance.transform);
+        calculateBounds();
     }
     
     public Vector3 getDirection() {

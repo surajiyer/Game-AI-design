@@ -82,17 +82,17 @@ public class AIController {
     public void update() {
         switch(state) {
             case STEP:
-                System.out.println("Acquiring next step");
+                //System.out.println("Acquiring next step");
                 path = RL.step();
                 state = AIState.MOVE;
                 index = path.size;
-                System.out.println("Path found");
+                //System.out.println("Path found");
                 break;
             case MOVE:
                 update(Gdx.graphics.getDeltaTime());
                 break;
             case EVAL:
-                System.out.println("Evaluating");
+                //System.out.println("Evaluating");
                 flagsManager.captureFlag(player);
                 RL.evaluate();
                 state = AIState.STEP;

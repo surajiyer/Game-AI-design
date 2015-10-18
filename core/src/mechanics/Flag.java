@@ -3,9 +3,7 @@ package mechanics;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import utils.GameObject;
@@ -79,6 +77,7 @@ public class Flag extends GameObject {
         position.set(pos);
         model.transform.setTranslation(position);
         worldTrans.set(model.transform);
+        calculateBounds();
     }
 
     @Override
@@ -90,7 +89,7 @@ public class Flag extends GameObject {
     @Override
     public boolean isVisible(Camera cam) {
         model.transform.getTranslation(tmp);
-        tmp.add(center);
+        //tmp.add(center);
         return cam.frustum.sphereInFrustum(tmp, radius);
     }
 

@@ -171,7 +171,7 @@ public class VoxelTest extends ApplicationAdapter {
         skyBox.render(camera);
         
         modelBatch.begin(camera);
-        DefaultShader.defaultCullFace = GL20.GL_FRONT;
+        DefaultShader.defaultCullFace = GL20.GL_NONE;
         // Render the voxel terrain
         if(voxelWorld.isVisible(camera)) {
             modelBatch.render(voxelWorld, environment);

@@ -18,7 +18,6 @@ import static mechanics.GlobalState.assetsManager;
 import static terrain.VoxelChunk.CHUNK_SIZE_X;
 import static terrain.VoxelChunk.CHUNK_SIZE_Y;
 import static terrain.VoxelChunk.CHUNK_SIZE_Z;
-import static terrain.VoxelChunk.indices;
 import utils.ConcreteGameObject;
 import utils.GameObject;
 
@@ -64,17 +63,6 @@ public class VoxelWorld extends GameObject {
                     chunks[i++] = chunk;
                 }
             }
-        }
-        
-        // Load the indices of the voxel chunks
-        short j=0;
-        for (i = 0; i < indices.length; i += 6, j += 4) {
-            indices[i + 0] = (short)(j + 0);
-            indices[i + 1] = (short)(j + 1);
-            indices[i + 2] = (short)(j + 2);
-            indices[i + 3] = (short)(j + 2);
-            indices[i + 4] = (short)(j + 3);
-            indices[i + 5] = (short)(j + 0);
         }
         
         this.NROF_TREES = numberOfTrees;
@@ -211,14 +199,26 @@ public class VoxelWorld extends GameObject {
     @Override
     public void getRenderables (Array<Renderable> renderables, Pool<Renderable> pool) {
         renderedChunks = 0;
-        for (VoxelChunk chunk : chunks) {
-            if(!chunk.isGenerated()) {
-                chunk.generate();
-            }
-            if(chunk.numVerts != 0) {
-                chunk.getRenderables(renderables, pool);
-                renderedChunks++;
-            }
+        // Render chunks
+//        for (VoxelChunk chunk : chunks) {
+//            if(!chunk.isGenerated()) {
+//                chunk.generate();
+//            }
+//            if(chunk.numVerts != 0) {
+//                //chunk.getRenderables(renderables, pool);
+//                chunk.updateWorldTranform();
+//                chunk.boundingBoxModel().getRenderables(renderables, pool);
+//                renderedChunks++;
+//            }
+//        }
+        
+        if(!chunks[0].isGenerated()) {
+            chunks[0].generate();
+        }
+        if(chunks[0].numVerts != 0) {
+            chunks[0].getRenderables(renderables, pool);
+            chunks[0].boundingBoxModel().getRenderables(renderables, pool);
+            renderedChunks++;
         }
         
         // Render trees

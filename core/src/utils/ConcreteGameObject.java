@@ -50,6 +50,7 @@ public class ConcreteGameObject extends GameObject {
         instance.transform.scl(scale);
         worldTrans.set(instance.transform);
         scale = scl;
+        calculateBounds();
     }
 
     @Override
@@ -57,5 +58,6 @@ public class ConcreteGameObject extends GameObject {
         position.set(pos);
         instance.transform.setTranslation(pos);
         worldTrans.set(instance.transform);
+        calculateBounds();
     }
 }

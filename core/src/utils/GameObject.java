@@ -37,7 +37,6 @@ public abstract class GameObject implements RenderableProvider {
     protected Vector3 tmp = new Vector3();
     
     protected void calculateBounds() {
-        bounds.mul(worldTrans);
         bounds.getCenter(center);
         bounds.getDimensions(dimensions);
         radius = dimensions.len() / 2f;

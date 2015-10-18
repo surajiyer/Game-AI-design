@@ -17,6 +17,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.Pool;
 import mechanics.GlobalState;
 import static mechanics.GlobalState.UNITS_PER_METER;
@@ -92,10 +93,8 @@ public class VoxelChunk extends GameObject {
     public static final int CHUNK_SIZE_X = UNITS_PER_METER;
     public static final int CHUNK_SIZE_Y = UNITS_PER_METER;
     public static final int CHUNK_SIZE_Z = UNITS_PER_METER;
-    private static final float[] vertices = new float[CHUNK_SIZE_X * 
-                CHUNK_SIZE_Y * CHUNK_SIZE_Z * NROF_FACES * VoxelChunk.VERTEX_SIZE];
-    public static final short[] indices = new short[CHUNK_SIZE_X * CHUNK_SIZE_Y * 
-            CHUNK_SIZE_Z * NROF_FACES * 2];
+    
+    public static final short[] indices;
     private final VoxelWorld parent;
     public Mesh mesh;
     private final Matrix4 localTrans;
@@ -114,6 +113,20 @@ public class VoxelChunk extends GameObject {
     private final int rightOffset;
     private final int frontOffset;
     private final int backOffset;
+    
+    static {
+        // Load the indices of the voxel chunks
+        indices = new short[CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z * NROF_FACES * 2];
+        int i, j=0;
+        for (i = 0; i < indices.length; i += 6, j += 4) {
+            indices[i + 0] = (short)(j + 0);
+            indices[i + 1] = (short)(j + 1);
+            indices[i + 2] = (short)(j + 2);
+            indices[i + 3] = (short)(j + 2);
+            indices[i + 4] = (short)(j + 3);
+            indices[i + 5] = (short)(j + 0);
+        }
+    }
     
     public VoxelChunk (VoxelWorld parent, int width, int height, int depth) {
         this.parent = parent;
@@ -142,8 +155,8 @@ public class VoxelChunk extends GameObject {
     }
     
     public Mesh generate() {
-        mesh.setIndices(indices);
-        mesh.setVertices(calculateVertices(vertices), 0, numVerts * VERTEX_SIZE);
+        mesh.setVertices(calculateVertices(), 0, numVerts * VERTEX_SIZE);
+        if(numVerts != 0) calculateBounds();
         regenerate = false;
         return mesh;
     }
@@ -151,7 +164,7 @@ public class VoxelChunk extends GameObject {
     /** @param height the height of the cube
      * @return the type of the cube */
     public VoxelType getCubeType(float height) {
-        int random = MathUtils.random(8) - 4;
+        int random = MathUtils.random(6) - 3;
         if(height < 10 + random)
             return VoxelType.WATER;
         else if(height < 13 + random)
@@ -192,8 +205,14 @@ public class VoxelChunk extends GameObject {
     }
     
     @Override
+    public void calculateBounds() {
+        mesh.calculateBoundingBox(bounds);
+        super.calculateBounds();
+    }
+    
+    @Override
     public void setPosition(Vector3 pos) {
-        position.set(pos.scl(width, height, depth));
+        position.set(pos).scl(width, height, depth);
         localTrans.setTranslation(position);
     }
     
@@ -226,7 +245,7 @@ public class VoxelChunk extends GameObject {
                 new Material(TextureAttribute.createDiffuse(parent.voxelTextures));
         renderable.mesh = mesh;
         renderable.meshPartOffset = 0;
-        renderable.meshPartSize = numVerts * (6 / NROF_VERTICES_PER_FACE);
+        renderable.meshPartSize = numVerts / NROF_VERTICES_PER_FACE * 6;
         if(GlobalState.enableWireframe) {
             renderable.primitiveType = GL20.GL_LINE_STRIP;
         } else {
@@ -234,15 +253,15 @@ public class VoxelChunk extends GameObject {
         }
         renderables.add(renderable);
     }
-
+    
     /** 
      * Creates a mesh out of the chunk, returning the number of indices produced
-     * @param vertices
      * @return the number of vertices produced 
      */
-    public float[] calculateVertices (float[] vertices) {
+    public float[] calculateVertices () {
+        FloatArray vertices = new FloatArray(CHUNK_SIZE_X * CHUNK_SIZE_Y * CHUNK_SIZE_Z 
+                * VERTEX_SIZE);
         int i = 0;
-        int vertexOffset = 0;
         for (int y = 0; y < height; y++) {
             for (int z = 0; z < depth; z++) {
                 for (int x = 0; x < width; x++, i++) {
@@ -250,262 +269,262 @@ public class VoxelChunk extends GameObject {
                     if (voxels[i] == 0) continue;
                     voxelType = getCubeType(position.y+y);
                     
-                    if(y == height - 1 || voxels[i + topOffset] == 0) 
-                        vertexOffset = createTop(x, y, z, vertices, vertexOffset);
+                    if (y >= height - 1 || voxels[i + topOffset] == 0) {
+                        createTop(x, y, z, vertices);
+                    }
                     
-                    if (y == 0 || voxels[i + bottomOffset] == 0)
-                        vertexOffset = createBottom(x, y, z, vertices, vertexOffset);
+                    if (y <= 0 || voxels[i + bottomOffset] == 0) {
+                        createBottom(x, y, z, vertices);
+                    }
                     
-                    if (x == 0 || voxels[i + leftOffset] == 0)
-                        vertexOffset = createLeft(x, y, z, vertices, vertexOffset);
+                    if (x <= 0 || voxels[i + leftOffset] == 0) {
+                        createLeft(x, y, z, vertices);
+                    }
                     
-                    if (x == width - 1 || voxels[i + rightOffset] == 0) 
-                        vertexOffset = createRight(x, y, z, vertices, vertexOffset);
+                    if (x >= width - 1 || voxels[i + rightOffset] == 0) {
+                        createRight(x, y, z, vertices);
+                    }
                     
-                    if (z == 0 || voxels[i + frontOffset] == 0) 
-                        vertexOffset = createFront(x, y, z, vertices, vertexOffset);
+                    if (z <= 0 || voxels[i + frontOffset] == 0) {
+                        createFront(x, y, z, vertices);
+                    }
                     
-                    if (z == depth - 1 || voxels[i + backOffset] == 0) 
-                        vertexOffset = createBack(x, y, z, vertices, vertexOffset);
+                    if (z >= depth - 1 || voxels[i + backOffset] == 0) {
+                        createBack(x, y, z, vertices);
+                    }
                 }
             }
         }
         
-        numVerts = (vertexOffset / VERTEX_SIZE);
-        return vertices;
+        numVerts = (vertices.size / VERTEX_SIZE);
+        return vertices.toArray();
+    }
+    
+    public void createTop (int x, int y, int z, FloatArray vertices) {
+        vertices.add(x);
+        vertices.add(y + 1);
+        vertices.add(z);
+        vertices.add(0);
+        vertices.add(1);
+        vertices.add(0);
+        vertices.add(voxelType.topUV[0]);
+        vertices.add(voxelType.topUV[1]);
+
+        vertices.add(x + 1);
+        vertices.add(y + 1);
+        vertices.add(z);
+        vertices.add(0);
+        vertices.add(1);
+        vertices.add(0);
+        vertices.add(voxelType.topUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.topUV[1]);
+
+        vertices.add(x + 1);
+        vertices.add(y + 1);
+        vertices.add(z + 1);
+        vertices.add(0);
+        vertices.add(1);
+        vertices.add(0);
+        vertices.add(voxelType.topUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.topUV[1]+VoxelType.texSize);
+
+        vertices.add(x);
+        vertices.add(y + 1);
+        vertices.add(z + 1);
+        vertices.add(0);
+        vertices.add(1);
+        vertices.add(0);
+        vertices.add(voxelType.topUV[0]);
+        vertices.add(voxelType.topUV[1]+VoxelType.texSize);
     }
 
-    public int createTop (int x, int y, int z, float[] vertices, int vertexOffset) {
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.topUV[0];
-        vertices[vertexOffset++] = voxelType.topUV[1];
+    public void createBottom (int x, int y, int z, FloatArray vertices) {
+        vertices.add(x);
+        vertices.add(y);
+        vertices.add(z);
+        vertices.add(0);
+        vertices.add(-1);
+        vertices.add(0);
+        vertices.add(voxelType.bottomUV[0]);
+        vertices.add(voxelType.bottomUV[1]);
 
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.topUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.topUV[1];
+        vertices.add(x);
+        vertices.add(y);
+        vertices.add(z + 1);
+        vertices.add(0);
+        vertices.add(-1);
+        vertices.add(0);
+        vertices.add(voxelType.bottomUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.bottomUV[1]);
 
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.topUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.topUV[1]+VoxelType.texSize;
+        vertices.add(x + 1);
+        vertices.add(y);
+        vertices.add(z + 1);
+        vertices.add(0);
+        vertices.add(-1);
+        vertices.add(0);
+        vertices.add(voxelType.bottomUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.bottomUV[1]+VoxelType.texSize);
 
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.topUV[0];
-        vertices[vertexOffset++] = voxelType.topUV[1]+VoxelType.texSize;
-        return vertexOffset;
+        vertices.add(x + 1);
+        vertices.add(y);
+        vertices.add(z);
+        vertices.add(0);
+        vertices.add(-1);
+        vertices.add(0);
+        vertices.add(voxelType.bottomUV[0]);
+        vertices.add(voxelType.bottomUV[1]+VoxelType.texSize);
     }
 
-    public int createBottom (int x, int y, int z, float[] vertices, int vertexOffset) {
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.bottomUV[0];
-        vertices[vertexOffset++] = voxelType.bottomUV[1];
+    public void createLeft (int x, int y, int z, FloatArray vertices) {
+        vertices.add(x);
+        vertices.add(y);
+        vertices.add(z);
+        vertices.add(-1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(voxelType.leftUV[0]);
+        vertices.add(voxelType.leftUV[1]+VoxelType.texSize);
 
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.bottomUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.bottomUV[1];
+        vertices.add(x);
+        vertices.add(y + 1);
+        vertices.add(z);
+        vertices.add(-1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(voxelType.leftUV[0]);
+        vertices.add(voxelType.leftUV[1]);
 
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.bottomUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.bottomUV[1]+VoxelType.texSize;
+        vertices.add(x);
+        vertices.add(y + 1);
+        vertices.add(z + 1);
+        vertices.add(-1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(voxelType.leftUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.leftUV[1]);
 
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.bottomUV[0];
-        vertices[vertexOffset++] = voxelType.bottomUV[1]+VoxelType.texSize;
-        return vertexOffset;
+        vertices.add(x);
+        vertices.add(y);
+        vertices.add(z + 1);
+        vertices.add(-1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(voxelType.leftUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.leftUV[1]+VoxelType.texSize);
     }
 
-    public int createLeft (int x, int y, int z, float[] vertices, int vertexOffset) {
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.leftUV[0];
-        vertices[vertexOffset++] = voxelType.leftUV[1]+VoxelType.texSize;
+    public void createRight (int x, int y, int z, FloatArray vertices) {
+        vertices.add(x + 1);
+        vertices.add(y);
+        vertices.add(z);
+        vertices.add(1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(voxelType.rightUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.rightUV[1]+VoxelType.texSize);
 
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.leftUV[0];
-        vertices[vertexOffset++] = voxelType.leftUV[1];
+        vertices.add(x + 1);
+        vertices.add(y);
+        vertices.add(z + 1);
+        vertices.add(1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(voxelType.rightUV[0]);
+        vertices.add(voxelType.rightUV[1]+VoxelType.texSize);
 
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.leftUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.leftUV[1];
+        vertices.add(x + 1);
+        vertices.add(y + 1);
+        vertices.add(z + 1);
+        vertices.add(1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(voxelType.rightUV[0]);
+        vertices.add(voxelType.rightUV[1]);
 
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.leftUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.leftUV[1]+VoxelType.texSize;
-        return vertexOffset;
+        vertices.add(x + 1);
+        vertices.add(y + 1);
+        vertices.add(z);
+        vertices.add(1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(voxelType.rightUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.rightUV[1]);
     }
 
-    public int createRight (int x, int y, int z, float[] vertices, int vertexOffset) {
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.rightUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.rightUV[1]+VoxelType.texSize;
+    public void createFront (int x, int y, int z, FloatArray vertices) {
+        vertices.add(x);
+        vertices.add(y);
+        vertices.add(z);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(1);
+        vertices.add(voxelType.frontUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.frontUV[1]+VoxelType.texSize);
 
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.rightUV[0];
-        vertices[vertexOffset++] = voxelType.rightUV[1]+VoxelType.texSize;
+        vertices.add(x + 1);
+        vertices.add(y);
+        vertices.add(z);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(1);
+        vertices.add(voxelType.frontUV[0]);
+        vertices.add(voxelType.frontUV[1]+VoxelType.texSize);
 
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.rightUV[0];
-        vertices[vertexOffset++] = voxelType.rightUV[1];
+        vertices.add(x + 1);
+        vertices.add(y + 1);
+        vertices.add(z);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(1);
+        vertices.add(voxelType.frontUV[0]);
+        vertices.add(voxelType.frontUV[1]);
 
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = voxelType.rightUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.rightUV[1];
-        return vertexOffset;
+        vertices.add(x);
+        vertices.add(y + 1);
+        vertices.add(z);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(1);
+        vertices.add(voxelType.frontUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.frontUV[1]);
     }
 
-    public int createFront (int x, int y, int z, float[] vertices, int vertexOffset) {
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = voxelType.frontUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.frontUV[1]+VoxelType.texSize;
-
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = voxelType.frontUV[0];
-        vertices[vertexOffset++] = voxelType.frontUV[1]+VoxelType.texSize;
-
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = voxelType.frontUV[0];
-        vertices[vertexOffset++] = voxelType.frontUV[1];
-
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 1;
-        vertices[vertexOffset++] = voxelType.frontUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.frontUV[1];
-        return vertexOffset;
-    }
-
-    public int createBack (int x, int y, int z, float[] vertices, int vertexOffset) {
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = voxelType.backUV[0];
-        vertices[vertexOffset++] = voxelType.backUV[1]+VoxelType.texSize;
-
-        vertices[vertexOffset++] = x;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = voxelType.backUV[0];
-        vertices[vertexOffset++] = voxelType.backUV[1];
-
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y + 1;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = voxelType.backUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.backUV[1];
-
-        vertices[vertexOffset++] = x + 1;
-        vertices[vertexOffset++] = y;
-        vertices[vertexOffset++] = z + 1;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = 0;
-        vertices[vertexOffset++] = -1;
-        vertices[vertexOffset++] = voxelType.backUV[0]+VoxelType.texSize;
-        vertices[vertexOffset++] = voxelType.backUV[1]+VoxelType.texSize;
-        return vertexOffset;
+    public void createBack (int x, int y, int z, FloatArray vertices) {
+        vertices.add(x);
+        vertices.add(y);
+        vertices.add(z + 1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(-1);
+        vertices.add(voxelType.backUV[0]);
+        vertices.add(voxelType.backUV[1]+VoxelType.texSize);
+        
+        vertices.add(x);
+        vertices.add(y + 1);
+        vertices.add(z + 1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(-1);
+        vertices.add(voxelType.backUV[0]);
+        vertices.add(voxelType.backUV[1]);
+        
+        vertices.add(x + 1);
+        vertices.add(y + 1);
+        vertices.add(z + 1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(-1);
+        vertices.add(voxelType.backUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.backUV[1]);
+        
+        vertices.add(x + 1);
+        vertices.add(y);
+        vertices.add(z + 1);
+        vertices.add(0);
+        vertices.add(0);
+        vertices.add(-1);
+        vertices.add(voxelType.backUV[0]+VoxelType.texSize);
+        vertices.add(voxelType.backUV[1]+VoxelType.texSize);
     }
 }
