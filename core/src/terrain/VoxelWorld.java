@@ -200,26 +200,26 @@ public class VoxelWorld extends GameObject {
     public void getRenderables (Array<Renderable> renderables, Pool<Renderable> pool) {
         renderedChunks = 0;
         // Render chunks
-//        for (VoxelChunk chunk : chunks) {
-//            if(!chunk.isGenerated()) {
-//                chunk.generate();
-//            }
-//            if(chunk.numVerts != 0) {
-//                //chunk.getRenderables(renderables, pool);
-//                chunk.updateWorldTranform();
-//                chunk.boundingBoxModel().getRenderables(renderables, pool);
-//                renderedChunks++;
-//            }
-//        }
+        for (VoxelChunk chunk : chunks) {
+            if(!chunk.isGenerated()) {
+                chunk.generate();
+            }
+            if(chunk.numVerts != 0) {
+                chunk.getRenderables(renderables, pool);
+                //chunk.updateWorldTranform();
+                //chunk.boundingBoxModel().getRenderables(renderables, pool);
+                renderedChunks++;
+            }
+        }
         
-        if(!chunks[0].isGenerated()) {
-            chunks[0].generate();
-        }
-        if(chunks[0].numVerts != 0) {
-            chunks[0].getRenderables(renderables, pool);
-            chunks[0].boundingBoxModel().getRenderables(renderables, pool);
-            renderedChunks++;
-        }
+//        if(!chunks[0].isGenerated()) {
+//            chunks[0].generate();
+//        }
+//        if(chunks[0].numVerts != 0) {
+//            chunks[0].getRenderables(renderables, pool);
+//            chunks[0].boundingBoxModel().getRenderables(renderables, pool);
+//            renderedChunks++;
+//        }
         
         // Render trees
         for(ConcreteGameObject tree : trees) {
