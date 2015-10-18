@@ -93,7 +93,7 @@ public class AIController {
                 break;
             case EVAL:
                 //System.out.println("Evaluating");
-                flagsManager.captureFlag(player);
+                //flagsManager.captureFlag(player);
                 RL.evaluate();
                 state = AIState.STEP;
                 //state = AIState.DEFAULT;

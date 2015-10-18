@@ -133,7 +133,7 @@ public class PlayerController extends InputAdapter {
                 updateThirdPerson(deltaTime);
             }
         }
-        flagsManager.captureFlag(player);
+        //flagsManager.captureFlag(player);
     }
     
     public void updateThirdPerson(float deltaTime) {

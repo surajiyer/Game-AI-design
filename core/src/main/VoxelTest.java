@@ -237,6 +237,8 @@ public class VoxelTest extends ApplicationAdapter {
         
         // Check if there exists a winner, if so, stop the AI
         existsWinner = scoreBoard.getWinner() != Flag.Occupant.NONE;
+        GlobalState.flagsManager.captureFlag(player);
+        GlobalState.flagsManager.captureFlag(AI);
         
         spriteBatch.end();
     }
