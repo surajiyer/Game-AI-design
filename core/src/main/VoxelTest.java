@@ -41,6 +41,7 @@ import static mechanics.GlobalState.assetsManager;
 import static mechanics.GlobalState.flagsManager;
 import static mechanics.GlobalState.miniMap;
 import static mechanics.GlobalState.scoreBoard;
+import mechanics.Minimap;
 import mechanics.Player.PlayerType;
 
 
@@ -65,6 +66,7 @@ public class VoxelTest extends ApplicationAdapter {
     Player AI;
     AIController aiController;
     boolean existsWinner = false;
+    Minimap miniMap;
     
     @Override
     public void create () {
@@ -103,12 +105,13 @@ public class VoxelTest extends ApplicationAdapter {
         GlobalState.assetsManager.load("trees/tree3.g3db", Model.class);
         GlobalState.assetsManager.load("trees/tree4.g3db", Model.class);
         GlobalState.assetsManager.load("characters/BlueWalk.g3db", Model.class);
+        GlobalState.assetsManager.load("characters/RedWalk.g3db", Model.class);
         assetLoading = true;
         assetsManager.finishLoading();
         
         // Create a voxel terrain
         voxelWorld = new VoxelWorld(new Texture(Gdx.files.internal("tiles.png")), 
-                20, 4, 20, MathUtils.random(20), 4);
+                20, 4, 20, 300, 4);
         SimplexNoise.generateHeightMap(voxelWorld, 0, 64, 10, 0.5f, 0.007f, 0.002f);
         voxelWorld.voxelTextures.bind(0);
 //        PerlinNoiseGenerator.generateVoxels(model, 0, 64, 10);
@@ -137,6 +140,9 @@ public class VoxelTest extends ApplicationAdapter {
         // Set the initial camera position
         camera.position.set(player.getPosition().add(playerController.cameraOffset));
         
+        //Setup minimap
+        miniMap = new Minimap();
+        
         // Setup all input sources
         InputMultiplexer inputMultiplexer = new InputMultiplexer();
         inputMultiplexer.addProcessor(GlobalState.gameController);
@@ -161,8 +167,8 @@ public class VoxelTest extends ApplicationAdapter {
         
         // Update the camera, the player and the AI
         GlobalState.gameController.update(playerController, camera);
-        playerController.update();
-        if(!existsWinner) aiController.update();
+        if(!existsWinner && GlobalState.started) playerController.update(); 
+        if(!existsWinner && GlobalState.started) aiController.update(); 
         
         // Render all 3D stuff      
         GlobalState.visibleCount = 0;
@@ -173,17 +179,17 @@ public class VoxelTest extends ApplicationAdapter {
         modelBatch.begin(camera);
         DefaultShader.defaultCullFace = GL20.GL_NONE;
         // Render the voxel terrain
-        if(voxelWorld.isVisible(camera)) {
+        //if(voxelWorld.isVisible(camera)) {
             modelBatch.render(voxelWorld, environment);
-        }
+        //}
         modelBatch.flush();
         DefaultShader.defaultCullFace = GL20.GL_BACK;
         
-        // Render all loaded models
+        //Render all loaded models
 //        for(ConcreteGameObject gameObject : instances) {
 //            if(gameObject.isVisible(camera)) {
 //                modelBatch.render(gameObject);
-//                modelBatch.render(gameObject.boundingBoxModel());
+//                //modelBatch.render(gameObject.boundingBoxModel());
 //                GlobalState.visibleCount++;
 //            }
 //        }
@@ -194,7 +200,7 @@ public class VoxelTest extends ApplicationAdapter {
                 modelBatch.render(flag);
                 GlobalState.visibleCount++;
             }
-            modelBatch.render(flag.boundingBoxModel());
+            //modelBatch.render(flag.boundingBoxModel());
         }
         
         // Render the player character
@@ -206,7 +212,7 @@ public class VoxelTest extends ApplicationAdapter {
         // Render the AI character
         if(AI.isVisible(camera)) {
             modelBatch.render(AI);
-            modelBatch.render(AI.boundingBoxModel());
+            //modelBatch.render(AI.boundingBoxModel());
             GlobalState.visibleCount++;
         }
         modelBatch.end();
@@ -214,7 +220,7 @@ public class VoxelTest extends ApplicationAdapter {
         
         spriteBatch.begin();
         // Draw minimap and HUD
-        scoreBoard.updateScore();
+        if (!existsWinner) scoreBoard.updateScore();
         miniMap.draw(spriteBatch, camera, players);
         scoreBoard.draw(spriteBatch, camera, font);
         
@@ -234,6 +240,9 @@ public class VoxelTest extends ApplicationAdapter {
         font.draw(spriteBatch, "Camera direction: "+camera.direction, 10, 
                 camera.viewportHeight - 100);
         font.draw(spriteBatch, "Winner: "+scoreBoard.getWinner(), 10, camera.viewportHeight - 115);
+        if (existsWinner) {
+            font.draw(spriteBatch, "Game Over! Please R to restart!", camera.viewportWidth/2 - 150, camera.viewportHeight/2);
+        }
         
         // Check if there exists a winner, if so, stop the AI
         existsWinner = scoreBoard.getWinner() != Flag.Occupant.NONE;

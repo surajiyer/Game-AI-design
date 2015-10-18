@@ -122,5 +122,9 @@ public class AIController {
         tmp.y = playerWorld.getHeight(tmp.x, tmp.z);
         player.setPosition(tmp);
         pointReached = tmp.dst(destination) <= UNITS_PER_METER;
+        if (GlobalState.respawnAI) {
+            player.respawn();
+            GlobalState.respawnAI = false;
+        }
     }
 }

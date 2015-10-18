@@ -130,6 +130,11 @@ public class PlayerController extends InputAdapter {
             if(GlobalState.isFirstPerson) {
                 updateFirstPerson(deltaTime);
             } else {
+                if (GlobalState.respawnP) {
+                    player.respawn();
+                    camera.position.set(player.getPosition().add(cameraOffset));
+                    GlobalState.respawnP = false;
+                }
                 updateThirdPerson(deltaTime);
             }
         }
@@ -271,5 +276,5 @@ public class PlayerController extends InputAdapter {
         
         // Update the camera
         camera.update(true);
-    }
+    }    
 }

@@ -14,6 +14,7 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
 import mechanics.GlobalState;
+import static mechanics.GlobalState.UNITS_PER_METER;
 import static mechanics.GlobalState.assetsManager;
 import static terrain.VoxelChunk.CHUNK_SIZE_X;
 import static terrain.VoxelChunk.CHUNK_SIZE_Y;
@@ -155,11 +156,12 @@ public class VoxelWorld extends GameObject {
             z = MathUtils.random(GlobalState.depthField)*scale;
             y = (int) getHeight(x, z);
             type = MathUtils.random(1, NROF_TREES_TYPES);
-            if (y < 18) continue;
+            if (y > 16*UNITS_PER_METER && y < 36*UNITS_PER_METER) {
             tmpObject = new ConcreteGameObject(
                     assetsManager.get("trees/tree"+type+".g3db", Model.class));
             tmpObject.setPosition(tmp.set(x, y, z));
             trees.add(tmpObject);
+            }
         }
     }
     
@@ -207,19 +209,19 @@ public class VoxelWorld extends GameObject {
             if(chunk.numVerts != 0) {
                 chunk.getRenderables(renderables, pool);
                 chunk.updateWorldTranform();
-                chunk.boundingBoxModel().getRenderables(renderables, pool);
+                //chunk.boundingBoxModel().getRenderables(renderables, pool);
                 renderedChunks++;
             }
         }
         
-        if(!chunks[0].isGenerated()) {
-            chunks[0].generate();
-        }
-        if(chunks[0].numVerts != 0) {
-            chunks[0].getRenderables(renderables, pool);
-            chunks[0].boundingBoxModel().getRenderables(renderables, pool);
-            renderedChunks++;
-        }
+//        if(!chunks[0].isGenerated()) {
+//            chunks[0].generate();
+//        }
+//        if(chunks[0].numVerts != 0) {
+//            chunks[0].getRenderables(renderables, pool);
+//            chunks[0].boundingBoxModel().getRenderables(renderables, pool);
+//            renderedChunks++;
+//        }
         
         // Render trees
         for(ConcreteGameObject tree : trees) {
