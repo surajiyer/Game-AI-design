@@ -240,7 +240,10 @@ public class VoxelTest extends ApplicationAdapter {
                 camera.viewportHeight - 100);
         font.draw(spriteBatch, "Winner: "+scoreBoard.getWinner(), 10, camera.viewportHeight - 115);
         if (existsWinner) {
-            font.draw(spriteBatch, "Game Over! Please R to restart!", camera.viewportWidth/2 - 150, camera.viewportHeight/2);
+            font.draw(spriteBatch, "Game Over! Press <R> to restart!", camera.viewportWidth/2 - 150, camera.viewportHeight/2);
+        }
+        if (!GlobalState.started) {
+            font.draw(spriteBatch, "Press <Enter> to start!", camera.viewportWidth/2 - 100, camera.viewportHeight/2);
         }
         
         // Check if there exists a winner, if so, stop the AI
