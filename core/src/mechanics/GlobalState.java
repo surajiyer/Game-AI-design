@@ -40,7 +40,7 @@ public class GlobalState {
     public static boolean respawnAI = false;
     
     static {
-        scoreBoard = new ScoreBoard(20);
+        scoreBoard = new ScoreBoard(250);
         flagsManager = new FlagsManager(5);
         miniMap = new Minimap();
         gameController = new GameController();

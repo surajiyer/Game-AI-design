@@ -48,12 +48,12 @@ public class AIController {
         // Set up an animation controller for the walking action of the player
         playerAnimsController = new MultipleAnimationsController();
         playerAnimsController.addAnimations(new String[]{
-            "Head|HeadAction",
             "Torso|TorsoAction",
-            "Right Hand|Right HandAction",
-            "Left Hand|Left HandAction",
-            "Right Leg|Right LegAction",
-            "Left Leg|Left LegAction"}, player.instance);
+            "LegRight|LegRightAction",
+            "LegLeft|LegLeftAction",
+            "ArmRight|ArmRightAction",
+            "ArmLeft|ArmLeftAction",
+            "Head|HeadAction.001"}, player.instance);
         
         // Setup the brain of the AI
         this.RL = new ReinforcementLearning(player);

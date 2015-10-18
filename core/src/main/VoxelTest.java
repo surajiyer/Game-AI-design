@@ -39,7 +39,6 @@ import mechanics.Flag;
 import static mechanics.GlobalState.UNITS_PER_METER;
 import static mechanics.GlobalState.assetsManager;
 import static mechanics.GlobalState.flagsManager;
-import static mechanics.GlobalState.miniMap;
 import static mechanics.GlobalState.scoreBoard;
 import mechanics.Minimap;
 import mechanics.Player.PlayerType;
@@ -131,7 +130,7 @@ public class VoxelTest extends ApplicationAdapter {
         players.add(player);
         
         // Load the AI
-        AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/BlueWalk.g3dj")), 
+        AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/RedWalk.g3dj")), 
                 PlayerType.AI, Vector3.Zero, camera.direction);
         aiController = new AIController(AI, voxelWorld);
         aiController.setVelocity(22 * UNITS_PER_METER);
