@@ -38,6 +38,7 @@ public class GlobalState {
     public static boolean started = false;
     public static boolean respawnP = false;
     public static boolean respawnAI = false;
+    public static boolean treeLocations[][];
     
     static {
         scoreBoard = new ScoreBoard(250);

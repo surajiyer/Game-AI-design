@@ -37,6 +37,7 @@ public class VoxelWorld extends GameObject {
     public final int voxelsZ;
     public int renderedChunks;
     public int numChunks;
+
     
     Array<ConcreteGameObject> trees;
     public final int NROF_TREES;
@@ -147,22 +148,31 @@ public class VoxelWorld extends GameObject {
         }
     }
     
-    public void loadTrees() {
+    public void loadTrees() { 
+        int width = GlobalState.widthField;
+        int depth = GlobalState.depthField;
+        GlobalState.treeLocations = new boolean[width + 1][depth + 1];
         float x, y, z;
         int type;
         ConcreteGameObject tmpObject;
         for (int i = 0; i < NROF_TREES; i++) {
             x = MathUtils.random(GlobalState.widthField)*scale;
             z = MathUtils.random(GlobalState.depthField)*scale;
+            //System.out.println("width: " + width + " depth: " + depth + " x " + x + " z " + scale);
             y = (int) getHeight(x, z);
             type = MathUtils.random(1, NROF_TREES_TYPES);
             if (y > 16*UNITS_PER_METER && y < 36*UNITS_PER_METER) {
+            GlobalState.treeLocations[(int)Math.floor(x / scale)][(int)Math.floor(z / scale)] = true; 
             tmpObject = new ConcreteGameObject(
                     assetsManager.get("trees/tree"+type+".g3db", Model.class));
             tmpObject.setPosition(tmp.set(x, y, z));
+            //System.out.println(x / scale + "  " + z / scale + "  " + NROF_TREES);
             trees.add(tmpObject);
             }
         }
+    }
+    public boolean treeLocations(int x, int z) {
+        return GlobalState.treeLocations[x][z];
     }
     
     @Override
