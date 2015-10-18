@@ -14,7 +14,7 @@ import mechanics.State;
  * @author Kevin van Eenige and Daniël van der Laan
  */
 public class ReinforcementLearning {
-    
+
     public static double PJOG = 1;
     public static double LearningRate = 2;
     public static double Epsilon = 3;
@@ -47,24 +47,24 @@ public class ReinforcementLearning {
     int[] closestFlagArray;
     Astar astar;
 
+    boolean init = true;
+
     public ReinforcementLearning(Player AIPlayer) {
         this.AIPlayer = AIPlayer;
-        tileCost = TileCostArray.generateTileCostArray(GlobalState.widthField, GlobalState.depthField, 
-                GlobalState.intHeightMap, 8, 
-                GlobalState.widthField - 1, 
+        tileCost = TileCostArray.generateTileCostArray(GlobalState.widthField, GlobalState.depthField,
+                GlobalState.intHeightMap, 8,
+                GlobalState.widthField - 1,
                 GlobalState.depthField - 1);
-        pathcostarray = new PathCostArray(GlobalState.widthField, 
-                GlobalState.depthField, 
-                GlobalState.flagsManager.getFlagPositions(), 
+        pathcostarray = new PathCostArray(GlobalState.widthField,
+                GlobalState.depthField,
+                GlobalState.flagsManager.getFlagPositions(),
                 GlobalState.flagsManager.getNumberOfFlags(), tileCost);
         closestFlagArray = new int[GlobalState.flagsManager.getNumberOfFlags()];
         closestFlagArray = pathcostarray.generateClosestFlagArrayAtLocation(pathCost, pathCost);
         start = new State(closestFlagArray[0], 0);
         currState = new State(closestFlagArray[0], 0);
         policy = new int[5][5];
-        qsa = new double[GlobalState.flagsManager.getNumberOfFlags()]
-                [GlobalState.flagsManager.getNumberOfFlags()]
-                [GlobalState.flagsManager.getNumberOfFlags()];
+        qsa = new double[GlobalState.flagsManager.getNumberOfFlags()][GlobalState.flagsManager.getNumberOfFlags()][GlobalState.flagsManager.getNumberOfFlags()];
         astar = new Astar(GlobalState.widthField, GlobalState.depthField);
         init();
     }
@@ -111,11 +111,11 @@ public class ReinforcementLearning {
         Vector3 tmp = new Vector3(GlobalState.flagsManager
                 .getFlagsList()
                 .get(currAction)
-                .getPosition().scl(1/worldScale));
-        IntArray path = astar.getPath((int) (AIPlayer.getPosition().x / worldScale), 
-                (int) (AIPlayer.getPosition().z / worldScale), 
-                (int) tmp.x, 
-                (int) tmp.z, 
+                .getPosition().scl(1 / worldScale));
+        IntArray path = astar.getPath((int) (AIPlayer.getPosition().x / worldScale),
+                (int) (AIPlayer.getPosition().z / worldScale),
+                (int) tmp.x,
+                (int) tmp.z,
                 tileCost);
         return path;
     }
@@ -168,9 +168,17 @@ public class ReinforcementLearning {
     }
 
     private int getBestAction(double[] actions) {
-        closestFlagArray = pathcostarray.generateClosestFlagArray(0);
+        double min;
+        if (init) {
+            min = actions[0];
+            init = false;
+        } else {
+            closestFlagArray = pathcostarray.generateClosestFlagArray(GlobalState.latestAiCapture);
+            min = closestFlagArray[0];
+        }
+        //closestFlagArray = pathcostarray.generateClosestFlagArray(0);
         int bestAction = 0;
-        double min = actions[0];
+
         for (int i = 0; i < actions.length; i++) {
             if (min > actions[i] && !GlobalState.flagsManager.getOccupant(i).equals(Occupant.AI)) {
                 min = actions[i];

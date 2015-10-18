@@ -16,6 +16,7 @@ import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
+import static mechanics.GlobalState.UNITS_PER_METER;
 import utils.GameObject;
 
 /**
@@ -48,6 +49,9 @@ public class Player extends GameObject {
     public final Vector3 up;
     public int flags;
     public final PlayerType type;
+    private int x;
+    private int y;
+    private int z;
     
     private final Node headNode;
     private final Quaternion tmpQuat = new Quaternion();
@@ -56,7 +60,7 @@ public class Player extends GameObject {
         instance = new ModelInstance(model);
         this.type = type;
         headNode = instance.nodes.get(PlayerParts.HEAD_PART.id);
-        setPosition(pos);
+        respawn();
         direction = new Vector3(dir).nor().scl(1, 0, 1);
         up = new Vector3(Vector3.Y);
     }
@@ -131,5 +135,13 @@ public class Player extends GameObject {
     public void getRenderables(Array<Renderable> renderables, Pool<Renderable> pool) {
         instance.getRenderables(renderables, pool);
     }
-
+    
+    public void respawn() {
+            x = (int) (MathUtils.random(GlobalState.widthField)*UNITS_PER_METER);
+            z = (int) (MathUtils.random(GlobalState.depthField)*UNITS_PER_METER);
+            y = (int) GlobalState.voxelworld.getHeight(x, z);
+            
+            tmp = new Vector3(x, y, z);
+            setPosition(tmp);
+    }
 }

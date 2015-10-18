@@ -41,8 +41,10 @@ public class ScoreBoard {
         spriteBatch.draw(hudScore, camera.viewportWidth/2 - 250, camera.viewportHeight - 70);
         font.draw(spriteBatch, "" + getPS(), camera.viewportWidth/2 - 90, camera.viewportHeight - 20);
         font.draw(spriteBatch, "" + getCS(), camera.viewportWidth/2 + 80, camera.viewportHeight - 20);
-        font.draw(spriteBatch, String.format("%02d", elapsedTime/60) + ":" + String.format("%02d", elapsedTime%60), 
-                camera.viewportWidth/2 - 15, camera.viewportHeight - 20);
+        if(GlobalState.started) {
+            font.draw(spriteBatch, String.format("%02d", elapsedTime/60) + ":" + String.format("%02d", elapsedTime%60), 
+                    camera.viewportWidth/2 - 15, camera.viewportHeight - 20);
+        }
     }
     
     public int getPS() {
@@ -94,5 +96,14 @@ public class ScoreBoard {
         } else if (elapsedTime % scoreTime != 0) {
             toScore = true;
         }
+    }
+    
+    public void reset() {
+        playerScore = 0;
+        AIScore = 0;
+        toScore = true;
+        startTime = System.currentTimeMillis();
+        elapsedTime = 0;
+        winner = Occupant.NONE;
     }
 }

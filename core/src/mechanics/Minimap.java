@@ -13,6 +13,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import static mechanics.GlobalState.worldScale;
+import static mechanics.Player.PlayerType.AI;
+import static mechanics.Player.PlayerType.HUMAN;
 
 /**
  *
@@ -69,8 +71,13 @@ public class Minimap {
         
         // Load markers for all players
         for(Player player : players) {
-            tmp.set(player.getPosition().scl(1/worldScale));
-            spriteBatch.draw(playerMarker, tmp.z, tmp.x);
+            if (player.type == HUMAN) {
+                tmp.set(player.getPosition().scl(1/worldScale));
+                spriteBatch.draw(playerMarker, tmp.z, tmp.x);
+            }
+            //if (player.type == AI) {
+            //    //could potentially draw red dot?
+            //}
         }
         
     }

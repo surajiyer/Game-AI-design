@@ -26,8 +26,8 @@ public class Flag extends GameObject {
     private final int scoreWeight;
     private Occupant occupant;
     
-    public Flag(Vector3 pos, int scoreWeight) {
-        this.id = idCount++;
+    public Flag(Vector3 pos, int scoreWeight, int i) {
+        this.id = i;
         this.scoreWeight = scoreWeight;
         this.occupant = Occupant.NONE;
         this.model = noneFlag.copy();

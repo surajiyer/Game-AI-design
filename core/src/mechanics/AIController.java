@@ -48,12 +48,12 @@ public class AIController {
         // Set up an animation controller for the walking action of the player
         playerAnimsController = new MultipleAnimationsController();
         playerAnimsController.addAnimations(new String[]{
-            "Head|HeadAction",
             "Torso|TorsoAction",
-            "Right Hand|Right HandAction",
-            "Left Hand|Left HandAction",
-            "Right Leg|Right LegAction",
-            "Left Leg|Left LegAction"}, player.instance);
+            "LegRight|LegRightAction",
+            "LegLeft|LegLeftAction",
+            "ArmRight|ArmRightAction",
+            "ArmLeft|ArmLeftAction",
+            "Head|HeadAction.001"}, player.instance);
         
         // Setup the brain of the AI
         this.RL = new ReinforcementLearning(player);
@@ -93,7 +93,7 @@ public class AIController {
                 break;
             case EVAL:
                 //System.out.println("Evaluating");
-                flagsManager.captureFlag(player);
+                //flagsManager.captureFlag(player);
                 RL.evaluate();
                 state = AIState.STEP;
                 //state = AIState.DEFAULT;
@@ -122,5 +122,9 @@ public class AIController {
         tmp.y = playerWorld.getHeight(tmp.x, tmp.z);
         player.setPosition(tmp);
         pointReached = tmp.dst(destination) <= UNITS_PER_METER;
+        if (GlobalState.respawnAI) {
+            player.respawn();
+            GlobalState.respawnAI = false;
+        }
     }
 }

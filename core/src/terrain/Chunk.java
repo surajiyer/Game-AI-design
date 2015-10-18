@@ -50,9 +50,9 @@ public class Chunk extends GameObject {
      * @return the type of the cube */
     public CubeType getCubeType(int height) {
         int random = MathUtils.random(10) - 5;
-        if(height < 20 + random)
+        if(height < 20)
             return CubeType.WATER;
-        else if(height < 40 + random)
+        else if(height < 40)
             return CubeType.SAND;
         else
             return CubeType.GRASS;

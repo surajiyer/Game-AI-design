@@ -50,7 +50,7 @@ public class FlagsManager {
             }
             y = (int) world.getHeight(x*=scale, z*=scale);
             flagPositions.add(tmp.set(x, y, z));
-            flagList.add(new Flag(tmp, 5));
+            flagList.add(new Flag(tmp, 5, i));
         }
     }
     

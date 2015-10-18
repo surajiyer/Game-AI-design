@@ -165,11 +165,11 @@ public class VoxelChunk extends GameObject {
      * @return the type of the cube */
     public VoxelType getCubeType(float height) {
         int random = MathUtils.random(6) - 3;
-        if(height < 10 + random)
+        if(height < 10)
             return VoxelType.WATER;
-        else if(height < 13 + random)
+        else if(height < 13)
             return VoxelType.SAND;
-        else if(height < 35 + random)
+        else if(height < 35)
             return VoxelType.GRASS;
         else
             return VoxelType.SNOW;

@@ -34,15 +34,20 @@ public class GlobalState {
     public final static FlagsManager flagsManager;
     public final static Minimap miniMap;
     public final static GameController gameController;
+    public static VoxelWorld voxelworld;
+    public static boolean started = false;
+    public static boolean respawnP = false;
+    public static boolean respawnAI = false;
     
     static {
-        scoreBoard = new ScoreBoard(100);
+        scoreBoard = new ScoreBoard(250);
         flagsManager = new FlagsManager(5);
         miniMap = new Minimap();
         gameController = new GameController();
     }
     
     public static void init(VoxelWorld world) {
+        voxelworld = world;
         widthField = world.chunksX * UNITS_PER_METER;
         depthField = world.chunksZ * UNITS_PER_METER;
     }
