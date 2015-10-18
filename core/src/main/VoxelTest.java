@@ -110,7 +110,7 @@ public class VoxelTest extends ApplicationAdapter {
         
         // Create a voxel terrain
         voxelWorld = new VoxelWorld(new Texture(Gdx.files.internal("tiles.png")), 
-                20, 4, 20, 300, 4);
+                20, 4, 20, 500, 4);
         SimplexNoise.generateHeightMap(voxelWorld, 0, 64, 10, 0.5f, 0.007f, 0.002f);
         voxelWorld.voxelTextures.bind(0);
 //        PerlinNoiseGenerator.generateVoxels(model, 0, 64, 10);

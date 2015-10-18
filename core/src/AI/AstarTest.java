@@ -86,10 +86,6 @@ public class AstarTest extends ApplicationAdapter {
         }*/
 
 		astar = new Astar(widthField, heightField) {
-                        @Override
-			protected boolean isValid (int x, int y) {
-				return !map[x + y * widthField];
-			}
 		};      
 	}
         

@@ -2,6 +2,7 @@ package AI;
 
 import com.badlogic.gdx.utils.BinaryHeap;
 import com.badlogic.gdx.utils.IntArray;
+import mechanics.GlobalState; 
 
 /**
  * Based on the work of Nathan Sweet at https://gist.github.com/NathanSweet/7587981
@@ -33,7 +34,7 @@ public class Astar {
      * @return  
      */
      public IntArray getPath (int startX, int startY, int targetX, int targetY, 
-             float[][][] tileCost) {
+        float[][][] tileCost) {
         this.targetX = targetX;
         this.targetY = targetY;
 
@@ -91,8 +92,10 @@ public class Astar {
      }
 
     private void addNode (PathNode parent, int x, int y, float cost) {
-        if (!isValid(x, y)) return;
-
+        if(GlobalState.voxelworld.treeLocations(x, y) == true) {
+            //System.out.println(x + "  " + y);
+            return;
+        } 
         float pathCost = parent.pathCost + cost;
         int dx = Math.abs(x - targetX);
         int dy = Math.abs(y - targetY);
@@ -121,10 +124,6 @@ public class Astar {
             node.parent = parent;
             node.pathCost = pathCost;
         }
-    }
-
-    protected boolean isValid (int x, int y) {
-        return true;
     }
 
     public int getWidth () {
