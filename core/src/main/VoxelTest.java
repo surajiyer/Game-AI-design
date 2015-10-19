@@ -85,7 +85,7 @@ public class VoxelTest extends ApplicationAdapter {
         // Set up a 3D perspective camera
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 1.5f;
-        camera.far = 120f*UNITS_PER_METER;
+        camera.far = 320f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
         
