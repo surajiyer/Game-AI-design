@@ -23,7 +23,6 @@ import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
@@ -39,6 +38,7 @@ import mechanics.Flag;
 import static mechanics.GlobalState.UNITS_PER_METER;
 import static mechanics.GlobalState.assetsManager;
 import static mechanics.GlobalState.flagsManager;
+import static mechanics.GlobalState.fogColour;
 import static mechanics.GlobalState.scoreBoard;
 import mechanics.Minimap;
 import mechanics.Player.PlayerType;
@@ -49,7 +49,6 @@ import mechanics.Player.PlayerType;
  * @author S.S.Iyer
  */
 public class VoxelTest extends ApplicationAdapter {
-    final float[] FOG_COLOR = new float[] {0.13f, 0.13f, 0.13f, 1f};
     Environment environment;
     PerspectiveCamera camera;
     ModelBatch modelBatch;
@@ -79,19 +78,19 @@ public class VoxelTest extends ApplicationAdapter {
         // create the surrounding environment
         environment = new Environment();
         environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-        environment.set(new ColorAttribute(ColorAttribute.Fog, FOG_COLOR[0], 
-                FOG_COLOR[1], FOG_COLOR[2], FOG_COLOR[3]));
+        environment.set(new ColorAttribute(ColorAttribute.Fog, fogColour[0], 
+                fogColour[1], fogColour[2], fogColour[3]));
         environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
         
         // Set up a 3D perspective camera
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 1.5f;
-        camera.far = 360f*UNITS_PER_METER;
+        camera.far = 120f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
         
         // Create a skybox
-        skyBox = new EnvironmentCubeMap(new Pixmap(Gdx.files.internal("skybox.png")));
+        skyBox = new EnvironmentCubeMap(new Pixmap(Gdx.files.internal("skybox.jpg")));
         skyBox.setScale(camera.far);
         
         // Load a 3d Model
@@ -152,7 +151,7 @@ public class VoxelTest extends ApplicationAdapter {
     @Override
     public void render () {
         // Clear the color buffer and the depth buffer
-        Gdx.gl.glClearColor(FOG_COLOR[0], FOG_COLOR[1], FOG_COLOR[2], FOG_COLOR[3]);
+        Gdx.gl.glClearColor(fogColour[0], fogColour[1], fogColour[2], fogColour[3]);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
         
         // Set viewport
@@ -176,11 +175,11 @@ public class VoxelTest extends ApplicationAdapter {
         skyBox.render(camera);
         
         modelBatch.begin(camera);
-        DefaultShader.defaultCullFace = GL20.GL_NONE;
+        DefaultShader.defaultCullFace = GL20.GL_FRONT;
         // Render the voxel terrain
-        //if(voxelWorld.isVisible(camera)) {
+        if(voxelWorld.isVisible(camera)) {
             modelBatch.render(voxelWorld, environment);
-        //}
+        }
         modelBatch.flush();
         DefaultShader.defaultCullFace = GL20.GL_BACK;
         

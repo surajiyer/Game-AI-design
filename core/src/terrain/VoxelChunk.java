@@ -169,7 +169,7 @@ public class VoxelChunk extends GameObject {
             return VoxelType.WATER;
         else if(height < 13)
             return VoxelType.SAND;
-        else if(height < 35)
+        else if(height < 35 + random)
             return VoxelType.GRASS;
         else
             return VoxelType.SNOW;

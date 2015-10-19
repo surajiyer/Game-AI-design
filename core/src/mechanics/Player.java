@@ -6,6 +6,7 @@
 package mechanics;
 
 import com.badlogic.gdx.graphics.Camera;
+import com.badlogic.gdx.graphics.GLTexture;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
@@ -49,9 +50,6 @@ public class Player extends GameObject {
     public final Vector3 up;
     public int flags;
     public final PlayerType type;
-    private int x;
-    private int y;
-    private int z;
     
     private final Node headNode;
     private final Quaternion tmpQuat = new Quaternion();
@@ -82,11 +80,20 @@ public class Player extends GameObject {
         calculateBounds();
     }
     
-    public void rotate(Vector3 dir, float deltaX, float deltaY) {
-//        headNode.rotation.mul(tmpQuat.setEulerAngles(0, -deltaY, 0));
-//        headNode.calculateTransforms(true);
-//        instance.transform.mul(new Matrix4().setToRotation(up, deltaX));
-        //direction.set(dir).nor().scl(1, 0, 1);
+    public void setDirection(Vector3 dir, float deltaX) {
+        // Calculate head rotation
+        float deltaY = (float) (Math.asin(tmp.set(dir.nor()).crs(Vector3.Y).len()) 
+                * MathUtils.radDeg);
+        if(dir.y < 0) deltaY *= -1; else deltaY -= 180;
+        headNode.rotation.setEulerAngles(0, deltaY, 0);
+        instance.calculateTransforms();
+        
+        // Calculate body rotation
+        tmp.set(direction).scl(1, 0, 1);
+        direction.set(dir).scl(1, 0, 1);
+        instance.transform.rotate(up, deltaX);
+        worldTrans.set(instance.transform);
+        calculateBounds();
     }
     
     public void setDirection(Vector3 dir) {
@@ -100,13 +107,30 @@ public class Player extends GameObject {
         // Calculate body rotation
         tmp.set(direction).scl(1, 0, 1);
         direction.set(dir).scl(1, 0, 1);
-        float deltaX = (float) (Math.asin(tmp.crs(direction).len()) * MathUtils.radDeg);
-        if(tmp.y > 0) deltaX *= -1;
-        //System.out.println(deltaX);
-        //instance.transform.rotate(up, -deltaX);
-        instance.transform.mul(new Matrix4().setToRotation(up, -deltaX));
+        float deltaX = (float) -(Math.asin(tmp.crs(direction).len()) * MathUtils.radDeg);
+        if(Math.abs(deltaX) > 0.01) {
+            if(tmp.y > 0) deltaX = -deltaX;
+            roundOff(deltaX);
+            instance.transform.rotate(up, deltaX);
+        }
         worldTrans.set(instance.transform);
         calculateBounds();
+    }
+    
+    /** 
+     * Round off given value to nearest multiple of 5
+     * @param n number to round off
+     * @return rounded off-number
+     */
+    public float roundOff(float n) {
+        n *= 2f;
+        if(n > 0) {
+            n = (float) Math.ceil(n);
+        } else {
+            n = (float) Math.floor(n);
+        }
+        n /= 2f;
+        return n;
     }
     
     public Vector3 getDirection() {
@@ -137,11 +161,10 @@ public class Player extends GameObject {
     }
     
     public void respawn() {
-            x = (int) (MathUtils.random(GlobalState.widthField)*UNITS_PER_METER);
-            z = (int) (MathUtils.random(GlobalState.depthField)*UNITS_PER_METER);
-            y = (int) GlobalState.voxelworld.getHeight(x, z);
-            
-            tmp = new Vector3(x, y, z);
-            setPosition(tmp);
+        int x = (int) (MathUtils.random(GlobalState.widthField)*GlobalState.worldScale);
+        int z = (int) (MathUtils.random(GlobalState.depthField)*GlobalState.worldScale);
+        float y = GlobalState.voxelworld.getHeight(x, z);
+        tmp.set(x, y, z);
+        setPosition(tmp);
     }
 }

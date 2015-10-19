@@ -196,7 +196,7 @@ public class VoxelWorld extends GameObject {
                 return true;
             }
         }
-        return false;
+        return true;
     }
     
     @Override
@@ -218,20 +218,9 @@ public class VoxelWorld extends GameObject {
             }
             if(chunk.numVerts != 0) {
                 chunk.getRenderables(renderables, pool);
-                //chunk.updateWorldTranform();
-                //chunk.boundingBoxModel().getRenderables(renderables, pool);
                 renderedChunks++;
             }
         }
-        
-//        if(!chunks[0].isGenerated()) {
-//            chunks[0].generate();
-//        }
-//        if(chunks[0].numVerts != 0) {
-//            chunks[0].getRenderables(renderables, pool);
-//            chunks[0].boundingBoxModel().getRenderables(renderables, pool);
-//            renderedChunks++;
-//        }
         
         // Render trees
         for(ConcreteGameObject tree : trees) {

@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
 import static mechanics.GlobalState.UNITS_PER_METER;
-import static mechanics.GlobalState.flagsManager;
 import terrain.VoxelWorld;
 import utils.MultipleAnimationsController;
 
@@ -94,8 +93,7 @@ public class PlayerController extends InputAdapter {
                 camera.lookAt(player.getPosition());
                 camera.up.set(Vector3.Y);
             }
-            player.rotate(camera.direction, deltaX, deltaY);
-            player.setDirection(camera.direction);
+            player.setDirection(camera.direction, deltaX);
             return true;
         }
         return false;

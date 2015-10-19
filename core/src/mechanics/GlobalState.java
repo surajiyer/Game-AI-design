@@ -16,6 +16,7 @@ import utils.GameController;
 public class GlobalState {
     public final static AssetManager assetsManager = new AssetManager();
     public final static int UNITS_PER_METER = 16;
+    public final static float[] fogColour = new float[]{0.13f, 0.13f, 0.13f, 1.0f};
     public static boolean fullScreen = false;
     public static boolean descendLimit = true;
     public static boolean enableWireframe = false;

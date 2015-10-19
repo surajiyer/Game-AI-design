@@ -18,6 +18,7 @@ import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
+import mechanics.GlobalState;
 
 /**
  *
@@ -28,7 +29,10 @@ public class EnvironmentCubeMap implements Disposable{
     protected final Pixmap[] data = new Pixmap[6];  
     protected ShaderProgram shader;
 
+    public float rotationSpeed = 1f;
+    private float rotation = 0f;
     protected int u_worldTrans;
+    protected int fogColor;
     protected Mesh quad;
     private Matrix4 worldTrans;
     private Quaternion q;
@@ -49,11 +53,17 @@ public class EnvironmentCubeMap implements Disposable{
     protected String fragmentShader = "#ifdef GL_ES \n"+
             " precision mediump float; \n"+
             " #endif \n"+           
-            " uniform samplerCube u_environmentCubemap; \n"+            
+            " uniform samplerCube u_environmentCubemap; \n"+
+            " const float lowerLimit = 0.0;\n"+
+            " const float upperLimit = 0.0;\n"+
+            " uniform vec3 fogColour; \n"+
             " varying vec2 v_texCoord0; \n"+
             " varying vec3 v_cubeMapUV; \n"+            
             " void main() {      \n"+
-            "   gl_FragColor = vec4(textureCube(u_environmentCubemap, v_cubeMapUV).rgb, 1.0);   \n"+
+            "   vec4 finalColour = vec4(textureCube(u_environmentCubemap, v_cubeMapUV).rgb, 1.0);\n"+
+            "   float factor = (v_cubeMapUV.y - lowerLimit) / (upperLimit - lowerLimit);\n"+
+            "   factor = clamp(factor, 0.0, 1.0);\n"+
+            "   gl_FragColor = mix(vec4(fogColour, 1.0), finalColour, factor);\n"+
             " } \n";
 
     public String getDefaultVertexShader(){
@@ -108,7 +118,7 @@ public class EnvironmentCubeMap implements Disposable{
             throw new GdxRuntimeException(shader.getLog());
         
         u_worldTrans = shader.getUniformLocation("u_worldTrans");
-        
+        fogColor = shader.getUniformLocation("fogColour");
         quad = createQuad();      
         worldTrans = new Matrix4();  
         q = new Quaternion();
@@ -144,9 +154,12 @@ public class EnvironmentCubeMap implements Disposable{
         camera.view.getRotation( q, true );
         q.conjugate();
         worldTrans.rotate(q);
+        rotation += (rotationSpeed * Gdx.graphics.getDeltaTime()) % 360;
+        worldTrans.rotate(camera.up, rotation);
 
         shader.begin();     
         shader.setUniformMatrix(u_worldTrans, worldTrans.translate(0, 0, -1));
+        shader.setUniform4fv(fogColor, GlobalState.fogColour, 0, 4);
         quad.render(shader, GL20.GL_TRIANGLES);
         shader.end();
     }
