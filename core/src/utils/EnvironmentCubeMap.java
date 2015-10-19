@@ -54,8 +54,8 @@ public class EnvironmentCubeMap implements Disposable{
             " precision mediump float; \n"+
             " #endif \n"+           
             " uniform samplerCube u_environmentCubemap; \n"+
-            " const float lowerLimit = -16.0;\n"+
-            " const float upperLimit = 0.0;\n"+
+            " const float lowerLimit = 0.0;\n"+
+            " const float upperLimit = 1.0;\n"+
             " uniform vec3 fogColour; \n"+
             " varying vec2 v_texCoord0; \n"+
             " varying vec3 v_cubeMapUV; \n"+            
