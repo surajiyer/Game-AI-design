@@ -39,7 +39,7 @@ public class VoxelWorld extends GameObject {
     public int numChunks;
 
     
-    Array<ConcreteGameObject> trees;
+    public Array<ConcreteGameObject> trees;
     public final int NROF_TREES;
     public final int NROF_TREES_TYPES;
 
@@ -223,8 +223,8 @@ public class VoxelWorld extends GameObject {
         }
         
         // Render trees
-        for(ConcreteGameObject tree : trees) {
-            tree.getRenderables(renderables, pool);
-        }
+//        for(ConcreteGameObject tree : trees) {
+//            tree.getRenderables(renderables, pool);
+//        }
     }
 }

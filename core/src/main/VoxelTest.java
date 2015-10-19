@@ -179,9 +179,13 @@ public class VoxelTest extends ApplicationAdapter {
         // Render the voxel terrain
         if(voxelWorld.isVisible(camera)) {
             modelBatch.render(voxelWorld, environment);
+            modelBatch.flush();
+            // Render trees
+            DefaultShader.defaultCullFace = GL20.GL_BACK;
+            for(ConcreteGameObject tree : voxelWorld.trees) {
+                modelBatch.render(tree);
+            }
         }
-        modelBatch.flush();
-        DefaultShader.defaultCullFace = GL20.GL_BACK;
         
         //Render all loaded models
 //        for(ConcreteGameObject gameObject : instances) {
