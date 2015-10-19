@@ -25,6 +25,8 @@ public class Flag extends GameObject {
     private final int id;
     private final int scoreWeight;
     private Occupant occupant;
+    private boolean capturable = true;
+    private long capTime;
     
     public Flag(Vector3 pos, int scoreWeight, int i) {
         this.id = i;
@@ -37,7 +39,21 @@ public class Flag extends GameObject {
     public int getScoreWeight() {
         return scoreWeight;
     }
-
+    
+    public void setCap(boolean set) {
+        capturable = set;
+    }
+    
+    public boolean getCap() {
+        return capturable;
+    }
+    
+    public void setCapTime(long time) {
+        capTime = time;
+    }
+    public long getCapTime() {
+        return capTime;
+    }
     public int getID() {
         return id;
     }

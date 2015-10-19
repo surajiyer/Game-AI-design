@@ -3,6 +3,7 @@ package mechanics;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
+import java.util.concurrent.TimeUnit;
 import mechanics.Flag.Occupant;
 import static mechanics.GlobalState.UNITS_PER_METER;
 import mechanics.Player.PlayerType;
@@ -69,10 +70,17 @@ public class FlagsManager {
     public void captureFlag(Player player) {
         Vector3 position = player.getPosition();
         for(Flag flag : flagList) {
+            if(!flag.getCap() && (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) - flag.getCapTime()) % 5 == 0 && 
+                    TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) !=flag.getCapTime()) {
+                System.out.println("HI");
+                flag.setCap(true);
+            }
             if(position.dst(flag.getPosition()) > 2*UNITS_PER_METER) continue;
-            if(flag.getOccupant() == Occupant.NONE 
+            if((flag.getOccupant() == Occupant.NONE 
                 || (flag.getOccupant() == Occupant.AI && player.type == PlayerType.HUMAN) 
-                || (flag.getOccupant() == Occupant.PLAYER && player.type == PlayerType.AI)) {
+                || (flag.getOccupant() == Occupant.PLAYER && player.type == PlayerType.AI)) && flag.getCap()) {
+                flag.setCap(false);
+                flag.setCapTime(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
                 switch(player.type) {
                     case HUMAN:
                         flag.setOccupant(Occupant.PLAYER);

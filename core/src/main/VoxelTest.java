@@ -132,7 +132,7 @@ public class VoxelTest extends ApplicationAdapter {
         AI = new Player(modelLoader.loadModel(Gdx.files.internal("characters/RedWalk.g3dj")), 
                 PlayerType.AI, Vector3.Zero, camera.direction);
         aiController = new AIController(AI, voxelWorld);
-        aiController.setVelocity(22 * UNITS_PER_METER);
+        aiController.setVelocity(30 * UNITS_PER_METER);
         players.add(AI);
 
         // Set the initial camera position
