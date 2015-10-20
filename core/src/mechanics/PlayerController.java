@@ -93,7 +93,7 @@ public class PlayerController extends InputAdapter {
                 camera.lookAt(player.getPosition());
                 camera.up.set(Vector3.Y);
             }
-            player.setDirection(camera.direction, deltaX);
+            player.rotate(camera.direction);
             return true;
         }
         return false;
@@ -136,7 +136,6 @@ public class PlayerController extends InputAdapter {
                 updateThirdPerson(deltaTime);
             }
         }
-        //flagsManager.captureFlag(player);
     }
     
     public void updateThirdPerson(float deltaTime) {

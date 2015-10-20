@@ -92,11 +92,14 @@ public class AIController {
                 break;
             case EVAL:
                 //System.out.println("Evaluating");
-                //flagsManager.captureFlag(player);
                 RL.evaluate();
                 state = AIState.STEP;
                 //state = AIState.DEFAULT;
                 break;
+        }
+        if (GlobalState.respawnAI) {
+            player.respawn();
+            GlobalState.respawnAI = false;
         }
     }
 
@@ -115,15 +118,11 @@ public class AIController {
         }
         
         // Move the AI to the next point
-        player.setDirection(tmp.set(destination).sub(player.getPosition()));
+        player.rotate(tmp.set(destination).sub(player.getPosition()));
         tmp.nor().scl(deltaTime * velocity);
         tmp.set(player.getPosition().add(tmp));
         tmp.y = playerWorld.getHeight(tmp.x, tmp.z);
         player.setPosition(tmp);
         pointReached = tmp.dst(destination) <= UNITS_PER_METER;
-        if (GlobalState.respawnAI) {
-            player.respawn();
-            GlobalState.respawnAI = false;
-        }
     }
 }

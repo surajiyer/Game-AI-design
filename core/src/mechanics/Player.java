@@ -6,18 +6,15 @@
 package mechanics;
 
 import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.GLTexture;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.Renderable;
 import com.badlogic.gdx.graphics.g3d.model.Node;
 import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import static mechanics.GlobalState.UNITS_PER_METER;
 import utils.GameObject;
 
 /**
@@ -61,6 +58,7 @@ public class Player extends GameObject {
         respawn();
         direction = new Vector3(dir).nor().scl(1, 0, 1);
         up = new Vector3(Vector3.Y);
+        instance.transform.rotate(tmpQuat.set(up, 180));
     }
     
     @Override
@@ -80,7 +78,7 @@ public class Player extends GameObject {
         calculateBounds();
     }
     
-    public void setDirection(Vector3 dir, float deltaX) {
+    public void rotate(Vector3 dir) {
         // Calculate head rotation
         float deltaY = (float) (Math.asin(tmp.set(dir.nor()).crs(Vector3.Y).len()) 
                 * MathUtils.radDeg);
@@ -88,49 +86,15 @@ public class Player extends GameObject {
         headNode.rotation.setEulerAngles(0, deltaY, 0);
         instance.calculateTransforms();
         
-        // Calculate body rotation
+        // Calculate body rotation        
         tmp.set(direction).scl(1, 0, 1);
         direction.set(dir).scl(1, 0, 1);
-        instance.transform.rotate(up, deltaX);
+        float w = (float) Math.sqrt(tmp.len2() * direction.len2()) + tmp.dot(direction);
+        tmp.crs(direction);
+        tmpQuat.set(tmp.x, tmp.y, tmp.z, w).nor();
+        instance.transform.rotate(tmpQuat);
         worldTrans.set(instance.transform);
         calculateBounds();
-    }
-    
-    public void setDirection(Vector3 dir) {
-        // Calculate head rotation
-        float deltaY = (float) (Math.asin(tmp.set(dir.nor()).crs(Vector3.Y).len()) 
-                * MathUtils.radDeg);
-        if(dir.y < 0) deltaY *= -1; else deltaY -= 180;
-        headNode.rotation.setEulerAngles(0, deltaY, 0);
-        instance.calculateTransforms();
-        
-        // Calculate body rotation
-        tmp.set(direction).scl(1, 0, 1);
-        direction.set(dir).scl(1, 0, 1);
-        float deltaX = (float) -(Math.asin(tmp.crs(direction).len()) * MathUtils.radDeg);
-        if(Math.abs(deltaX) > 0.01) {
-            if(tmp.y > 0) deltaX = -deltaX;
-            roundOff(deltaX);
-            instance.transform.rotate(up, deltaX);
-        }
-        worldTrans.set(instance.transform);
-        calculateBounds();
-    }
-    
-    /** 
-     * Round off given value to nearest multiple of 5
-     * @param n number to round off
-     * @return rounded off-number
-     */
-    public float roundOff(float n) {
-        n *= 2f;
-        if(n > 0) {
-            n = (float) Math.ceil(n);
-        } else {
-            n = (float) Math.floor(n);
-        }
-        n /= 2f;
-        return n;
     }
     
     public Vector3 getDirection() {

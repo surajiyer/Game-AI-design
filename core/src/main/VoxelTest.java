@@ -165,8 +165,10 @@ public class VoxelTest extends ApplicationAdapter {
         
         // Update the camera, the player and the AI
         GlobalState.gameController.update(playerController, camera);
-        if(!existsWinner && GlobalState.started) playerController.update(); 
-        if(!existsWinner && GlobalState.started) aiController.update(); 
+        if(!existsWinner && GlobalState.started) {
+            playerController.update();
+            aiController.update();
+        }
         
         // Render all 3D stuff      
         GlobalState.visibleCount = 0;
