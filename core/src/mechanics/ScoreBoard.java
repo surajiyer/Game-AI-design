@@ -25,15 +25,10 @@ public class ScoreBoard {
     private Occupant winner;
     
     public ScoreBoard(final int scoreLimit) {
-        playerScore = 0;
-        AIScore = 0;
-        scoreTime = 3;
-        toScore = true;
-        startTime = System.currentTimeMillis();
-        elapsedTime = 0;
-        hudScore = new Texture(Gdx.files.internal("markers/hudScore.png"));
+        this.hudScore = new Texture(Gdx.files.internal("markers/hudScore.png"));
         this.scoreLimit = scoreLimit;
-        this.winner = Occupant.NONE;
+        this.scoreTime = 3;
+        reset();
     }
     
     public void draw(SpriteBatch spriteBatch, Camera camera, BitmapFont font) {

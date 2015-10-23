@@ -11,9 +11,6 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.IntIntMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import mechanics.Flag;
 import mechanics.GlobalState;
 import mechanics.PlayerController;
 
@@ -32,7 +29,6 @@ public class GameController extends InputAdapter {
     private final int RELEASE_CURSOR = Keys.ESCAPE;
     private final int START_GAME = Keys.ENTER;
     private final Vector3 tmp = new Vector3();
-    private boolean started = false;
 
     public GameController() {
         Gdx.input.setCursorCatched(GlobalState.cursorCaught);
@@ -110,23 +106,27 @@ public class GameController extends InputAdapter {
             GlobalState.fullScreen = !GlobalState.fullScreen;
         }
         
-        //start and restart the game
+        // Restart the game
         if (Gdx.input.isKeyPressed(RESTART_GAME)) {
-            if (GlobalState.scoreBoard.getWinner() != Flag.Occupant.NONE) {
-                    GlobalState.scoreBoard.reset();
-                    GlobalState.flagsManager.generateFlags(GlobalState.voxelworld);
-                    GlobalState.respawnP = true;
-                    GlobalState.respawnAI = true;
+            if (!GlobalState.started && GlobalState.gameCount > 0) {
+                GlobalState.started = true;
+                GlobalState.scoreBoard.reset();
+                GlobalState.flagsManager.generateFlags(GlobalState.voxelWorld);
+                GlobalState.respawnP = true;
+                GlobalState.respawnAI = true;
+                GlobalState.gameCount++;
             }
+            sleep();
         }
         
-        //start the game
+        // Start the game
         if (Gdx.input.isKeyPressed(START_GAME)) {
-            if (!started) {
-                started = true;
-                //start the game
-                GlobalState.started = started;
+            if (!GlobalState.started && GlobalState.gameCount == 0) {
+                GlobalState.started = true;
+                GlobalState.scoreBoard.reset();
+                GlobalState.gameCount++;
             }
+            sleep();
         }
     }
 }

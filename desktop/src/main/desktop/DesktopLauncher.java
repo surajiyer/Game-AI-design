@@ -2,9 +2,7 @@ package main.desktop;
 
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
-import main.Basic3DTest;
 import main.VoxelTest;
-import AI.AstarTest;
 
 public class DesktopLauncher {
     public static void main (String[] arg) {
@@ -14,8 +12,6 @@ public class DesktopLauncher {
         config.height = 720;
         //config.vSyncEnabled = true;
         config.resizable = false;
-        //new LwjglApplication(new Basic3DTest(), config);
         new LwjglApplication(new VoxelTest(), config);
-        //new LwjglApplication(new AstarTest(), config);
     }
 }

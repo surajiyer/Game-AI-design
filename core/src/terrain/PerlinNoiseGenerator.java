@@ -11,7 +11,7 @@ import com.badlogic.gdx.math.MathUtils;
 
 
 /**
- *
+ * Not used
  * @author S.S.Iyer
  */
 public class PerlinNoiseGenerator {

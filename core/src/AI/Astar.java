@@ -92,7 +92,7 @@ public class Astar {
      }
 
     private void addNode (PathNode parent, int x, int y, float cost) {
-        if(GlobalState.voxelworld.treeLocations(x, y) == true) {
+        if(GlobalState.voxelWorld.treeLocations(x, y) == true) {
             //System.out.println(x + "  " + y);
             return;
         } 

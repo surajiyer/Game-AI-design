@@ -13,7 +13,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import static mechanics.GlobalState.worldScale;
-import static mechanics.Player.PlayerType.AI;
 import static mechanics.Player.PlayerType.HUMAN;
 
 /**
@@ -48,13 +47,13 @@ public class Minimap {
         hudMapSprite = new Sprite(new Texture(Gdx.files.internal("markers/hudMap.png")));
     }
     
-    public void draw(SpriteBatch spriteBatch, Camera camera, Array<Player> players) {
+    public void draw(SpriteBatch spriteBatch, Array<Player> players) {
         spriteBatch.draw(hudMapSprite, hudMapSprite.getX()-6, hudMapSprite.getY()-6);
         spriteBatch.draw(mapSprite, mapSprite.getX(), mapSprite.getY());
         
         // Load flag marker for each flag
-        for (int i = 0; i < 5; i++) {
-            switch (GlobalState.flagsManager.getOccupant(i)) {
+        for (int id = 0; id < GlobalState.flagsManager.NROF_FLAGS; id++) {
+            switch (GlobalState.flagsManager.getOccupant(id)) {
                 case AI:
                     flagTexture = flagMarkerRed;
                     break;
@@ -65,7 +64,7 @@ public class Minimap {
                     flagTexture = flagMarkerGrey;
                     break;
             }
-            tmp.set(GlobalState.flagsManager.getFlagPosition(i)).scl(1/worldScale);
+            tmp.set(GlobalState.flagsManager.getFlagPosition(id)).scl(1/worldScale);
             spriteBatch.draw(flagTexture, tmp.z, tmp.x);
         }
         

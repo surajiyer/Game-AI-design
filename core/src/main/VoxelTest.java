@@ -9,6 +9,7 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.assets.loaders.ModelLoader;
+import com.badlogic.gdx.graphics.Cubemap;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
 import com.badlogic.gdx.graphics.Pixmap;
@@ -20,9 +21,11 @@ import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.ModelInstance;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
+import com.badlogic.gdx.graphics.g3d.attributes.CubemapAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.loader.G3dModelLoader;
 import com.badlogic.gdx.graphics.g3d.shaders.DefaultShader;
+import com.badlogic.gdx.graphics.glutils.FacedCubemapData;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonReader;
@@ -63,7 +66,6 @@ public class VoxelTest extends ApplicationAdapter {
     PlayerController playerController;
     Player AI;
     AIController aiController;
-    boolean existsWinner = false;
     Minimap miniMap;
     
     @Override
@@ -75,23 +77,23 @@ public class VoxelTest extends ApplicationAdapter {
         instances = new Array<>();
         ModelLoader modelLoader = new G3dModelLoader(new JsonReader());
         
-        // create the surrounding environment
-        environment = new Environment();
-        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
-        environment.set(new ColorAttribute(ColorAttribute.Fog, fogColour[0], 
-                fogColour[1], fogColour[2], fogColour[3]));
-        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
-        
         // Set up a 3D perspective camera
         camera = new PerspectiveCamera(67, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.near = 1.5f;
-        camera.far = 320f*UNITS_PER_METER;
+        camera.far = 64f*UNITS_PER_METER;
         camera.up.set(Vector3.Y);
         camera.update();
         
         // Create a skybox
         skyBox = new EnvironmentCubeMap(new Pixmap(Gdx.files.internal("skybox.jpg")));
         skyBox.setScale(camera.far);
+        
+        // create the surrounding environment
+        environment = new Environment();
+        environment.set(new ColorAttribute(ColorAttribute.AmbientLight, 0.4f, 0.4f, 0.4f, 1f));
+        environment.set(new ColorAttribute(ColorAttribute.Fog, fogColour[0], 
+                fogColour[1], fogColour[2], fogColour[3]));
+        environment.add(new DirectionalLight().set(0.8f, 0.8f, 0.8f, -1f, -0.8f, -0.2f));
         
         // Load a 3d Model
         GlobalState.assetsManager.load("tower/tower.g3db", Model.class);
@@ -117,7 +119,7 @@ public class VoxelTest extends ApplicationAdapter {
 //        float camZ = model.voxelsZ / 2f;
 //        float camY = model.getHeight(camX, camZ) + 1.5f;
 //        camera.position.set(camX, camY, camZ);
-        voxelWorld.setScale(UNITS_PER_METER);
+        voxelWorld.setScale(UNITS_PER_METER);   
         GlobalState.init(voxelWorld);
         
         // Load the player
@@ -165,17 +167,23 @@ public class VoxelTest extends ApplicationAdapter {
         
         // Update the camera, the player and the AI
         GlobalState.gameController.update(playerController, camera);
-        if(!existsWinner && GlobalState.started) {
+        if(GlobalState.started) {
             playerController.update();
             aiController.update();
         }
         
-        // Render all 3D stuff      
-        GlobalState.visibleCount = 0;
-        
         // Render the skybox
         skyBox.render(camera);
         
+        // Render main game elements
+        renderGameElements();
+        
+        // Render game GUI
+        renderGUI();
+    }
+    
+    public void renderGameElements() {
+        GlobalState.visibleCount = 0;
         modelBatch.begin(camera);
         DefaultShader.defaultCullFace = GL20.GL_FRONT;
         // Render the voxel terrain
@@ -185,7 +193,7 @@ public class VoxelTest extends ApplicationAdapter {
             // Render trees
             DefaultShader.defaultCullFace = GL20.GL_BACK;
             for(ConcreteGameObject tree : voxelWorld.trees) {
-                modelBatch.render(tree);
+                modelBatch.render(tree, environment);
             }
         }
         
@@ -201,34 +209,56 @@ public class VoxelTest extends ApplicationAdapter {
         // Render the flags
         for(Flag flag : GlobalState.flagsManager.getFlagsList()) {
             if(flag.isVisible(camera)) {
-                modelBatch.render(flag);
+                modelBatch.render(flag, environment);
                 GlobalState.visibleCount++;
             }
-            //modelBatch.render(flag.boundingBoxModel());
         }
         
         // Render the player character
         if(player.isVisible(camera) && !GlobalState.isFirstPerson) {
-            modelBatch.render(player);
+            modelBatch.render(player, environment);
             GlobalState.visibleCount++;
         }
         
         // Render the AI character
         if(AI.isVisible(camera)) {
-            modelBatch.render(AI);
-            //modelBatch.render(AI.boundingBoxModel());
+            modelBatch.render(AI, environment);
             GlobalState.visibleCount++;
         }
         modelBatch.end();
-        
-        
+    }
+    
+    public void renderGUI() {
         spriteBatch.begin();
         // Draw minimap and HUD
-        if (!existsWinner) scoreBoard.updateScore();
-        miniMap.draw(spriteBatch, camera, players);
+        if (GlobalState.started) scoreBoard.updateScore();
+        miniMap.draw(spriteBatch, players);
         scoreBoard.draw(spriteBatch, camera, font);
         
         // Render the 2D text
+        renderDebugInfo();
+        if (!GlobalState.started) {
+            if(GlobalState.gameCount > 0) {
+                font.draw(spriteBatch, "Winner: "+scoreBoard.getWinner(), camera.viewportWidth/2 - 50, camera.viewportHeight/2 + 55);
+                font.draw(spriteBatch, "Game Over! Press <R> to restart!", camera.viewportWidth/2 - 100, camera.viewportHeight/2 + 40);
+            } else {
+                font.draw(spriteBatch, "Press <Enter> to start!", camera.viewportWidth/2 - 65, camera.viewportHeight/2);
+            }
+        }
+        
+        // Check if there exists a winner, if so, stop the AI
+        if(scoreBoard.getWinner() != Flag.Occupant.NONE) {
+            GlobalState.started = false;
+        }
+        if(GlobalState.started) {
+            GlobalState.flagsManager.captureFlag(player);
+            GlobalState.flagsManager.captureFlag(AI);
+        }
+        
+        spriteBatch.end();
+    }
+    
+    public void renderDebugInfo() {
         font.setColor(1,1,1,1);
         font.draw(spriteBatch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 10, 
                 camera.viewportHeight - 10);
@@ -243,20 +273,6 @@ public class VoxelTest extends ApplicationAdapter {
                 camera.viewportHeight - 85);
         font.draw(spriteBatch, "Camera direction: "+camera.direction, 10, 
                 camera.viewportHeight - 100);
-        font.draw(spriteBatch, "Winner: "+scoreBoard.getWinner(), 10, camera.viewportHeight - 115);
-        if (existsWinner) {
-            font.draw(spriteBatch, "Game Over! Press <R> to restart!", camera.viewportWidth/2 - 150, camera.viewportHeight/2);
-        }
-        if (!GlobalState.started) {
-            font.draw(spriteBatch, "Press <Enter> to start!", camera.viewportWidth/2 - 100, camera.viewportHeight/2);
-        }
-        
-        // Check if there exists a winner, if so, stop the AI
-        existsWinner = scoreBoard.getWinner() != Flag.Occupant.NONE;
-        GlobalState.flagsManager.captureFlag(player);
-        GlobalState.flagsManager.captureFlag(AI);
-        
-        spriteBatch.end();
     }
 
     @Override
@@ -291,7 +307,7 @@ public class VoxelTest extends ApplicationAdapter {
         Flag.blueFlag = new ModelInstance(assetsManager.get("flags/flagBlue.g3db", Model.class));
         Flag.noneFlag = new ModelInstance(assetsManager.get("flags/flagNone.g3db", Model.class));
         
-        // Load new flags into the game
+        // Generate flags for the game
         flagsManager.generateFlags(voxelWorld);
     }
 }

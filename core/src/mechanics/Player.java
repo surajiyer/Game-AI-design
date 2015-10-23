@@ -127,7 +127,7 @@ public class Player extends GameObject {
     public void respawn() {
         int x = (int) (MathUtils.random(GlobalState.widthField)*GlobalState.worldScale);
         int z = (int) (MathUtils.random(GlobalState.depthField)*GlobalState.worldScale);
-        float y = GlobalState.voxelworld.getHeight(x, z);
+        float y = GlobalState.voxelWorld.getHeight(x, z);
         tmp.set(x, y, z);
         setPosition(tmp);
     }

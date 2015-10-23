@@ -26,6 +26,7 @@ import utils.GameObject;
 
 /**
  * Adapted from https://github.com/libgdx/libgdx/blob/master/tests/gdx-tests/src/com/badlogic/gdx/tests/g3d/voxel/VoxelChunk.java
+ * But heavily modified
  * @author S.S.Iyer
  */
 public class VoxelChunk extends GameObject {

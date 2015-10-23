@@ -28,8 +28,8 @@ public class Flag extends GameObject {
     private boolean capturable = true;
     private long capTime;
     
-    public Flag(Vector3 pos, int scoreWeight, int i) {
-        this.id = i;
+    public Flag(Vector3 pos, int scoreWeight) {
+        this.id = idCount++;
         this.scoreWeight = scoreWeight;
         this.occupant = Occupant.NONE;
         this.model = noneFlag.copy();

@@ -128,12 +128,18 @@ public class PlayerController extends InputAdapter {
             if(GlobalState.isFirstPerson) {
                 updateFirstPerson(deltaTime);
             } else {
-                if (GlobalState.respawnP) {
-                    player.respawn();
-                    camera.position.set(player.getPosition().add(cameraOffset));
-                    GlobalState.respawnP = false;
-                }
                 updateThirdPerson(deltaTime);
+                // Respawn player if he goes off the map.
+                tmp.set(player.getPosition());
+                if(playerWorld.getHeight(tmp.x, tmp.z) == 0) {
+                     player.respawn();
+                    camera.position.set(player.getPosition().add(cameraOffset));
+                }
+            }
+            if (GlobalState.respawnP) {
+                player.respawn();
+                camera.position.set(player.getPosition().add(cameraOffset));
+                GlobalState.respawnP = false;
             }
         }
     }
@@ -160,7 +166,7 @@ public class PlayerController extends InputAdapter {
             tmp.set(player.getPosition().add(tmp));
             tmp.y = playerWorld.getHeight(tmp.x, tmp.z);
             player.setPosition(tmp);
-            camera.position.set(player.getPosition().add(cameraOffset));
+            camera.position.set(tmp.add(cameraOffset));
         }
         
         // Strafe left
@@ -173,7 +179,7 @@ public class PlayerController extends InputAdapter {
                 strafingLeft = true;
             }
             player.setPosition(tmp);
-            camera.position.set(player.getPosition().add(cameraOffset));
+            camera.position.set(tmp.add(cameraOffset));
         } else if(strafingLeft) {
             player.rotateBody(-40);
             strafingLeft = false;

@@ -24,6 +24,7 @@ import utils.GameObject;
 
 /**
  * Adapted from https://github.com/libgdx/libgdx/blob/master/tests/gdx-tests/src/com/badlogic/gdx/tests/g3d/voxel/VoxelWorld.java
+ * But heavily modified
  * @author S.S.Iyer
  */
 public class VoxelWorld extends GameObject {

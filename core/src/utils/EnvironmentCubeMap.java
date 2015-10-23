@@ -16,23 +16,25 @@ import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Quaternion;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Disposable;
 import com.badlogic.gdx.utils.GdxRuntimeException;
 import mechanics.GlobalState;
 
 /**
- *
+ * Adapted from code posted on StackOverflow http://stackoverflow.com/questions/21884805/libgdx-0-9-9-apply-cubemap-in-environment
+ * But heavily modified
  * @author S.S.Iyer
  */
 public class EnvironmentCubeMap implements Disposable{
 
-    protected final Pixmap[] data = new Pixmap[6];  
+    public final Pixmap[] data = new Pixmap[6];  
     protected ShaderProgram shader;
 
     public float rotationSpeed = 1f;
     private float rotation = 0f;
     protected int u_worldTrans;
-    protected int fogColor;
+    protected int fogColour;
     protected Mesh quad;
     private Matrix4 worldTrans;
     private Quaternion q;
@@ -42,7 +44,7 @@ public class EnvironmentCubeMap implements Disposable{
             " attribute vec2 a_texCoord0; \n"+          
             " uniform mat4 u_worldTrans; \n"+                   
             " varying vec2 v_texCoord0; \n"+
-            " varying vec3 v_cubeMapUV; \n"+            
+            " varying vec3 v_cubeMapUV; \n"+
             " void main() { \n"+
             "     v_texCoord0 = a_texCoord0;     \n"+
             "     vec4 g_position = u_worldTrans * vec4(a_position, 1.0); \n"+
@@ -55,15 +57,15 @@ public class EnvironmentCubeMap implements Disposable{
             " #endif \n"+           
             " uniform samplerCube u_environmentCubemap; \n"+
             " const float lowerLimit = 0.0;\n"+
-            " const float upperLimit = 1.0;\n"+
-            " uniform vec3 fogColour; \n"+
+            " const float upperLimit = 0.64;\n"+
+            " uniform vec4 fogColour; \n"+
             " varying vec2 v_texCoord0; \n"+
-            " varying vec3 v_cubeMapUV; \n"+            
+            " varying vec3 v_cubeMapUV; \n"+
             " void main() {      \n"+
-            "   vec4 finalColour = vec4(textureCube(u_environmentCubemap, v_cubeMapUV).rgb, 1.0);\n"+
+            "   vec4 finalColour = texture(u_environmentCubemap, v_cubeMapUV);\n"+
             "   float factor = (v_cubeMapUV.y - lowerLimit) / (upperLimit - lowerLimit);\n"+
             "   factor = clamp(factor, 0.0, 1.0);\n"+
-            "   gl_FragColor = mix(vec4(fogColour, 1.0), finalColour, factor);\n"+
+            "   gl_FragColor = mix(fogColour, finalColour, factor);\n"+
             " } \n";
 
     public String getDefaultVertexShader(){
@@ -96,17 +98,23 @@ public class EnvironmentCubeMap implements Disposable{
         for(int x=0; x<w; x++)
             for(int y=0; y<h; y++){
                 //-X
-                if(x>=0 && x<=w/4 && y>=h/3 && y<=h*2/3) data[1].drawPixel(x, y-h/3, cubemap.getPixel(x, y));
+                if(x>=0 && x<=w/4 && y>=h/3 && y<=h*2/3) 
+                    data[1].drawPixel(x, y-h/3, cubemap.getPixel(x, y));
                 //+Y
-                if(x>=w/4 && x<=w/2 && y>=0 && y<=h/3) data[2].drawPixel(x-w/4, y, cubemap.getPixel(x, y));
+                if(x>=w/4 && x<=w/2 && y>=0 && y<=h/3) 
+                    data[2].drawPixel(x-w/4, y, cubemap.getPixel(x, y));
                 //+Z
-                if(x>=w/4 && x<=w/2 && y>=h/3 && y<=h*2/3) data[4].drawPixel(x-w/4, y-h/3, cubemap.getPixel(x, y));
+                if(x>=w/4 && x<=w/2 && y>=h/3 && y<=h*2/3) 
+                    data[4].drawPixel(x-w/4, y-h/3, cubemap.getPixel(x, y));
                 //-Y
-                if(x>=w/4 && x<=w/2 && y>=h*2/3 && y<=h) data[3].drawPixel(x-w/4, y-h*2/3, cubemap.getPixel(x, y));
+                if(x>=w/4 && x<=w/2 && y>=h*2/3 && y<=h) 
+                    data[3].drawPixel(x-w/4, y-h*2/3, cubemap.getPixel(x, y));
                 //+X
-                if(x>=w/2 && x<=w*3/4 && y>=h/3 && y<=h*2/3) data[0].drawPixel(x-w/2, y-h/3, cubemap.getPixel(x, y));
+                if(x>=w/2 && x<=w*3/4 && y>=h/3 && y<=h*2/3) 
+                    data[0].drawPixel(x-w/2, y-h/3, cubemap.getPixel(x, y));
                 //-Z
-                if(x>=w*3/4 && x<=w && y>=h/3 && y<=h*2/3) data[5].drawPixel(x-w*3/4, y-h/3, cubemap.getPixel(x, y));
+                if(x>=w*3/4 && x<=w && y>=h/3 && y<=h*2/3) 
+                    data[5].drawPixel(x-w*3/4, y-h/3, cubemap.getPixel(x, y));
             }
         cubemap.dispose();
         init();     
@@ -118,7 +126,7 @@ public class EnvironmentCubeMap implements Disposable{
             throw new GdxRuntimeException(shader.getLog());
         
         u_worldTrans = shader.getUniformLocation("u_worldTrans");
-        fogColor = shader.getUniformLocation("fogColour");
+        fogColour = shader.getUniformLocation("fogColour");
         quad = createQuad();      
         worldTrans = new Matrix4();  
         q = new Quaternion();
@@ -154,12 +162,13 @@ public class EnvironmentCubeMap implements Disposable{
         camera.view.getRotation( q, true );
         q.conjugate();
         worldTrans.rotate(q);
-        rotation += (rotationSpeed * Gdx.graphics.getDeltaTime()) % 360;
-        worldTrans.rotate(camera.up, rotation);
+        rotation += (rotationSpeed * Gdx.graphics.getDeltaTime());
+        rotation %= 360;
+        worldTrans.rotate(Vector3.Y, rotation);
 
         shader.begin();     
         shader.setUniformMatrix(u_worldTrans, worldTrans.translate(0, 0, -1));
-        shader.setUniform4fv(fogColor, GlobalState.fogColour, 0, 4);
+        shader.setUniform4fv(fogColour, GlobalState.fogColour, 0, 4);
         quad.render(shader, GL20.GL_TRIANGLES);
         shader.end();
     }

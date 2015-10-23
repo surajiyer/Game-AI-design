@@ -12,7 +12,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Renderable;
-import com.badlogic.gdx.graphics.g3d.Shader;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.attributes.TextureAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.MeshBuilder;
@@ -20,11 +19,11 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Pool;
-import terrain.CubeShader;
 
 
 /**
  * Adapted from https://github.com/libgdx/libgdx/blob/master/tests/gdx-tests/src/com/badlogic/gdx/tests/g3d/voxel/Cube.java
+ * Not used
  * @author S.S.Iyer
  */
 public class Cube extends GameObject {
@@ -86,7 +85,6 @@ public class Cube extends GameObject {
     }
     
     public static Texture texture = null;
-    private Shader shader;
     private Mesh mesh;
     public final CubeType cubeType;
     private boolean isActive;
@@ -105,8 +103,6 @@ public class Cube extends GameObject {
         isActive = false;
         setPosition(pos);
         setScale(scl);
-        shader = new CubeShader();
-        shader.init();
     }
 
     /** 

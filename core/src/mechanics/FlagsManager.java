@@ -51,7 +51,7 @@ public class FlagsManager {
             }
             y = (int) world.getHeight(x*=scale, z*=scale);
             flagPositions.add(tmp.set(x, y, z));
-            flagList.add(new Flag(tmp, 5, i));
+            flagList.add(new Flag(tmp, 5));
         }
     }
     
@@ -72,7 +72,6 @@ public class FlagsManager {
         for(Flag flag : flagList) {
             if(!flag.getCap() && (TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) - flag.getCapTime()) % 5 == 0 && 
                     TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()) !=flag.getCapTime()) {
-                System.out.println("HI");
                 flag.setCap(true);
             }
             if(position.dst(flag.getPosition()) > 2*UNITS_PER_METER) continue;

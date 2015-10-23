@@ -16,7 +16,8 @@ import utils.GameController;
 public class GlobalState {
     public final static AssetManager assetsManager = new AssetManager();
     public final static int UNITS_PER_METER = 16;
-    public final static float[] fogColour = new float[]{0.13f, 0.13f, 0.13f, 1.0f};
+    //public final static float[] fogColour = new float[]{0.13f, 0.13f, 0.13f, 1.0f};
+    public final static float[] fogColour = new float[]{0.54f, 0.62f, 0.69f, 1f};
     public static boolean fullScreen = false;
     public static boolean descendLimit = true;
     public static boolean enableWireframe = false;
@@ -35,10 +36,11 @@ public class GlobalState {
     public final static FlagsManager flagsManager;
     public final static Minimap miniMap;
     public final static GameController gameController;
-    public static VoxelWorld voxelworld;
+    public static VoxelWorld voxelWorld;
+    public static int gameCount = 0;
     public static boolean started = false;
-    public static boolean respawnP = false;
-    public static boolean respawnAI = false;
+    public static boolean respawnP = true;
+    public static boolean respawnAI = true;
     public static boolean treeLocations[][];
     
     static {
@@ -49,7 +51,7 @@ public class GlobalState {
     }
     
     public static void init(VoxelWorld world) {
-        voxelworld = world;
+        voxelWorld = world;
         widthField = world.chunksX * UNITS_PER_METER;
         depthField = world.chunksZ * UNITS_PER_METER;
     }

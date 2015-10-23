@@ -24,7 +24,7 @@ import static utils.Cube.texture;
 import utils.GameObject;
 
 /**
- *
+ * Not used
  * @author S.S.Iyer
  */
 public class Chunk extends GameObject {
