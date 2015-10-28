@@ -132,11 +132,16 @@ public class EnvironmentCubeMap implements Disposable{
         q = new Quaternion();
         
         initCubemap();
-    } 
+    }
+    
+    public void reset() {
+        worldTrans = new Matrix4();  
+        q = new Quaternion();
+    }
 
     private void initCubemap(){
         // Bind cube map
-        Gdx.gl20.glBindTexture(GL20.GL_TEXTURE_CUBE_MAP, 0);
+        Gdx.gl20.glBindTexture(GL20.GL_TEXTURE_CUBE_MAP, 1);
         Gdx.gl20.glTexImage2D(GL20.GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL20.GL_RGB, data[0].getWidth(), data[0].getHeight(), 0, GL20.GL_RGB, GL20.GL_UNSIGNED_BYTE, data[0].getPixels());
         Gdx.gl20.glTexImage2D(GL20.GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL20.GL_RGB, data[1].getWidth(), data[1].getHeight(), 0, GL20.GL_RGB, GL20.GL_UNSIGNED_BYTE, data[1].getPixels());
 
@@ -159,12 +164,12 @@ public class EnvironmentCubeMap implements Disposable{
 
     public void render(Camera camera) {
         worldTrans.idt();
-        camera.view.getRotation( q, true );
+        camera.view.getRotation(q, true);
         q.conjugate();
         worldTrans.rotate(q);
-        rotation += (rotationSpeed * Gdx.graphics.getDeltaTime());
-        rotation %= 360;
-        worldTrans.rotate(Vector3.Y, rotation);
+//        rotation += (rotationSpeed * Gdx.graphics.getDeltaTime());
+//        rotation %= 360;
+//        worldTrans.rotate(Vector3.Y, rotation);
 
         shader.begin();     
         shader.setUniformMatrix(u_worldTrans, worldTrans.translate(0, 0, -1));
